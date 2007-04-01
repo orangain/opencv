@@ -1,0 +1,13 @@
+010_enable_static.diff
+010_ffmpeg_linking.diff
+010_fix_optimisations.diff
+010_m4_syntax.diff
+010_makefile_syntax.diff
+010_python_cspec.diff
+020_rebootstrap.diff
+100_amd64.diff
+100_static_inline.diff
+110_dc1394.diff
+120_header_warnings.diff
+200_documentation.diff
+200_examples_makefile.diff

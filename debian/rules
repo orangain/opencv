@@ -1,0 +1,136 @@
+#!/usr/bin/make -f
+
+#export DH_VERBOSE=1
+
+DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+
+confflags = --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info
+ifeq ($(DEB_BUILD_GNU_TYPE), $(DEB_HOST_GNU_TYPE))
+  confflags += --build $(DEB_HOST_GNU_TYPE)
+else
+  confflags += --build $(DEB_BUILD_GNU_TYPE) --host $(DEB_HOST_GNU_TYPE)
+endif
+
+CFLAGS = -Wall -g
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O0
+else
+	CFLAGS += -O2 -g
+endif
+ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
+	INSTALL_PROGRAM += -s
+endif
+
+config.status: configure
+	dh_testdir
+	QUILT_PATCHES=debian/patches quilt push -a || test $$? = 2
+	touch configure.in
+	touch aclocal.m4
+	touch configure
+	touch cvconfig.h.in
+	touch `find . -name Makefile.in`
+	touch stamp-h.in
+	CFLAGS="$(CFLAGS)" ./configure $(confflags) --enable-static --enable-python --with-apps
+
+build: build-stamp
+build-stamp: config.status
+	dh_testdir
+	$(MAKE) CFLAGS="$(CFLAGS)" CXXFLAGS="$(CFLAGS)"
+	touch build-stamp
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp 
+	-$(MAKE) distclean
+	rm -f tests/cv/src/lt-cvtest.lst tests/cv/src/lt-cvtest.sum
+	QUILT_PATCHES=debian/patches quilt pop -a -R || test $$? = 2
+	dh_clean 
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k 
+	dh_installdirs
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
+	# Move files around
+	mkdir -p debian/tmp/usr/share/doc/opencv-doc
+	mv debian/tmp/usr/share/opencv/doc/* debian/tmp/usr/share/doc/opencv-doc/
+	mv debian/tmp/usr/share/opencv/readme.txt debian/tmp/usr/share/doc/opencv-doc/
+	mv debian/tmp/usr/share/opencv/samples debian/tmp/usr/share/doc/opencv-doc/examples
+	# Remove useless files
+	rm -f `find debian/tmp -name license.txt`
+	rm -f `find debian/tmp -name '*.py[co]'`
+	# Install files in their required packages
+	dh_install --sourcedir=debian/tmp --list-missing
+
+binary-indep: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs -i ChangeLog
+	dh_installdocs -i AUTHORS THANKS TODO debian/README.Debian
+	dh_installexamples -p opencv-doc samples/c/*.c samples/c/*.png samples/c/*.jpg samples/c/Makefile.debian
+	mv debian/opencv-doc/usr/share/doc/opencv-doc/examples/Makefile.debian debian/opencv-doc/usr/share/doc/opencv-doc/examples/Makefile
+	(cd debian/opencv-doc/usr/share/doc/opencv-doc/examples/python/; cp minidemo.py tmp ; echo '#!/usr/bin/python' >| minidemo.py ; cat tmp >> minidemo.py ; rm -f tmp)
+	#dh_install -p opencv-doc docs/*.rtf usr/share/doc/opencv-doc
+	#dh_install -p opencv-doc docs/*.pdf usr/share/doc/opencv-doc
+	#dh_install -p opencv-doc docs/*.htm usr/share/doc/opencv-doc/html
+	#dh_install -p opencv-doc docs/*.jpg usr/share/doc/opencv-doc/html
+	#dh_install -p opencv-doc docs/ref usr/share/doc/opencv-doc/html
+#	dh_install
+#	dh_installmenu
+#	dh_installdebconf	
+#	dh_installlogrotate
+#	dh_installemacsen
+#	dh_installpam
+#	dh_installmime
+#	dh_installinit
+#	dh_installcron
+#	dh_installinfo
+	dh_installman -i
+	dh_link -i
+	dh_strip -i
+	dh_compress -i -Xexamples
+	dh_fixperms -i
+#	dh_perl
+#	dh_python
+#	dh_makeshlibs
+	dh_installdeb -i
+#	dh_shlibdeps -i
+	dh_gencontrol -i
+	dh_md5sums -i
+	dh_builddeb -i
+
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs -a ChangeLog
+	dh_installdocs -a AUTHORS THANKS TODO debian/README.Debian
+	dh_installexamples -a
+#	dh_install
+#	dh_installmenu
+#	dh_installdebconf	
+#	dh_installlogrotate
+#	dh_installemacsen
+#	dh_installpam
+#	dh_installmime
+#	dh_installinit
+#	dh_installcron
+#	dh_installinfo
+	dh_installman -p libcv-dev debian/opencv-config.1
+	dh_link -a
+	dh_strip -a
+	dh_compress -a
+	dh_fixperms -a
+#	dh_perl
+	dh_pysupport -a
+	dh_makeshlibs
+	dh_installdeb -a
+	dh_shlibdeps -a
+	dh_gencontrol -a
+	dh_md5sums -a
+	dh_builddeb -a
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install 
