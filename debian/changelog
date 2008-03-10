@@ -7,7 +7,7 @@ opencv (1.0.0-4) unstable; urgency=low
   * debian/control:
     + Add ${shlibs:Depends} to -dev packages, to get a proper dependency
       when these packages ship binaries.
-    + Use ${source:Version} instead of ${Source-Version} (Closes: 430726).
+    + Use ${binary:Version} instead of ${Source-Version} (Closes: 430726).
     + Set policy to 3.7.3.
     + Use Vcs-Svn: instead of XS-Vcs-Svn: fields.
 

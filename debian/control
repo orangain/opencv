@@ -29,7 +29,7 @@ Description: OpenCV documentation and examples
 Package: libcv-dev
 Section: libdevel
 Architecture: any
-Depends: ${shlibs:Depends}, libcv1 (= ${source:Version}), libcvaux-dev (= ${source:Version}), libhighgui-dev (= ${source:Version}), pkg-config
+Depends: ${shlibs:Depends}, libcv1 (= ${binary:Version}), libcvaux-dev (= ${binary:Version}), libhighgui-dev (= ${binary:Version}), pkg-config
 Conflicts: libopencv-dev
 Replaces: libopencv-dev
 Description: development files for libcv
@@ -49,7 +49,7 @@ Description: development files for libcv
 Package: libcvaux-dev
 Section: libdevel
 Architecture: any
-Depends: ${shlibs:Depends}, libcvaux1 (= ${source:Version}), libcv-dev (>= ${source:Version}), pkg-config
+Depends: ${shlibs:Depends}, libcvaux1 (= ${binary:Version}), libcv-dev (>= ${binary:Version}), pkg-config
 Description: development files for libcvaux
  This package contains the header files and static library needed to compile
  applications that use the OpenCV (Open Computer Vision) extensions.
@@ -67,7 +67,7 @@ Description: development files for libcvaux
 Package: libhighgui-dev
 Section: libdevel
 Architecture: any
-Depends: ${shlibs:Depends}, libhighgui1 (= ${source:Version}), libcv-dev (>= ${source:Version}), libpng12-dev, libjpeg-dev, zlib1g-dev, libtiff4-dev, libgtk2.0-dev, libavcodec-dev (>= 0.cvs20050918-2), libavformat-dev, pkg-config
+Depends: ${shlibs:Depends}, libhighgui1 (= ${binary:Version}), libcv-dev (>= ${binary:Version}), libpng12-dev, libjpeg-dev, zlib1g-dev, libtiff4-dev, libgtk2.0-dev, libavcodec-dev (>= 0.cvs20050918-2), libavformat-dev, pkg-config
 Description: development files for libhighgui
  This package contains the header files and static library needed to compile
  applications that use the OpenCV (Open Computer Vision) GUI.
