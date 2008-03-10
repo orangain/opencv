@@ -2,13 +2,16 @@ opencv (1.0.0-4) unstable; urgency=low
 
   * debian/rules:
     + Support CONCURRENCY_LEVEL.
+    + Don't ignore make distclean errors.
 
   * debian/control:
     + Add ${shlibs:Depends} to -dev packages, to get a proper dependency
       when these packages ship binaries.
-    + Use ${source:Version} instead of ${Source-Version}.
+    + Use ${source:Version} instead of ${Source-Version} (Closes: 430726).
+    + Set policy to 3.7.3.
+    + Use Vcs-Svn: instead of XS-Vcs-Svn: fields.
 
- -- Sam Hocevar (Debian packages) <sam+deb@zoy.org>  Mon, 10 Mar 2008 15:28:47 +0000
+ -- Sam Hocevar (Debian packages) <sam+deb@zoy.org>  Mon, 10 Mar 2008 16:41:05 +0000
 
 opencv (1.0.0-3) unstable; urgency=low
 
