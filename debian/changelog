@@ -1,3 +1,11 @@
+opencv (1.0.0-5) UNRELEASED; urgency=low
+
+  * debian/control: Added Homepage field.
+    (Vcs-Svn): Fixed.
+  * debian/watch: Added.
+
+ -- Daniel Leidert (dale) <daniel.leidert@wgdd.de>  Sat, 10 May 2008 14:25:23 +0200
+
 opencv (1.0.0-4) unstable; urgency=low
 
   * debian/rules:
