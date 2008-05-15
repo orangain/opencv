@@ -14,6 +14,11 @@ opencv-createsamples \- create training and testing samples
 .B opencv\-createsamples
 creates positive samples from a single object image or a collection of
 positive images.
+.PP
+The scheme of test samples creation is similar to training samples creation
+since each test sample is a background image into which a randomly
+distorted and randomly scaled instance of the object picture is pasted at a
+random position.
 
 
 .SH OPTIONS
@@ -24,11 +29,15 @@ supports the following options:
 .PP
 .TP
 .BI "\-info " collection_file_name
-A database of positive source images.
+A database of positive source images. Use it together with
+.B \-img
+to create test samples instead.
 
 .TP
 .BI "\-img " image_file_name
-A positive source image.
+A positive source image. Use it together with
+.B \-info
+to create test samples instead.
 
 .TP
 .BI "\-vec " vec_file_name
@@ -36,23 +45,25 @@ The output file name containing the generated positive samples for training.
 
 .TP
 .BI "\-bg " background_file_name
-The background description file. It contains a list of images into which
-randomly distorted versions of the object are pasted for positive sample
-generation.
+The background description file (the negative sample set). It contains a list
+of images into which randomly distorted versions of the object are pasted for
+positive sample generation.
 
 .TP
 .BI "\-num " number_of_samples
-The number of positive samples to generate. The default value is
+The number of positive samples to generate/train. The default is
 .IR 1000 .
 
 .TP
 .BI "\-bgcolor " background_color
-The background color for the sample image. The default is
+The background color (currently grayscale images are assumed); the background
+color denotes the transparent color. The default is
 .IR 0 .
 .\" TODO: What does 0 mean? How are colors expressed with integers?
 
 .TP
 .BI "\-bgthresh " background_color_threshold
+The amount of color tolerance 
 The background color threshold. Pixels whose colors are in range \[+-]
 .I background_color_threshold
 are considered as transparent.
@@ -87,8 +98,8 @@ The maximum rotation angle in z-direction in radians. The default is
 
 .TP
 .BI "\-show [" scale_factor "]"
-Show the created samples during the creation process. Optionally a scaling
-factor can be defined. The default value is
+Show each created sample during the creation process. Optionally a scaling
+factor can be defined. The default is
 .IR 4.0 .
 .IP
 If <\fBESC\fR> is pressed, the creation process will continue without showing
@@ -96,13 +107,21 @@ the samples. This can be useful for debugging purposes.
 
 .TP
 .BI "\-h " sample_height
-The generated sample height. The default value is
+For the creation of training samples, it is the resulting sample height.
+The default is
 .IR 24 .
+.IP
+In case of creating test samples, it is the minimal height of placed object 
+picture.
 
 .TP
 .BI "\-w " sample_width
-The generated sample width. The default value is
+For the creation of training samples, it is the resulting sample width.
+The default is
 .IR 24 .
+.IP
+In case of creating test samples, it is the minimal width of placed object
+picture.
 
 .PP
 The same information is shown, if
@@ -128,7 +147,7 @@ distortions:
 .BR opencv\-haartraing (1),
 .BR opencv\-performance (1)
 .PP
-More information and examples can be found online.
+More information and examples can be found in the OpenCV documentation.
 
 
 .SH AUTHORS
