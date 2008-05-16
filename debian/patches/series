@@ -12,3 +12,4 @@
 200_documentation.diff
 200_examples_makefile.diff
 210_openmp_compilation.diff
+300_fix_segfault_in_window_gtk.diff

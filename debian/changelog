@@ -1,33 +1,23 @@
 opencv (1.0.0-5) UNRELEASED; urgency=low
 
-  * debian/control:
-    + Added Homepage field.
-    + Fixed Vcs-Svn field.
-    + Added libjasper-dev to Build-Depends and Depends for higui (closes:
-      #428474).
-
-  * debian/dirs:
-    + Removed (useless). Avoids empty directories.
-
-  * debian/libcv-dev.install:
-    + Small cosmetic fix.
-
-  * debian/libcv-dev.manpages: Added.
-    + Install manpages for haartraining utilities:
-      - debian/opencv-createsamples.1: Initially added.
-      - debian/opencv-haartraining.1: Ditto.
-      - debian/opencv-performance.1: Ditto.
-
-  * debian/opencv-doc.install:
-    + Install Makefile.debian here.
-
-  * debian/rules:
-    + Removed most of the unused debhelper calls.
-    + Let dh_install exclude files we don't want.
-    + Don't install examples twice.
-    + Removed installation of opencv-config.1 (closes: #407946).
-
+  * debian/control: Added Homepage field.
+    (Vcs-Svn): Fixed.
+    (Depends, Build-Depends): Added libjasper-dev (closes: #428474).
+  * debian/dirs: Removed (useless). Avoids empty directories.
+  * debian/libcv-dev.install: Small cosmetic fix.
+  * debian/libcv-dev.manpages: Added for haartraining utilities.
+  * debian/opencv-createsamples.1: Initially added.
+  * debian/opencv-haartraining.1: Ditto.
+  * debian/opencv-performance.1: Ditto.
+  * debian/opencv-doc.install: Install Makefile.debian here.
+  * debian/rules (install, binary-arch, binary-indep): Removed most of the
+    unused debhelper calls. Let dh_install exclude files we don't want. Don't
+    install examples twice. Removed installation of opencv-config.1 (closes:
+    #407946).
   * debian/watch: Added.
+  * debian/patches/300_fix_segfault_in_window_gtk.diff: Added. Merged from
+    Ubuntu.
+  * debian/patches/series: Adjusted.
 
  -- Daniel Leidert (dale) <daniel.leidert@wgdd.de>  Sat, 10 May 2008 14:25:23 +0200
 
