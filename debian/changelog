@@ -1,4 +1,6 @@
-opencv (1.0.0-5) UNRELEASED; urgency=low
+opencv (1.0.0-5) unstable; urgency=high
+
+  [ Daniel Leidert ]
 
   * debian/control: Added Homepage field.
     (Vcs-Svn): Fixed.
@@ -19,7 +21,20 @@ opencv (1.0.0-5) UNRELEASED; urgency=low
     Ubuntu.
   * debian/patches/series: Adjusted.
 
- -- Daniel Leidert (dale) <daniel.leidert@wgdd.de>  Sat, 10 May 2008 14:25:23 +0200
+  [ Sam Hocevar ]
+
+  * High urgency to ease testing propagations.
+  * debian/patches/100_ffmpeg_updates.diff:
+    + Updated patch to latest ffmpeg version (Closes: #482217).
+  * debian/patches/020_python_linking.diff:
+    + Link python bindings with required libraries.
+  * debian/patches/030_install_hook.diff:
+    + Use install-exec-hook instead of install-hook.
+
+  * debian/control:
+    + Build-depend on more recent libavcodec-dev.
+
+ -- Sam Hocevar (Debian packages) <sam+deb@zoy.org>  Sun, 08 Jun 2008 15:01:18 +0000
 
 opencv (1.0.0-4) unstable; urgency=low
 
