@@ -1,4 +1,20 @@
-opencv (1.0.0-6.1) unstable; urgency=low
+opencv (1.0.0-7) UNRELEASED; urgency=low
+
+  * Acknowledge previous NMU (Closes: #497689).
+
+  * deban/control:
+    + Re-activate libdc1394-22-dev build-dependency.
+
+  * debian/patches/040_check_for_newer_dc1394.diff:
+    + New patch. Check for libdc1394 2.x instead of 1.5, since it's the one
+      we explicitely build-depend on.
+
+  * debian/patches/110_dc1394.diff:
+    + Update patch for libdc1394 2.x.
+
+ -- Sam Hocevar (Debian packages) <sam+deb@zoy.org>  Sun, 01 Mar 2009 22:35:26 +0100
+ 
+ opencv (1.0.0-6.1) unstable; urgency=low
 
   * Non-maintainer upload.
   * debian/control:

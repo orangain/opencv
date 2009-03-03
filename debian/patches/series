@@ -6,6 +6,7 @@
 010_python_cspec.diff
 020_python_linking.diff
 030_install_hook.diff
+040_check_for_newer_dc1394.diff
 050_rebootstrap.diff
 100_amd64.diff
 100_static_inline.diff
