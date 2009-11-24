@@ -1,3 +1,2 @@
 version=3
-opts=uversionmangle=s/(pre\d+)/~$1/ \
-http://sf.net/opencvlibrary/(?i:opencv)-(.*)\.tar\.gz
+http://sf.net/opencvlibrary/(?i:opencv)-([\d.]+)\.tar\.gz

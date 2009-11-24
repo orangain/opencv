@@ -6,7 +6,6 @@
 010_python_cspec.diff
 020_python_linking.diff
 030_install_hook.diff
-040_check_for_newer_dc1394.diff
 050_rebootstrap.diff
 100_amd64.diff
 100_static_inline.diff
@@ -17,3 +16,5 @@
 200_examples_makefile.diff
 210_openmp_compilation.diff
 300_fix_segfault_in_window_gtk.diff
+400_ffmpeg_splitting_autofoo.diff
+410_ffmpeg_use_swscale.diff
