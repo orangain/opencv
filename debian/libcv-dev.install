@@ -8,13 +8,10 @@ usr/include/opencv/cvver.*
 usr/include/opencv/cvvidsurv.*
 usr/include/opencv/ml.*
 usr/lib/libcv.a
-usr/lib/libcv.la
 usr/lib/libcv.so
 usr/lib/libcxcore.a
-usr/lib/libcxcore.la
 usr/lib/libcxcore.so
 usr/lib/libml.a
-usr/lib/libml.la
 usr/lib/libml.so
 usr/lib/pkgconfig
 usr/share/opencv/haarcascades
