@@ -33,7 +33,7 @@ Description: OpenCV documentation and examples
 Package: libcv-dev
 Section: libdevel
 Architecture: any
-Depends: ${shlibs:Depends}, libcv4 (= ${binary:Version}), libcvaux-dev (= ${binary:Version}), libhighgui-dev (= ${binary:Version}), pkg-config, ${misc:Depends}
+Depends: ${shlibs:Depends}, libcv4 (= ${binary:Version}), pkg-config, ${misc:Depends}
 Conflicts: libopencv-dev
 Replaces: libopencv-dev
 Description: development files for libcv
