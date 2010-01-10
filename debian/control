@@ -15,6 +15,7 @@ Homepage: http://opencvlibrary.sourceforge.net/
 Package: opencv-doc
 Section: doc
 Architecture: all
+Depends: ${misc:Depends}
 Conflicts: libopencv-doc
 Replaces: libopencv-doc
 Description: OpenCV documentation and examples
