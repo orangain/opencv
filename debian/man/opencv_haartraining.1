@@ -1,17 +1,17 @@
-.TH "OPENCV\-HAARTRAINING" "1" "May 2008" "OpenCV" "User Commands"
+.TH "OPENCV_HAARTRAINING" "1" "May 2010" "OpenCV" "User Commands"
 
 
 .SH NAME
-opencv-haartraining \- train classifier
+opencv_haartraining \- train classifier
 
 
 .SH SYNOPSIS
-.B opencv\-haartraining [options]
+.B opencv_haartraining [options]
 
 
 .SH DESCRIPTION
 .PP
-.B opencv\-haartraining
+.B opencv_haartraining
 is training the classifier. While it is running, you can already get an
 impression, whether the classifier will be suitable or if you need to improve
 the training set and/or parameters.
@@ -36,7 +36,7 @@ further training doesn't make sense anymore, so it can be stopped.
 
 .SH OPTIONS
 .PP
-.B opencv\-haartraining
+.B opencv_haartraining
 supports the following options:
 
 .PP
@@ -47,7 +47,7 @@ The directory in which the trained classifier is stored.
 .TP
 .BI "\-vec " vec_file_name
 The file name of the positive samples file (e.g. created by the
-.BR opencv\-createsamples (1)
+.BR opencv_createsamples (1)
 utility).
 
 .TP
@@ -57,11 +57,15 @@ of images into which randomly distorted versions of the object are pasted for
 positive sample generation.
 
 .TP
+.BI "\-bg-vecfile
+This option is that bgfilename represents a vec file with discrete negatives. The default is
+.BR "not set".
+
+.TP
 .BI "\-npos " number_of_positive_samples
 The number of positive samples used in training of each classifier stage.
 The default is
 .IR 2000 .
-
 
 .TP
 .BI "\-nneg " number_of_negative_samples
@@ -150,6 +154,18 @@ The default is
 For more information on this see \%http://www.lienhart.de/ICIP2002.pdf.
 
 .TP
+.BI "\-h " sample_height
+The sample height (must have the same value as used during creation).
+The default is
+.IR 24 .
+
+.TP
+.BI "\-w " sample_width
+The sample width (must have the same value as used during creation).
+The default is
+.IR 24 .
+
+.TP
 .BI "\-bt {" DAB | RAB | LB | GAB "}"
 The type of the applied boosting algorithm. You can choose between Discrete
 AdaBoost (\fIDAB\fR), Real AdaBoost (\fIRAB\fR), LogitBoost (\fILB\fR) and
@@ -172,21 +188,9 @@ The maximal number of splits in a tree cascade. The default is
 The minimal number of positive samples per cluster. The default is
 .IR 500 .
 
-.TP
-.BI "\-h " sample_height
-The sample height (must have the same value as used during creation).
-The default is
-.IR 24 .
-
-.TP
-.BI "\-w " sample_width
-The sample width (must have the same value as used during creation).
-The default is
-.IR 24 .
-
 .PP
 The same information is shown, if
-.B opencv\-haartraining
+.B opencv_haartraining
 is called without any arguments/options.
 
 
@@ -198,8 +202,8 @@ TODO
 
 .SH SEE ALSO
 .PP
-.BR opencv\-createsamples (1),
-.BR opencv\-performance (1)
+.BR opencv_createsamples (1),
+.BR opencv_performance (1)
 .PP
 More information and examples can be found in the OpenCV documentation.
 
@@ -207,4 +211,5 @@ More information and examples can be found in the OpenCV documentation.
 .SH AUTHORS
 .PP
 This manual page was written by \fBDaniel Leidert\fR <\&daniel.leidert@wgdd.de\&>
+and \fBNobuhiro Iwamatsu\fR <\&iwamatsu@debian.org\&>
 for the Debian project (but may be used by others).

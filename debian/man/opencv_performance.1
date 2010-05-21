@@ -1,17 +1,17 @@
-.TH "OPENCV\-PERFORMANCE" "1" "May 2008" "OpenCV" "User Commands"
+.TH "OPENCV_PERFORMANCE" "1" "May 2010" "OpenCV" "User Commands"
 
 
 .SH NAME
-opencv-performance \- evaluate the performance of the classifier
+opencv_performance \- evaluate the performance of the classifier
 
 
 .SH SYNOPSIS
-.B opencv\-performance [options]
+.B opencv_performance [options]
 
 
 .SH DESCRIPTION
 .PP
-.B opencv\-performance
+.B opencv_performance
 evaluates the performance of the classifier. It takes a collection of marked
 up test images, applies the classifier and outputs the performance, i.e. number of
 found objects, number of missed objects, number of false alarms and other
@@ -19,7 +19,7 @@ information.
 .PP
 When there is no such collection available test samples may be created from single
 object image by the
-.BR opencv\-createsamples (1)
+.BR opencv_createsamples (1)
 utility. The scheme of test samples creation in this case is similar to training samples
 .PP
 In the output, the table should be read:
@@ -38,7 +38,7 @@ as false positives)
 
 .SH OPTIONS
 .PP
-.B opencv\-performance
+.B opencv_performance
 supports the following options:
 
 .PP
@@ -99,7 +99,7 @@ The default is
 
 .PP
 The same information is shown, if
-.B opencv\-performance
+.B opencv_performance
 is called without any arguments/options.
 
 
@@ -108,13 +108,13 @@ is called without any arguments/options.
 To create training samples from one image applying distortions and show the
 results:
 .IP
-.B opencv\-performance -data trainout -info tests.dat
+.B opencv_performance -data trainout -info tests.dat
 
 
 .SH SEE ALSO
 .PP
-.BR opencv\-createsamples (1),
-.BR opencv\-haartraing (1)
+.BR opencv_createsamples (1),
+.BR opencv_haartraing (1)
 .PP
 More information and examples can be found in the OpenCV documentation.
 
@@ -122,4 +122,5 @@ More information and examples can be found in the OpenCV documentation.
 .SH AUTHORS
 .PP
 This manual page was written by \fBDaniel Leidert\fR <\&daniel.leidert@wgdd.de\&>
+and \fBNobuhiro Iwamatsu\fR <\&iwamatsu@debian.org\&>
 for the Debian project (but may be used by others).
