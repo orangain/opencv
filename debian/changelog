@@ -8,6 +8,8 @@ opencv (2.1.0-1) unstable; urgency=low
     - library package name update.
       Soname of opencv library changed from 4 to 2.1.
     - Add cmake and liblapack-dev to Build-depends.
+    - Add arch depends to libraw1394-dev and libdc1394-22-dev.
+      (Closes: #581210)
   * Update man files.
   * Update patches
     - Update and rename 500_remove_bashism.patch.
@@ -23,7 +25,7 @@ opencv (2.1.0-1) unstable; urgency=low
     - Remove cvconfig.h
       remove_cvconfig.h.patch
 
- -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Tue, 13 Apr 2010 05:02:24 +0900
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Fri, 21 May 2010 06:47:54 +0900
 
 opencv (2.0.0-4) unstable; urgency=low
 
