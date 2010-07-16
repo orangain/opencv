@@ -12,11 +12,12 @@ opencv (2.1.0-1) unstable; urgency=low
       to Build-depends.
     - Add arch depends to libraw1394-dev and libdc1394-22-dev.
       Thanks to Pino Toscano. (Closes: #581210)
+  * Add opencv-doc.lintian-overrides.
+    opencv-doc has some sample program of python.
   * Update man files.
   * Update patches
     - Update and rename 500_remove_bashism.patch.
       And rename to remove_bashism.patch.
-  * Remove some patches.
   * Add new patches.
     - Enable build static library.
       enable_static.patch
@@ -27,8 +28,9 @@ opencv (2.1.0-1) unstable; urgency=low
       fix_build_pdf.patch
     - Remove cvconfig.h
       remove_cvconfig.h.patch
+  * Remove some patches.
 
- -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Fri, 21 May 2010 06:47:54 +0900
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Fri, 16 Jul 2010 13:12:28 +0900
 
 opencv (2.0.0-4) unstable; urgency=low
 
