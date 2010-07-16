@@ -9,8 +9,10 @@ Build-Depends: debhelper (>= 7.0.50~), quilt (>= 0.46-7~), cmake,
  libraw1394-dev [!kfreebsd-amd64 !kfreebsd-i386 !hurd-i386],
  libdc1394-22-dev [!kfreebsd-amd64 !kfreebsd-i386 !hurd-i386],
  zlib1g-dev, liblapack-dev, python-dev, swig, python-support (>= 0.4.1),
- texlive-fonts-extra
-Standards-Version: 3.8.4
+ texlive-fonts-extra, texlive-latex-extra, texlive-latex-recommended,
+ latex-xcolor, texlive-fonts-recommended
+
+Standards-Version: 3.9.0
 Vcs-Svn: svn://svn.debian.org/svn/pkg-scicomp/opencv/trunk/
 Vcs-Browser: http://svn.debian.org/wsvn/pkg-scicomp/opencv/
 Homepage: http://opencvlibrary.sourceforge.net/

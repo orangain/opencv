@@ -1,19 +1,22 @@
 opencv (2.1.0-1) unstable; urgency=low
 
-  * New upstream release. (Closes: #577594)
-    - Remove some patches.
+  * New upstream release. (Closes: #577594, #587232, #563717)
   * Update debian/rules.
     - Update build-system to debhelper v7.
   * Update debian/control.
+    - Bumped standards-version to 3.9.0. No changes needed.
     - library package name update.
       Soname of opencv library changed from 4 to 2.1.
-    - Add cmake and liblapack-dev to Build-depends.
+    - Add cmake, liblapack-dev, texlive-fonts-extra, texlive-latex-extra,
+      texlive-latex-recommended, latex-xcolor and  texlive-fonts-recommended
+      to Build-depends.
     - Add arch depends to libraw1394-dev and libdc1394-22-dev.
-      (Closes: #581210)
+      Thanks to Pino Toscano. (Closes: #581210)
   * Update man files.
   * Update patches
     - Update and rename 500_remove_bashism.patch.
       And rename to remove_bashism.patch.
+  * Remove some patches.
   * Add new patches.
     - Enable build static library.
       enable_static.patch

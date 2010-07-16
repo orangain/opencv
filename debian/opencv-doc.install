@@ -12,5 +12,5 @@ usr/share/opencv/doc/papers
 usr/share/opencv/doc/pattern.pdf
 usr/share/opencv/doc/vidsurv
 usr/share/opencv/samples/c
-#usr/share/opencv/samples/python
+usr/share/opencv/samples/python
 #../../samples/c/Makefile.debian	usr/share/doc/opencv-doc/examples/c/
