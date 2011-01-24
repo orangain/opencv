@@ -1,3 +1,9 @@
+opencv (2.1.0-4) experimental; urgency=low
+
+  * Fix install path of opencv-doc (Closes: #610803).
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Mon, 24 Jan 2011 12:06:39 +0900
+
 opencv (2.1.0-3) unstable; urgency=low
 
   * Fix set opencv minor version on Python (Closes: #600836).
