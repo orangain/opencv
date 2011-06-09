@@ -24,6 +24,7 @@ CMAKE_FLAGS = \
 	-DWITH_JPEG=ON	\
 	-DWITH_PNG=ON	\
 	-DWITH_TIFF=ON	\
+	-DWITH_OPENEXR=ON \
 	-DWITH_PVAPI=ON	\
 	-DWITH_TBB=OFF	\
 	-DWITH_UNICAP=OFF	\
@@ -35,7 +36,12 @@ CMAKE_FLAGS = \
 	-DCMAKE_SKIP_RPATH=ON
 
 %:
-	dh $@ --with quilt --buildsystem=cmake
+	dh --with quilt $@ --buildsystem=cmake
+
+override_dh_clean:
+	rm -rf modules/python/hdr_parser.pyc
+
+	dh_clean -O--buildsystem=cmake
 
 override_dh_auto_configure:
 	dh_auto_configure -- $(CMAKE_FLAGS)
@@ -45,5 +51,5 @@ override_dh_install:
 	-rm --verbose -f debian/tmp/usr/share/opencv/samples/c/cvsample.dsp
 	chmod --verbose +x debian/tmp/usr/share/opencv/samples/c/build_all.sh
 	for f in $$(ls obj-*/lib/libopencv_*_s.a); do \
-	 cp --verbose --preserve=mode $$f debian/tmp/usr/lib/$$(basename $$f _s.a).a; done
+		cp --verbose --preserve=mode $$f debian/tmp/usr/lib/$$(basename $$f _s.a).a; done
 	dh_install -O--buildsystem=cmake --list-missing
