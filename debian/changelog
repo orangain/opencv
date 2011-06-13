@@ -5,7 +5,6 @@ opencv (2.2.0-1) UNRELEASED; urgency=low
     - Account for upstream splitting/renaming libs:
       + generate N dynamic library packages.
       + name all library package as libopencv-*.
-      + combine lib*-dev into single libopencv-dev.
     - Update debian/copyright.
     - Remove debian/README.source.
     - Update debian/*.install scripts.
@@ -16,8 +15,13 @@ opencv (2.2.0-1) UNRELEASED; urgency=low
   * Fix formatting in debian/man/opencv_traincascade.1.
   * Bumped standards-version to 3.9.2.  No changes needed.
   * Update debian repository pointers for new alioth hosts.
+  * Add support openexr.
+  * Fix build using gcc-4.6 (Closes: #624917).
+    - Add patches/0008_fix_ftbfs_with_gcc-4.6.patch.
+  * Fix build without v4l1 (Closes: #623418).
+    - Add patches/0009_support_v4lv2_only.patch.
 
- -- Barak A. Pearlmutter <bap@debian.org>  Thu, 09 Jun 2011 07:42:39 +0100
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Sat, 11 Jun 2011 07:15:55 +0900
 
 opencv (2.1.0-4) unstable; urgency=low
 
