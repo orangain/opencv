@@ -1,4 +1,4 @@
-opencv (2.2.0-1) UNRELEASED; urgency=low
+opencv (2.2.0-1) experimental; urgency=low
 
   * New upstream release. (Closes: #623532)
     - Update, refresh and prune debian/patches.
