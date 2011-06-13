@@ -1,13 +1,4 @@
 # header files
-#usr/include/opencv/cv.h
-#usr/include/opencv/cv.hpp
-#usr/include/opencv/cvaux.h
-#usr/include/opencv/cvaux.hpp
-#usr/include/opencv/cvwimage.h
-#usr/include/opencv/cxcore.h
-#usr/include/opencv/cxcore.hpp
-#usr/include/opencv/cxeigen.hpp
-#usr/include/opencv/cxmisc.h
 usr/include/opencv2/core/*
 # libraries
 usr/lib/libopencv_core.a
@@ -15,6 +6,4 @@ usr/lib/libopencv_core.so
 usr/lib/pkgconfig
 usr/share/opencv/OpenCVConfig.cmake
 # samples
-#usr/bin
-#usr/share/opencv/haarcascades
-#usr/share/opencv/lbpcascades
+usr/bin
