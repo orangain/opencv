@@ -9,7 +9,7 @@ Build-Depends: debhelper (>= 8),
  libavcodec-dev (>= 0.svn20080206), libavformat-dev, libswscale-dev, libgtk2.0-dev,
  libjasper-dev (>= 1.900.1),
  libjpeg62-dev,
- libpng15-dev
+ libpng12-dev,
  libtiff4-dev (>= 3.9.4),
  libopenexr-dev (>= 1.4.0),
  libraw1394-dev [!kfreebsd-amd64 !kfreebsd-i386 !hurd-i386],
@@ -60,6 +60,9 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
 	libopencv-video-dev,
 	libopencv-ml-dev,
 Description: Translation package for libcv-dev
+ This package provide files for translation from libcv-dev to
+ subdivided packages.
+ .
  This package contains the header files and static library needed to compile
  applications that use OpenCV (Open Computer Vision).
  .
@@ -74,20 +77,19 @@ Description: Translation package for libcv-dev
  recognition, camera calibration and 3D reconstruction.
 
 Package: libcv2.2
-Section: libs
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends},
-	libopencv-core2.2 (= ${binary:Version}),
-	libopencv-imgproc2.2 (= ${binary:Version}),
-	libopencv-flann2.2 (= ${binary:Version}),
-	libopencv-features2d2.2 (= ${binary:Version}),
-	libopencv-calib3d2.2 (= ${binary:Version}),
-	libopencv-objdetect2.2 (= ${binary:Version}),
-	libopencv-legacy2.2 (= ${binary:Version}),
-	libopencv-video2.2 (= ${binary:Version}),
-	libopencv-ml2.2 (= ${binary:Version})
+Architecture: all
+Depends: ${misc:Depends},
+	libopencv-core2.2,
+	libopencv-imgproc2.2,
+	libopencv-flann2.2,
+	libopencv-features2d2.2,
+	libopencv-calib3d2.2,
+	libopencv-objdetect2.2,
+	libopencv-legacy2.2,
+	libopencv-video2.2,
+	libopencv-ml2.2
 Description: computer vision library - libcv* translation package
- This package provide files for translation to libcv2.2.
+ This package provide files for translation from libcv2.1 to libcv2.2.
  .
  The Open Computer Vision Library is a collection of algorithms and sample
  code for various computer vision problems. The library is compatible with
@@ -107,6 +109,9 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
 	libopencv-core-dev,
 	libopencv-highgui-dev
 Description: Translation package for libhighgui-dev
+ This package provide files for translation from libhighgui-dev to
+ subdivided packages.
+ .
  This package contains the header files and static library needed to compile
  applications that use OpenCV (Open Computer Vision).
  .
@@ -121,14 +126,12 @@ Description: Translation package for libhighgui-dev
  recognition, camera calibration and 3D reconstruction.
 
 Package: libhighgui2.2
-Section: libs
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends},
-	libopencv-core2.2 (= ${binary:Version}),
-	libopencv-highgui2.2 (= ${binary:Version})
+Architecture: all
+Depends: ${misc:Depends},
+	libopencv-core2.2,
+	libopencv-highgui2.2
 Description: computer vision library - libhighgui translation package
- This package provide files for translation to libhighgui2.2 
- (OpenCV / Open Computer Vision).
+ This package provide files for translation from libhighgui2.1 to libhighgui2.2.
  .
  The Open Computer Vision Library is a collection of algorithms and sample
  code for various computer vision problems. The library is compatible with
@@ -145,16 +148,16 @@ Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
 	pkg-config,
-	libopencv-core-dev (= ${binary:Version}),
-	libopencv-imgproc-dev (= ${binary:Version}),
-	libopencv-features2d-dev (= ${binary:Version}),
-	libopencv-calib3d-dev (= ${binary:Version}),
-	libopencv-objdetect-dev (= ${binary:Version}),
-	libopencv-legacy-dev (= ${binary:Version}),
-	libopencv-video-dev (= ${binary:Version}),
+	libopencv-core-dev,
+	libopencv-imgproc-dev,
+	libopencv-features2d-dev,
+	libopencv-calib3d-dev,
+	libopencv-objdetect-dev,
+	libopencv-legacy-dev,
+	libopencv-video-dev
 Description: Translation package for libcvaux-dev
- This package provide files for translation to libcvaux2.2 
- (OpenCV / Open Computer Vision).
+ This package provide files for translation from libcvaux-dev to
+ subdivided packages.
  .
  The Open Computer Vision Library is a collection of algorithms and sample
  code for various computer vision problems. The library is compatible with
@@ -167,18 +170,17 @@ Description: Translation package for libcvaux-dev
  recognition, camera calibration and 3D reconstruction.
 
 Package: libcvaux2.2
-Section: libs
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends},
-	libopencv-core2.2 (= ${binary:Version}),
-	libopencv-imgproc2.2 (= ${binary:Version}),
-	libopencv-features2d2.2 (= ${binary:Version}),
-	libopencv-calib3d2.2 (= ${binary:Version}),
-	libopencv-objdetect2.2 (= ${binary:Version}),
-	libopencv-legacy2.2 (= ${binary:Version}),
-	libopencv-video2.2 (= ${binary:Version}),
+Architecture: all
+Depends: ${misc:Depends},
+	libopencv-core2.2,
+	libopencv-imgproc2.2,
+	libopencv-features2d2.2,
+	libopencv-calib3d2.2,
+	libopencv-objdetect2.2,
+	libopencv-legacy2.2,
+	libopencv-video2.2
 Description: computer vision library - libcvaux translation package
- This package provide files for translation to libcvaux2.2.
+ This package provide files for translation from libcvaux2.1 to libcvaux2.2.
  .
  The Open Computer Vision Library is a collection of algorithms and sample
  code for various computer vision problems. The library is compatible with
@@ -498,8 +500,8 @@ Package: libopencv-calib3d2.2
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
-		libopencv-highgui-dev (= ${binary:Version}),
-		libopencv-imgproc-dev (= ${binary:Version}),
+		libopencv-highgui2.2 (= ${binary:Version}),
+		libopencv-imgproc2.2 (= ${binary:Version}),
 Description: computer vision Camera Calibration library
  This package contains the OpenCV (Open Computer Vision) Camera Calibration
  runtime libraries.
