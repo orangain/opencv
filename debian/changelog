@@ -1,6 +1,6 @@
 opencv (2.2.0-0exp1) experimental; urgency=low
 
-  * New upstream release. (Closes: #623532, #563428)
+  * New upstream release. (Closes: #623532, #563428, #604642)
     - Update, refresh and prune debian/patches.
     - Account for upstream splitting/renaming libs:
       + generate N dynamic library packages.
