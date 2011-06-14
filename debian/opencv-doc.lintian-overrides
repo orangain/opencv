@@ -24,3 +24,4 @@ opencv-doc: python-script-but-no-python-dep ./usr/share/opencv/samples/python/mo
 opencv-doc: python-script-but-no-python-dep ./usr/share/opencv/samples/python/pyramid_segmentation.py
 opencv-doc: python-script-but-no-python-dep ./usr/share/opencv/samples/python/squares.py
 opencv-doc: python-script-but-no-python-dep ./usr/share/opencv/samples/python/watershed.py
+opencv-doc: embedded-javascript-library usr/share/doc/opencv-doc/html/html/jquery.js
