@@ -7,3 +7,6 @@ usr/lib/pkgconfig
 usr/share/opencv/OpenCVConfig.cmake
 # samples
 usr/bin
+usr/share/opencv/haarcascades
+usr/share/opencv/lbpcascades
+
