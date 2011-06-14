@@ -1,6 +1,6 @@
-opencv (2.2.0-1) experimental; urgency=low
+opencv (2.2.0-0exp1) experimental; urgency=low
 
-  * New upstream release. (Closes: #623532)
+  * New upstream release. (Closes: #623532, #563428)
     - Update, refresh and prune debian/patches.
     - Account for upstream splitting/renaming libs:
       + generate N dynamic library packages.
@@ -16,6 +16,8 @@ opencv (2.2.0-1) experimental; urgency=low
   * Bumped standards-version to 3.9.2.  No changes needed.
   * Update debian repository pointers for new alioth hosts.
   * Add support openexr.
+  * Move usr/share/opencv/haarcascades and usr/share/opencv/lbpcascades
+    to libopencv-core-dev (Closes: #598356).
   * Fix build using gcc-4.6 (Closes: #624917).
     - Add patches/0008_fix_ftbfs_with_gcc-4.6.patch.
   * Fix build without v4l1 (Closes: #623418).
