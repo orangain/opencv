@@ -28,6 +28,7 @@ opencv (2.2.0-0exp1) experimental; urgency=low
   * Fix optimize of i386 (Closes: 629414).
     - Opencv was optimized to i686. This chenged optimization to i486.
     - Add patch/0011_optimize_i486.patch.
+  * If build architecture is amd64, enable SSE2 option.
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Mon, 27 Jun 2011 11:51:39 +0900
 
