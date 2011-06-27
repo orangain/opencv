@@ -8,3 +8,4 @@
 0008_fix_ftbfs_with_gcc-4.6.patch
 0009_support_v4lv2_only.patch
 0010_fix_ftbs_png15.patch
+0011_optimize_i486.patch

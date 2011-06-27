@@ -25,8 +25,11 @@ opencv (2.2.0-0exp1) experimental; urgency=low
     - Add patches/0009_support_v4lv2_only.patch.
   * Fix build with libpng15.
     - Add patch/0010_fix_ftbs_png15.patch.
+  * Fix optimize of i386 (Closes: 629414).
+    - Opencv was optimized to i686. This chenged optimization to i486.
+    - Add patch/0011_optimize_i486.patch.
 
- -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Sat, 11 Jun 2011 07:15:55 +0900
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Mon, 27 Jun 2011 11:51:39 +0900
 
 opencv (2.1.0-4) unstable; urgency=low
 
