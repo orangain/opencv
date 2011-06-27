@@ -9,6 +9,7 @@ opencv (2.2.0-0exp1) experimental; urgency=low
     - Remove debian/README.source.
     - Update debian/*.install scripts.
     - Update lintian overrides.
+    - Add libv4l-dev to Build-Depends.
   * Bump to dh 8.
   * Switch to source format 3.0 (quilt).
   * Patch minor upstream typos.
