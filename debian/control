@@ -59,7 +59,8 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
 	libopencv-objdetect-dev,
 	libopencv-legacy-dev,
 	libopencv-video-dev,
-	libopencv-ml-dev
+	libopencv-ml-dev,
+	libopencv-gpu-dev
 Conflicts: libcvaux-dev (<= 2.1.0-4), libhighgui-dev (<= 2.1.0-4)
 Description: Translation package for libcv-dev
  This package provide files for translation from libcv-dev to
