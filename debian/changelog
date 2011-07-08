@@ -1,3 +1,9 @@
+opencv (2.3.0-0exp1) experimental; urgency=low
+
+  * New upstream release.
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Wed, 06 Jul 2011 09:47:09 +0900
+
 opencv (2.2.0-0exp2) experimental; urgency=low
 
   * Add libopencv-contrib-dev to Depends of libcvaux-dev (Closes: #632439).
