@@ -480,6 +480,7 @@ Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
 		libopencv-features2d-dev (= ${binary:Version}),
 		libopencv-flann-dev (= ${binary:Version}),
+		libopencv-calib3d2.3 (= ${binary:Version}),
 		pkg-config
 Description: development files for libopencv-calib3d
  This package contains the header files and static library needed to compile
