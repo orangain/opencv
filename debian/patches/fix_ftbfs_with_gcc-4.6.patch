@@ -1,0 +1,17 @@
+# From 1ab75d4416360e4b38670c565f090ea834171f1c Mon Sep 17 00:00:00 2001
+# From: vrabaud <vrabaud@73c94f0f-984f-4a5f-82bc-2d8db8d8ee08>
+# Date: Wed, 6 Apr 2011 22:00:09 +0000
+# Subject: [PATCH] - make sure the code compiles under gcc-4.6
+#
+#git-svn-id: https://code.ros.org/svn/opencv/trunk/opencv@4861 73c94f0f-984f-4a5f-82bc-2d8db8d8ee08
+# Update for opencv 2.1.
+--- a/include/opencv/cxcore.hpp	2011-07-11 08:20:05.000000000 +0900
++++ b/include/opencv/cxcore.hpp	2011-07-11 08:20:22.000000000 +0900
+@@ -50,6 +50,7 @@
+ #ifndef SKIP_INCLUDES
+ #include <algorithm>
+ #include <cmath>
++#include <cstddef>
+ #include <complex>
+ #include <map>
+ #include <new>

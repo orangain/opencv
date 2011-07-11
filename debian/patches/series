@@ -6,3 +6,6 @@ remove_cvconfig.h.patch
 hurd.patch
 fix_minor_version_python.patch
 fix_stdint_gcc45.patch
+fix_ftbfs_with_gcc-4.6.patch
+optimize_i486.patch
+support_v4lv2_only.patch

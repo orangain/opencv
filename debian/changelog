@@ -6,6 +6,13 @@ opencv (2.1.0-5) unstable; urgency=high
     - Add opencv-doc: wrong-name-for-upstream-changelog.
   * Update debian/rules.
     - Remove usr/share/opencv/doc/license.txt, before installing.
+  * Fix build using gcc-4.6 (Closes: #624917).
+    - Add patches/fix_ftbfs_with_gcc-4.6.patch.
+  * Fix build without v4l1 (Closes: #623418).
+    - Add patches/support_v4lv2_only.patch.
+  * Fix optimize of i386 (Closes: #629414).
+    - Opencv was optimized to i686. This chenged optimization to i486.
+    - Add patch/optimize_i486.patch.
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Mon, 11 Jul 2011 01:01:23 +0900
 

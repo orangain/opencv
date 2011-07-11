@@ -1,0 +1,19 @@
+Description: Fix optimize of i386.
+  Opencv was optimized to i686. This chenged optimization to i486.
+  This patch is for opencv-2.1.x.
+Forwarded: not-needed
+Origin: vendor, http://bugs.debian.org/cgi-bin/bugreport.cgi?msg=80;bug=629414
+Bug-Debian: http://bugs.debian.org/629414
+Author: Nobuhiro Iwamatsu <iwamatsu@debian.org>
+
+--- a/CMakeLists.txt	2011-07-11 08:03:01.000000000 +0900
++++ b/CMakeLists.txt	2011-07-11 08:03:08.000000000 +0900
+@@ -760,7 +760,7 @@
+     if(X86)
+         if(NOT X86_64)
+             if(NOT APPLE)
+-                set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -march=i686")
++                set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -march=i486")
+             endif()
+         endif()
+     endif()
