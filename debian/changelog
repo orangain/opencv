@@ -4,6 +4,8 @@ opencv (2.1.0-5) unstable; urgency=high
     - Bumped standards-version to 3.9.2. No changes needed.
   * Update debian/opencv-doc.lintian-overrides.
     - Add opencv-doc: wrong-name-for-upstream-changelog.
+  * Update debian/rules.
+    - Remove usr/share/opencv/doc/license.txt, before installing.
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Mon, 11 Jul 2011 01:01:23 +0900
 

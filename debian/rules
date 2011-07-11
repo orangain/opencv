@@ -43,6 +43,7 @@ override_dh_auto_configure:
 override_dh_install:
 	rm -rf debian/tmp/usr/share/opencv/samples/octave
 	rm debian/tmp/usr/share/opencv/samples/c/cvsample.dsp
+	-rm -f debian/tmp/usr/share/opencv/doc/license.txt
 	chmod +x debian/tmp/usr/share/opencv/samples/c/build_all.sh
 
 	dh_install -O--buildsystem=cmake
