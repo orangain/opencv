@@ -1,3 +1,4 @@
+opencv-doc: wrong-name-for-upstream-changelog usr/share/doc/opencv-doc/ChangeLog.htm
 opencv-doc: python-script-but-no-python-dep ./usr/share/opencv/samples/python/cam-histo.py
 opencv-doc: python-script-but-no-python-dep ./usr/share/opencv/samples/python/capture-cam.py
 opencv-doc: python-script-but-no-python-dep ./usr/share/opencv/samples/python/chessboard.py
