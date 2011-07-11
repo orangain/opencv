@@ -1,3 +1,10 @@
+opencv (2.1.0-5) unstable; urgency=high
+
+  * Update debian/control.
+    - Bumped standards-version to 3.9.2. No changes needed.
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Mon, 11 Jul 2011 01:01:23 +0900
+
 opencv (2.1.0-4) unstable; urgency=low
 
   * Fix install path of opencv-doc (Closes: #610803).
