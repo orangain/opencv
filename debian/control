@@ -1,7 +1,7 @@
 Source: opencv
 Priority: optional
 Section: devel
-Maintainer: Debian Scientific Computing Team <pkg-scicomp-devel@lists.alioth.debian.org>
+Maintainer: Debian Science Team <debian-science-maintainers@lists.alioth.debian.org>
 Uploaders: Sam Hocevar (Debian packages) <sam+deb@zoy.org>, Nobuhiro Iwamatsu <iwamatsu@debian.org>
 Build-Depends: debhelper (>= 8),
  quilt (>= 0.46-7~),
@@ -23,8 +23,8 @@ Build-Depends: debhelper (>= 8),
  texlive-fonts-extra, texlive-latex-extra, texlive-latex-recommended,
  latex-xcolor, texlive-fonts-recommended
 Standards-Version: 3.9.2
-Vcs-Svn: svn://anonscm.debian.org/pkg-scicomp/opencv/
-Vcs-Browser: http://anonscm.debian.org/viewvc/pkg-scicomp/opencv/
+Vcs-Svn: svn://svn.debian.org/svn/debian-science/packages/opencv/trunk/
+Vcs-Browser: http://svn.debian.org/viewsvn/debian-science/packages/opencv/trunk/
 Homepage: http://opencvlibrary.sourceforge.net/
 
 Package: opencv-doc
