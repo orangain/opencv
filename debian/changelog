@@ -1,3 +1,9 @@
+opencv (2.3.1-0exp1) experimental; urgency=low
+
+  * New upstream release.
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Wed, 24 Aug 2011 12:12:14 +0900
+
 opencv (2.3.0-0exp4) experimental; urgency=low
 
   * Fix FTBFS with libav 0.7. (Closes: #634818)
