@@ -59,8 +59,7 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
 	libopencv-objdetect-dev,
 	libopencv-legacy-dev,
 	libopencv-video-dev,
-	libopencv-ml-dev,
-	libopencv-gpu-dev
+	libopencv-ml-dev
 Conflicts: libcvaux-dev (<= 2.1.0-7), libhighgui-dev (<= 2.1.0-7)
 Description: Translation package for libcv-dev
  This package provide files for translation from libcv-dev to
@@ -198,9 +197,18 @@ Package: libopencv-dev
 Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
+	libopencv-core-dev (= ${binary:Version}),
 	libopencv-ml-dev (= ${binary:Version}),
+	libopencv-imgproc-dev (= ${binary:Version}),
+	libopencv-video-dev (= ${binary:Version}),
+	libopencv-objdetect-dev (= ${binary:Version}),
 	libopencv-gpu-dev (= ${binary:Version}),
+	libopencv-highgui-dev (= ${binary:Version}),
 	libopencv-calib3d-dev (= ${binary:Version}),
+	libopencv-flann-dev (= ${binary:Version}),
+	libopencv-features2d-dev (= ${binary:Version}),
+	libopencv-legacy-dev (= ${binary:Version}),
+	libopencv-contrib-dev (= ${binary:Version}),
 	pkg-config
 Description: development files for opencv
  This is a meta package providing development package necessary for
