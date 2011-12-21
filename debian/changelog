@@ -1,3 +1,14 @@
+opencv (2.3.1-2) unstable; urgency=low
+
+  * Update debian/control.
+    - Adjusted version for Replaces and Breaks of libopencv-core-dev.
+      (Closes: #651988). Thanks to Ansgar Burchardt.
+  * Fix build on kfreeBSD. (Closes: #651872)
+    Add patches/0013_drop_asm_types_h_kfreebsd.patch.
+    Thanks to Julien Cristau.
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Tue, 20 Dec 2011 17:10:11 +0900
+
 opencv (2.3.1-1) unstable; urgency=low
 
   * Upload to unstable.
