@@ -26,8 +26,8 @@ Please install the package including a necessary library
 when you want to make a package using opencv.
 
 And, opencv provides pkg-config file. It is necessary you
-build it, and to Build-Depneds on libcv-dev package if the 
-ackage which you want to use pkg-config.
+build it, and to Build-Depneds on libopencv-dev package if the 
+package which you want to use pkg-config.
 
 When you build it and do not Build-Depends, please be careful
 because it becomes the build error.
