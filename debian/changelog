@@ -1,3 +1,10 @@
+opencv (2.3.1-4) unstable; urgency=low
+
+  * Update patches/0013_drop_asm_types_h_kfreebsd.patch.
+    Drop <asm/types.h>, not <sys/types.h>.
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Wed, 21 Dec 2011 17:01:12 +0900
+
 opencv (2.3.1-3) unstable; urgency=low
 
   * Update debian/README.Debian.
