@@ -20,6 +20,7 @@ Build-Depends: debhelper (>= 8),
  python-dev, swig,
  python-support (>= 0.4.1),
  python-numpy,
+ python-sphinx,
  texlive-fonts-extra, texlive-latex-extra, texlive-latex-recommended,
  latex-xcolor, texlive-fonts-recommended
 Standards-Version: 3.9.2
