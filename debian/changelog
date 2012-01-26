@@ -5,7 +5,7 @@ opencv (2.3.1-5) unstable; urgency=low
   * Update debian/control.
     Add python-sphinx to Build-Depends.
 
- -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Wed, 11 Jan 2012 09:11:24 +0900
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Fri, 27 Jan 2012 05:36:29 +0900
 
 opencv (2.3.1-4) unstable; urgency=low
 
