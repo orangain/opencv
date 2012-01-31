@@ -1,3 +1,10 @@
+opencv (2.3.1-6) unstable; urgency=low
+
+  * Fix installation of usr/include/opencv2/opencv.hpp. (Closes: #656860)
+    Update debian/libopencv-core-dev.install.
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Tue, 31 Jan 2012 08:08:00 +0900
+
 opencv (2.3.1-5) unstable; urgency=low
 
   * Fix FTBFS with libav 0.8. (Closes: #654220)
