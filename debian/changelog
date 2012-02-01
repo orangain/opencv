@@ -1,3 +1,13 @@
+opencv (2.3.1-7) unstable; urgency=low
+
+  * Update debian/libopencv-core-dev.install.
+    - Change install path of OpenCVConfig.cmake from usr/share/opencv/ 
+      to usr/share/OpenCV. (Closes: #658196)
+    - usr/share/OpenCV/OpenCVConfig-version.cmake was added to the 
+      installation file of libopencv-core-dev.
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Thu, 02 Feb 2012 02:39:05 +0900
+
 opencv (2.3.1-6) unstable; urgency=low
 
   * Fix installation of usr/include/opencv2/opencv.hpp. (Closes: #656860)
