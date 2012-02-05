@@ -4,7 +4,8 @@ CFLAGS := $(shell dpkg-buildflags --get CFLAGS)
 CXXFLAGS := $(shell dpkg-buildflags --get CXXFLAGS)
 LDFLAGS := $(shell dpkg-buildflags --get LDFLAGS) -Wl,--as-needed
 
-DEB_BUILD_ARCH_CPU ?= $(shell dpkg-architecture -qDEB_BUILD_ARCH_CPU)
+DEB_HOST_ARCH_CPU ?= $(shell dpkg-architecture -qDEB_BUILD_HOST_CPU)
+DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 
 # These don't need to be exported and if they are we'll get the flags
 # duplicated in the command line.
@@ -12,10 +13,18 @@ unexport CFLAGS
 unexport CXXFLAGS
 unexport LDFLAGS
 
-ifeq ($(DEB_BUILD_ARCH_CPU),amd64)
-CMAKE_ARCH_FLAGS = -DENABLE_SSE=ON -DENABLE_SSE2=ON -DENABLE_SSSE3=OFF
+# SSE options
+ifeq ($(DEB_HOST_ARCH_CPU),amd64)
+CMAKE_ARCH_FLAGS = -DENABLE_SSE=ON -DENABLE_SSE2=ON -DENABLE_SSSE3=OFF 
 else
-CMAKE_ARCH_FLAGS = -DENABLE_SSE=OFF -DENABLE_SSE2=OFF -DENABLE_SSSE3=OFF
+CMAKE_ARCH_FLAGS = -DENABLE_SSE=OFF -DENABLE_SSE2=OFF -DENABLE_SSSE3=OFF 
+endif
+
+# TBB support
+ifneq (,$(findstring $(DEB_HOST_ARCH), amd64 i386 ia64))
+CMAKE_ARCH_FLAGS += -DWITH_TBB=ON
+else
+CMAKE_ARCH_FLAGS += -DWITH_TBB=OFF
 endif
 
 CMAKE_FLAGS = \
@@ -41,7 +50,6 @@ CMAKE_FLAGS = \
 	-DWITH_TIFF=ON	\
 	-DWITH_OPENEXR=ON \
 	-DWITH_PVAPI=ON	\
-	-DWITH_TBB=OFF	\
 	-DWITH_UNICAP=OFF	\
 	-DWITH_1394=ON	\
 	-DWITH_V4L=ON	\
