@@ -1,6 +1,7 @@
-opencv (2.3.1-8) UNRELEASED; urgency=low
+opencv (2.3.1-8) unstable; urgency=low
 
-  * NOT RELEASED YET
+  * Add support TBB.
+  * Fix getting value of dpkg-architecture.
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Thu, 02 Feb 2012 12:40:01 +0900
 
