@@ -231,8 +231,6 @@ Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}, libopencv-core2.3 (= ${binary:Version}),
 	zlib1g-dev ,pkg-config
-Replaces: libcv-dev (<< 2.3.1-1)
-Breaks: libcv-dev (<< 2.3.1-1)
 Description: development files for libopencv-core
  This package contains the header files and static library needed to compile
  applications that use OpenCV (Open Computer Vision) core.
