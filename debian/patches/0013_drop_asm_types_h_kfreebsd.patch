@@ -1,6 +1,8 @@
---- a/modules/highgui/src/cap_libv4l.cpp	2011-12-21 16:53:15.000000000 +0900
-+++ b/modules/highgui/src/cap_libv4l.cpp	2011-12-21 16:54:16.000000000 +0900
-@@ -236,7 +236,9 @@
+diff --git a/modules/highgui/src/cap_libv4l.cpp b/modules/highgui/src/cap_libv4l.cpp
+index 233e6f6..75f8477 100644
+--- a/modules/highgui/src/cap_libv4l.cpp
++++ b/modules/highgui/src/cap_libv4l.cpp
+@@ -235,7 +235,9 @@ make & enjoy!
  #include <sys/mman.h>
  #include <string.h>
  #include <stdlib.h>
@@ -10,9 +12,11 @@
  #include <assert.h>
  #include <sys/stat.h>
  #include <sys/ioctl.h>
---- a/modules/highgui/src/cap_v4l.cpp	2011-12-21 16:53:06.000000000 +0900
-+++ b/modules/highgui/src/cap_v4l.cpp	2011-12-21 16:53:38.000000000 +0900
-@@ -218,7 +218,9 @@
+diff --git a/modules/highgui/src/cap_v4l.cpp b/modules/highgui/src/cap_v4l.cpp
+index 5f9e111..f3fb6f4 100644
+--- a/modules/highgui/src/cap_v4l.cpp
++++ b/modules/highgui/src/cap_v4l.cpp
+@@ -218,7 +218,9 @@ make & enjoy!
  
  #include <string.h>
  #include <stdlib.h>

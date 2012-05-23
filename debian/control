@@ -210,6 +210,10 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
 	libopencv-features2d-dev (= ${binary:Version}),
 	libopencv-legacy-dev (= ${binary:Version}),
 	libopencv-contrib-dev (= ${binary:Version}),
+	libopencv-ts-dev (= ${binary:Version}),
+	libopencv-photo-dev (= ${binary:Version}),
+	libopencv-videostab-dev (= ${binary:Version}),
+	libopencv-stitching-dev (= ${binary:Version}),
 	pkg-config
 Description: development files for opencv
  This is a meta package providing development package necessary for
