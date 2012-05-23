@@ -27,7 +27,7 @@ Build-Depends: debhelper (>= 8),
 Standards-Version: 3.9.2
 Vcs-Svn: svn://svn.debian.org/svn/debian-science/packages/opencv/trunk/
 Vcs-Browser: http://svn.debian.org/viewsvn/debian-science/packages/opencv/trunk/
-Homepage: http://opencvlibrary.sourceforge.net/
+Homepage: http://opencv.willowgarage.com
 
 Package: opencv-doc
 Section: doc
