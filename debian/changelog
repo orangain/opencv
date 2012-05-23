@@ -1,8 +1,26 @@
+opencv (2.4.0-0exp1) experimental; urgency=low
+
+  * New upstream release.
+    - Add stitching, ts, videostab and photo packages.
+    - Remove gpu package.
+  * Update debian/control.
+    - Bumped Standards-Version to 3.9.3. No changes needed.
+    - Update Homepage field.
+  * UPdate debian/rules.
+    - Remove CUDA support.
+    - Remove unnecessary option of build config.
+  * Update patches.
+    - 0005-build-static-libs.patch
+    - 0007-typos-in-strings-docs.patch
+    - 0013_drop_asm_types_h_kfreebsd.patch
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Wed, 23 May 2012 12:42:17 +0900
+
 opencv (2.3.1-9) unstable; urgency=low
 
   * Update debian/control.
     - pkg-config and binarys move from libopencv-core-dev to libopencv-dev.
-      (Closes: #671376, #658197)
+	  (Closes: #671376, #658197)
     - Drop Replaces and Breaks from libopencv-core-dev. (Closes: #668708)
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Tue, 22 May 2012 12:17:09 +0900
