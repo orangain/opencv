@@ -53,7 +53,8 @@ CMAKE_FLAGS = \
 	-DWITH_V4L=ON	\
 	-DWITH_XINE=OFF	\
 	-DBUILD_TESTS=OFF \
-	-DCMAKE_SKIP_RPATH=ON
+	-DCMAKE_SKIP_RPATH=ON \
+	-DWITH_CUDA=OFF
 
 %:
 	dh $@ --with quilt --buildsystem=cmake
