@@ -685,6 +685,171 @@ Description: computer vision contrib library
  analysis, structural analysis, motion analysis and object tracking, object
  recognition, camera calibration and 3D reconstruction.
 
+Package: libopencv-ts-dev
+Section: libdevel
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends},
+		libopencv-core-dev (= ${binary:Version}),
+		libopencv-ts2.4 (= ${binary:Version}),
+		pkg-config
+Description: development files for libopencv-ts
+ This package contains the header files and static library needed to compile
+ applications that use OpenCV (Open Computer Vision) ts library.
+ .
+ The Open Computer Vision Library is a collection of algorithms and sample
+ code for various computer vision problems. The library is compatible with
+ IPL (Intel's Image Processing Library) and, if available, can use IPP
+ (Intel's Integrated Performance Primitives) for better performance.
+ .
+ OpenCV provides low level portable data types and operators, and a set
+ of high level functionalities for video acquisition, image processing and
+ analysis, structural analysis, motion analysis and object tracking, object
+ recognition, camera calibration and 3D reconstruction.
+
+Package: libopencv-ts2.4
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+		libopencv-core2.4 (= ${binary:Version})
+Description: computer vision ts library
+ This package contains the OpenCV (Open Computer Vision) ts
+ runtime libraries.
+ .
+ The Open Computer Vision Library is a collection of algorithms and sample
+ code for various computer vision problems. The library is compatible with
+ IPL (Intel's Image Processing Library) and, if available, can use IPP
+ (Intel's Integrated Performance Primitives) for better performance.
+ .
+ OpenCV provides low level portable data types and operators, and a set
+ of high level functionalities for video acquisition, image processing and
+ analysis, structural analysis, motion analysis and object tracking, object
+ recognition, camera calibration and 3D reconstruction.
+
+Package: libopencv-photo-dev
+Section: libdevel
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends},
+		libopencv-imgproc-dev (= ${binary:Version}),
+		libopencv-photo2.4 (= ${binary:Version}),
+		pkg-config
+Description: development files for libopencv-photo
+ This package contains the header files and static library needed to compile
+ applications that use OpenCV (Open Computer Vision) photo library.
+ .
+ The Open Computer Vision Library is a collection of algorithms and sample
+ code for various computer vision problems. The library is compatible with
+ IPL (Intel's Image Processing Library) and, if available, can use IPP
+ (Intel's Integrated Performance Primitives) for better performance.
+ .
+ OpenCV provides low level portable data types and operators, and a set
+ of high level functionalities for video acquisition, image processing and
+ analysis, structural analysis, motion analysis and object tracking, object
+ recognition, camera calibration and 3D reconstruction.
+
+Package: libopencv-photo2.4
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+		libopencv-imgproc2.4 (= ${binary:Version})
+Description: computer vision photo library
+ This package contains the OpenCV (Open Computer Vision) photo runtime
+ libraries.
+ .
+ The Open Computer Vision Library is a collection of algorithms and sample
+ code for various computer vision problems. The library is compatible with
+ IPL (Intel's Image Processing Library) and, if available, can use IPP
+ (Intel's Integrated Performance Primitives) for better performance.
+ .
+ OpenCV provides low level portable data types and operators, and a set
+ of high level functionalities for video acquisition, image processing and
+ analysis, structural analysis, motion analysis and object tracking, object
+ recognition, camera calibration and 3D reconstruction.
+
+Package: libopencv-videostab-dev
+Section: libdevel
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends},
+		libopencv-features2d-dev (= ${binary:Version}),
+		libopencv-video-dev (= ${binary:Version}),
+		libopencv-highgui-dev (= ${binary:Version}),
+		libopencv-photo-dev (= ${binary:Version}),
+		libopencv-videostab2.4 (= ${binary:Version})
+Description: development files for libopencv-stitching
+ This package contains the header files and static library needed to compile
+ applications that use OpenCV (Open Computer Vision) videostab library.
+ .
+ The Open Computer Vision Library is a collection of algorithms and sample
+ code for various computer vision problems. The library is compatible with
+ IPL (Intel's Image Processing Library) and, if available, can use IPP
+ (Intel's Integrated Performance Primitives) for better performance.
+ .
+ OpenCV provides low level portable data types and operators, and a set
+ of high level functionalities for video acquisition, image processing and
+ analysis, structural analysis, motion analysis and object tracking, object
+ recognition, camera calibration and 3D reconstruction.
+
+Package: libopencv-videostab2.4
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+	libopencv-features2d2.4 (= ${binary:Version}),
+	libopencv-video2.4 (= ${binary:Version}),
+	libopencv-highgui2.4 (= ${binary:Version}),
+	libopencv-photo2.4 (= ${binary:Version})
+Description: computer vision videostab library
+ This package contains the OpenCV (Open Computer Vision) videostab
+ runtime libraries.
+ .
+ The Open Computer Vision Library is a collection of algorithms and sample
+ code for various computer vision problems. The library is compatible with
+ IPL (Intel's Image Processing Library) and, if available, can use IPP
+ (Intel's Integrated Performance Primitives) for better performance.
+ .
+ OpenCV provides low level portable data types and operators, and a set
+ of high level functionalities for video acquisition, image processing and
+ analysis, structural analysis, motion analysis and object tracking, object
+ recognition, camera calibration and 3D reconstruction.
+
+Package: libopencv-stitching-dev
+Section: libdevel
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends},
+	libopencv-calib3d-dev (= ${binary:Version}),
+	libopencv-stitching2.4 (= ${binary:Version}),
+		pkg-config
+Description: development files for libopencv-stitching
+ This package contains the header files and static library needed to compile
+ applications that use OpenCV (Open Computer Vision) stitching library.
+ .
+ The Open Computer Vision Library is a collection of algorithms and sample
+ code for various computer vision problems. The library is compatible with
+ IPL (Intel's Image Processing Library) and, if available, can use IPP
+ (Intel's Integrated Performance Primitives) for better performance.
+ .
+ OpenCV provides low level portable data types and operators, and a set
+ of high level functionalities for video acquisition, image processing and
+ analysis, structural analysis, motion analysis and object tracking, object
+ recognition, camera calibration and 3D reconstruction.
+
+Package: libopencv-stitching2.4
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+	libopencv-calib3d2.4 (= ${binary:Version})
+Description: computer vision stitching library
+ This package contains the OpenCV (Open Computer Vision) stitching
+ runtime libraries.
+ .
+ The Open Computer Vision Library is a collection of algorithms and sample
+ code for various computer vision problems. The library is compatible with
+ IPL (Intel's Image Processing Library) and, if available, can use IPP
+ (Intel's Integrated Performance Primitives) for better performance.
+ .
+ OpenCV provides low level portable data types and operators, and a set
+ of high level functionalities for video acquisition, image processing and
+ analysis, structural analysis, motion analysis and object tracking, object
+ recognition, camera calibration and 3D reconstruction.
+
 Package: python-opencv
 Section: python
 Architecture: any
