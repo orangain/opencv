@@ -24,7 +24,7 @@ Build-Depends: debhelper (>= 8),
  python-sphinx,
  texlive-fonts-extra, texlive-latex-extra, texlive-latex-recommended,
  latex-xcolor, texlive-fonts-recommended
-Standards-Version: 3.9.2
+Standards-Version: 3.9.3
 Vcs-Svn: svn://svn.debian.org/svn/debian-science/packages/opencv/trunk/
 Vcs-Browser: http://svn.debian.org/viewsvn/debian-science/packages/opencv/trunk/
 Homepage: http://opencv.willowgarage.com
