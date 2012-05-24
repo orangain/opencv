@@ -1,0 +1,14 @@
+opencv source package infomation
+
+- Remove source code
+  mozc debian source package deletes some source codes. 
+
+  The deleted source code is the following directories. 
+    * modules/nonfree
+
+  The module contains algorithms that may be patented in some countries or have
+  some other limitations on the use.
+
+  This description is in modules/nonfree/doc/nonfree.rst of original.
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org> Thu, 24 May 15:22:51 2012 +0900
