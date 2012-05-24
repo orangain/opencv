@@ -1,6 +1,6 @@
 opencv (2.4.0+dfsg-0exp1) experimental; urgency=low
 
-  * New upstream release.
+  * New upstream release. (Closes: 671377)
     - Add stitching, ts, videostab and photo packages.
     - Remove gpu package.
   * Update debian/control.
