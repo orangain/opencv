@@ -4,7 +4,6 @@ CFLAGS := $(shell dpkg-buildflags --get CFLAGS)
 CXXFLAGS := $(shell dpkg-buildflags --get CXXFLAGS)
 LDFLAGS := $(shell dpkg-buildflags --get LDFLAGS) -Wl,--as-needed
 
-DEB_HOST_ARCH_CPU ?= $(shell dpkg-architecture -qDEB_BUILD_HOST_CPU)
 DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 
 # These don't need to be exported and if they are we'll get the flags
@@ -14,7 +13,7 @@ unexport CXXFLAGS
 unexport LDFLAGS
 
 # SSE options
-ifeq ($(DEB_HOST_ARCH_CPU),amd64)
+ifeq ($(DEB_HOST_ARCH),amd64)
 CMAKE_ARCH_FLAGS = -DENABLE_SSE=ON -DENABLE_SSE2=ON -DENABLE_SSSE3=OFF 
 else
 CMAKE_ARCH_FLAGS = -DENABLE_SSE=OFF -DENABLE_SSE2=OFF -DENABLE_SSSE3=OFF 
