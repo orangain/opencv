@@ -2,7 +2,8 @@ Source: opencv
 Priority: optional
 Section: devel
 Maintainer: Debian Science Team <debian-science-maintainers@lists.alioth.debian.org>
-Uploaders: Sam Hocevar (Debian packages) <sam+deb@zoy.org>, Nobuhiro Iwamatsu <iwamatsu@debian.org>
+Uploaders: Sam Hocevar (Debian packages) <sam+deb@zoy.org>,
+		Nobuhiro Iwamatsu <iwamatsu@debian.org>
 Build-Depends: debhelper (>= 8),
  quilt (>= 0.46-7~),
  cmake,
@@ -233,7 +234,7 @@ Package: libopencv-core-dev
 Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}, libopencv-core2.4 (= ${binary:Version}),
-	zlib1g-dev ,pkg-config
+	zlib1g-dev
 Description: development files for libopencv-core
  This package contains the header files and static library needed to compile
  applications that use OpenCV (Open Computer Vision) core.
@@ -270,8 +271,7 @@ Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
 		libopencv-core-dev (= ${binary:Version}),
-		libopencv-ml2.4 (= ${binary:Version}),
-		pkg-config
+		libopencv-ml2.4 (= ${binary:Version})
 Description: development files for libopencv-ml
  This package contains the header files and static library needed to compile
  applications that use OpenCV (Open Computer Vision) Machine Learning library.
@@ -310,8 +310,7 @@ Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
 		libopencv-core-dev (= ${binary:Version}),
-		libopencv-imgproc2.4 (= ${binary:Version}),
-		pkg-config
+		libopencv-imgproc2.4 (= ${binary:Version})
 Description: development files for libopencv-imgproc
  This package contains the header files and static library needed to compile
  applications that use OpenCV (Open Computer Vision) Image Processing library.
@@ -350,8 +349,7 @@ Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
 		libopencv-imgproc-dev (= ${binary:Version}),
-		libopencv-video2.4 (= ${binary:Version}),
-		pkg-config
+		libopencv-video2.4 (= ${binary:Version})
 Description: development files for libopencv-video
  This package contains the header files and static library needed to compile
  applications that use OpenCV (Open Computer Vision) Video analysis library.
@@ -389,9 +387,8 @@ Package: libopencv-objdetect-dev
 Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
-		libopencv-calib3d-dev (= ${binary:Version}),
-		libopencv-objdetect2.4 (= ${binary:Version}),
-		pkg-config
+		libopencv-highgui-dev (= ${binary:Version}),
+		libopencv-objdetect2.4 (= ${binary:Version})
 Description: development files for libopencv-objdetect
  This package contains the header files and static library needed to compile
  applications that use OpenCV (Open Computer Vision) Object Detection library.
@@ -410,7 +407,7 @@ Package: libopencv-objdetect2.4
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
-		libopencv-calib3d2.4 (= ${binary:Version})
+		libopencv-highgui2.4 (= ${binary:Version})
 Description: computer vision Object Detection library
  This package contains the OpenCV (Open Computer Vision) Object Detection
  runtime libraries.
@@ -442,8 +439,7 @@ Depends: ${misc:Depends},
 		libtiff4-dev (>= 3.9.4),
 		libopenexr-dev (>= 1.4.0),
 		libraw1394-dev [!kfreebsd-amd64 !kfreebsd-i386 !hurd-i386],
-		libdc1394-22-dev [!kfreebsd-amd64 !kfreebsd-i386 !hurd-i386],
-		pkg-config
+		libdc1394-22-dev [!kfreebsd-amd64 !kfreebsd-i386 !hurd-i386]
 Description: development files for libopencv-highgui
  This package contains the header files and static library needed to compile
  applications that use OpenCV (Open Computer Vision) High-level GUI and
@@ -484,8 +480,7 @@ Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
 		libopencv-features2d-dev (= ${binary:Version}),
-		libopencv-calib3d2.4 (= ${binary:Version}),
-		pkg-config
+		libopencv-calib3d2.4 (= ${binary:Version})
 Description: development files for libopencv-calib3d
  This package contains the header files and static library needed to compile
  applications that use OpenCV (Open Computer Vision) Camera Calibration library.
@@ -524,8 +519,7 @@ Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
 		libopencv-core-dev (= ${binary:Version}),
-		libopencv-flann2.4 (= ${binary:Version}),
-		pkg-config
+		libopencv-flann2.4 (= ${binary:Version})
 Description: development files for libopencv-flann
  This package contains the header files and static library needed to compile
  applications that use OpenCV (Open Computer Vision) Clustering and Search
@@ -565,9 +559,8 @@ Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
 		libopencv-flann-dev (= ${binary:Version}),
-		libopencv-highgui-dev (= ${binary:Version}),
-		libopencv-features2d2.4 (= ${binary:Version}),
-		pkg-config
+		libopencv-imgpric-dev (= ${binary:Version}),
+		libopencv-features2d2.4 (= ${binary:Version})
 Description: development files for libopencv-features2d
  This package contains the header files and static library needed to compile
  applications that use OpenCV (Open Computer Vision) Feature Detection and
@@ -588,7 +581,7 @@ Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
 		libopencv-flann2.4 (= ${binary:Version}),
-		libopencv-highgui2.4 (= ${binary:Version}),
+		libopencv-imgproc2.4 (= ${binary:Version}),
 Description: computer vision Feature Detection and Descriptor Extraction library
  This package contains the OpenCV (Open Computer Vision) Feature Detection
  and Descriptor Extraction runtime libraries.
@@ -609,8 +602,9 @@ Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
 		libopencv-video-dev (= ${binary:Version}),
 		libopencv-calib3d-dev (= ${binary:Version}),
-		libopencv-legacy2.4 (= ${binary:Version}),
-		pkg-config
+		libopencv-ml-dev (= ${binary:Version}),
+		libopencv-highgui-dev (= ${binary:Version}),
+		libopencv-legacy2.4 (= ${binary:Version})
 Description: development files for libopencv-legacy
  This package contains the header files and static library needed to compile
  applications that use OpenCV (Open Computer Vision) legacy library.
@@ -631,6 +625,8 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
 		libopencv-video2.4 (= ${binary:Version}),
 		libopencv-calib3d2.4 (= ${binary:Version}),
+		libopencv-ml2.4 (= ${binary:Version}),
+		libopencv-highgui2.4 (= ${binary:Version})
 Description: computer vision legacy library
  This package contains the OpenCV (Open Computer Vision) legacy runtime
  libraries.
@@ -650,8 +646,11 @@ Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
 		libopencv-calib3d-dev (= ${binary:Version}),
-		libopencv-contrib2.4 (= ${binary:Version}),
-		pkg-config
+		libopencv-highgui-dev (= ${binary:Version}),
+		libopencv-ml-dev (= ${binary:Version}),
+		libopencv-videio-dev (= ${binary:Version}),
+		libopencv-objdetect-dev (= ${binary:Version}),
+		libopencv-contrib2.4 (= ${binary:Version})
 Description: development files for libopencv-contrib
  This package contains the header files and static library needed to compile
  applications that use OpenCV (Open Computer Vision) crotrib library.
@@ -671,6 +670,10 @@ Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
 		libopencv-calib3d2.4 (= ${binary:Version})
+		libopencv-highgui2.4 (= ${binary:Version}),
+		libopencv-ml2.4 (= ${binary:Version}),
+		libopencv-videio2.4 (= ${binary:Version}),
+		libopencv-objdetect2.4 (= ${binary:Version})
 Description: computer vision contrib library
  This package contains the OpenCV (Open Computer Vision) contrib
  runtime libraries.
@@ -690,8 +693,7 @@ Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
 		libopencv-core-dev (= ${binary:Version}),
-		libopencv-ts2.4 (= ${binary:Version}),
-		pkg-config
+		libopencv-ts2.4 (= ${binary:Version})
 Description: development files for libopencv-ts
  This package contains the header files and static library needed to compile
  applications that use OpenCV (Open Computer Vision) ts library.
@@ -730,8 +732,7 @@ Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
 		libopencv-imgproc-dev (= ${binary:Version}),
-		libopencv-photo2.4 (= ${binary:Version}),
-		pkg-config
+		libopencv-photo2.4 (= ${binary:Version})
 Description: development files for libopencv-photo
  This package contains the header files and static library needed to compile
  applications that use OpenCV (Open Computer Vision) photo library.
@@ -792,10 +793,10 @@ Package: libopencv-videostab2.4
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
-	libopencv-features2d2.4 (= ${binary:Version}),
-	libopencv-video2.4 (= ${binary:Version}),
-	libopencv-highgui2.4 (= ${binary:Version}),
-	libopencv-photo2.4 (= ${binary:Version})
+		libopencv-features2d2.4 (= ${binary:Version}),
+		libopencv-video2.4 (= ${binary:Version}),
+		libopencv-highgui2.4 (= ${binary:Version}),
+		libopencv-photo2.4 (= ${binary:Version})
 Description: computer vision videostab library
  This package contains the OpenCV (Open Computer Vision) videostab
  runtime libraries.
@@ -814,9 +815,9 @@ Package: libopencv-stitching-dev
 Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
-	libopencv-calib3d-dev (= ${binary:Version}),
-	libopencv-stitching2.4 (= ${binary:Version}),
-		pkg-config
+		libopencv-calib3d-dev (= ${binary:Version}),
+		libopencv-flann-dev (= ${binary:Version}),
+		libopencv-stitching2.4 (= ${binary:Version})
 Description: development files for libopencv-stitching
  This package contains the header files and static library needed to compile
  applications that use OpenCV (Open Computer Vision) stitching library.
@@ -835,7 +836,8 @@ Package: libopencv-stitching2.4
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
-	libopencv-calib3d2.4 (= ${binary:Version})
+		libopencv-calib3d2.4 (= ${binary:Version}),
+		libopencv-flann2.4 (= ${binary:Version})
 Description: computer vision stitching library
  This package contains the OpenCV (Open Computer Vision) stitching
  runtime libraries.
