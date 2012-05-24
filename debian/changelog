@@ -1,4 +1,4 @@
-opencv (2.4.0-0exp1) experimental; urgency=low
+opencv (2.4.0+dfsg-0exp1) experimental; urgency=low
 
   * New upstream release.
     - Add stitching, ts, videostab and photo packages.
