@@ -216,6 +216,8 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
 	libopencv-videostab-dev (= ${binary:Version}),
 	libopencv-stitching-dev (= ${binary:Version}),
 	pkg-config
+Replaces: libopencv-core-dev (<= 2.3.1-8)
+Breaks: libopencv-core-dev (<= 2.3.1-8)
 Description: development files for opencv
  This is a meta package providing development package necessary for
  development of OpenCV (Open Computer Vision).
