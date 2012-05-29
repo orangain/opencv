@@ -700,7 +700,7 @@ Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
 		libopencv-core-dev (= ${binary:Version}),
 		libopencv-ts2.4 (= ${binary:Version})
-Description: development files for libopencv-ts
+Description: development files for libopencv-ts2.4
  This package contains the header files and static library needed to compile
  applications that use OpenCV (Open Computer Vision) ts library.
  .
@@ -720,8 +720,7 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
 		libopencv-core2.4 (= ${binary:Version})
 Description: computer vision ts library
- This package contains the OpenCV (Open Computer Vision) ts
- runtime libraries.
+ This package contains the OpenCV (Open Computer Vision) ts runtime libraries.
  .
  The Open Computer Vision Library is a collection of algorithms and sample
  code for various computer vision problems. The library is compatible with
@@ -739,7 +738,7 @@ Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
 		libopencv-imgproc-dev (= ${binary:Version}),
 		libopencv-photo2.4 (= ${binary:Version})
-Description: development files for libopencv-photo
+Description: development files for libopencv-photo2.4
  This package contains the header files and static library needed to compile
  applications that use OpenCV (Open Computer Vision) photo library.
  .
@@ -781,9 +780,10 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
 		libopencv-highgui-dev (= ${binary:Version}),
 		libopencv-photo-dev (= ${binary:Version}),
 		libopencv-videostab2.4 (= ${binary:Version})
-Description: development files for libopencv-stitching
+Description: development files for libopencv-videostab2.4
  This package contains the header files and static library needed to compile
- applications that use OpenCV (Open Computer Vision) videostab library.
+ applications that use OpenCV (Open Computer Vision) video stabilization
+ library.
  .
  The Open Computer Vision Library is a collection of algorithms and sample
  code for various computer vision problems. The library is compatible with
@@ -803,8 +803,8 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
 		libopencv-video2.4 (= ${binary:Version}),
 		libopencv-highgui2.4 (= ${binary:Version}),
 		libopencv-photo2.4 (= ${binary:Version})
-Description: computer vision videostab library
- This package contains the OpenCV (Open Computer Vision) videostab
+Description: computer vision video stabilization library
+ This package contains the OpenCV (Open Computer Vision) video stabilization
  runtime libraries.
  .
  The Open Computer Vision Library is a collection of algorithms and sample
