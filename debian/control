@@ -182,7 +182,8 @@ Depends: ${misc:Depends},
 	libopencv-calib3d2.4,
 	libopencv-objdetect2.4,
 	libopencv-legacy2.4,
-	libopencv-video2.4
+	libopencv-video2.4,
+	libopencv-contrib2.4
 Description: computer vision library - libcvaux translation package
  This package provide files for translation from libcvaux2.1 to libcvaux2.4.
  .
@@ -215,6 +216,9 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
 	libopencv-photo-dev (= ${binary:Version}),
 	libopencv-videostab-dev (= ${binary:Version}),
 	libopencv-stitching-dev (= ${binary:Version}),
+	libcv-dev (= ${binary:Version}),
+	libhighgui-dev (= ${binary:Version}),
+	libcvaux-dev (= ${binary:Version}),
 	pkg-config
 Replaces: libopencv-core-dev (<= 2.3.1-8)
 Breaks: libopencv-core-dev (<= 2.3.1-8)
