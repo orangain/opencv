@@ -1,3 +1,9 @@
+opencv (2.4.1+dfsg-0exp1) experimental; urgency=low
+
+  * New upstream release. (Closes: 671377)
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Thu, 07 Jun 2012 08:54:31 +0900
+
 opencv (2.4.0+dfsg-0exp1) experimental; urgency=low
 
   * New upstream release. (Closes: 671377)
