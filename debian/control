@@ -565,7 +565,7 @@ Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
 		libopencv-flann-dev (= ${binary:Version}),
-		libopencv-imgpric-dev (= ${binary:Version}),
+		libopencv-imgproc-dev (= ${binary:Version}),
 		libopencv-features2d2.4 (= ${binary:Version})
 Description: development files for libopencv-features2d
  This package contains the header files and static library needed to compile
@@ -654,7 +654,7 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
 		libopencv-calib3d-dev (= ${binary:Version}),
 		libopencv-highgui-dev (= ${binary:Version}),
 		libopencv-ml-dev (= ${binary:Version}),
-		libopencv-videio-dev (= ${binary:Version}),
+		libopencv-video-dev (= ${binary:Version}),
 		libopencv-objdetect-dev (= ${binary:Version}),
 		libopencv-contrib2.4 (= ${binary:Version})
 Description: development files for libopencv-contrib
@@ -678,7 +678,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
 		libopencv-calib3d2.4 (= ${binary:Version}),
 		libopencv-highgui2.4 (= ${binary:Version}),
 		libopencv-ml2.4 (= ${binary:Version}),
-		libopencv-videio2.4 (= ${binary:Version}),
+		libopencv-video2.4 (= ${binary:Version}),
 		libopencv-objdetect2.4 (= ${binary:Version})
 Description: computer vision contrib library
  This package contains the OpenCV (Open Computer Vision) contrib
