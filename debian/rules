@@ -1,8 +1,9 @@
 #!/usr/bin/make -f
 
-CFLAGS := $(shell dpkg-buildflags --get CFLAGS)
-CXXFLAGS := $(shell dpkg-buildflags --get CXXFLAGS)
-LDFLAGS := $(shell dpkg-buildflags --get LDFLAGS) -Wl,--as-needed
+CPPFLAGS:=$(shell dpkg-buildflags --get CPPFLAGS)
+CFLAGS:=$(shell dpkg-buildflags --get CFLAGS) $(CPPFLAGS)
+CXXFLAGS:=$(shell dpkg-buildflags --get CXXFLAGS) $(CPPFLAGS)
+LDFLAGS:=$(shell dpkg-buildflags --get LDFLAGS) -Wl,--as-needed
 
 DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 
