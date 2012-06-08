@@ -5,6 +5,8 @@ opencv (2.4.1+dfsg-0exp1) experimental; urgency=low
     - Enable hardening option.
   * Update debian/control.
     - Fix wrong package name.
+    - Add python-numpy-abi9 and python-numpy (>= 1:1.6.1) to python-opencv.
+      Fix lintian error for missing-dependency-on-numpy-abi.
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Thu, 07 Jun 2012 08:54:31 +0900
 

@@ -861,7 +861,8 @@ Description: computer vision stitching library
 Package: python-opencv
 Section: python
 Architecture: any
-Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}
+Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}, python-numpy-abi9,
+		python-numpy (>= 1:1.6.1)
 Provides: ${python:Provides}
 Replaces: python2.3-opencv (<= 0.9.7-3)
 Conflicts: python2.3-opencv (<= 0.9.7-3)
