@@ -1,2 +1,3 @@
 0005-build-static-libs.patch
 0013_drop_asm_types_h_kfreebsd.patch
+remove_path_nonfree_doc
