@@ -1,3 +1,11 @@
+opencv (2.4.1+dfsg-0exp2) experimental; urgency=low
+
+  * Update package description.
+  * Add patches/pkg-config.patch.
+    This changed library specification method in pkgconfig.
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Tue, 26 Jun 2012 16:19:21 +0900
+
 opencv (2.4.1+dfsg-0exp1) experimental; urgency=low
 
   * New upstream release.
