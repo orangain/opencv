@@ -1,0 +1,20 @@
+Description: Change library specification method
+Forwarded: no
+Author: Nobuhiro Iwamatsu <iwamatsu@debian.org>
+Last-Update: 2012-06-26
+
+diff --git a/cmake/OpenCVGenPkgconfig.cmake b/cmake/OpenCVGenPkgconfig.cmake
+index 045bbb4..65fc93d 100644
+--- a/cmake/OpenCVGenPkgconfig.cmake
++++ b/cmake/OpenCVGenPkgconfig.cmake
+@@ -52,7 +52,9 @@ foreach(CVLib ${OpenCV_LIB_COMPONENTS})
+     set(installDir "${OPENCV_LIB_INSTALL_PATH}")
+   endif()
+ 
+-  set(OpenCV_LIB_COMPONENTS_ "${OpenCV_LIB_COMPONENTS_} \${exec_prefix}/${installDir}/${libname}")
++  get_filename_component(libname_ "${libname}" NAME_WE)
++  string(REGEX REPLACE "^lib" "-l" libname_ "${libname_}")
++  set(OpenCV_LIB_COMPONENTS_ "${OpenCV_LIB_COMPONENTS_} ${libname_}")
+ endforeach()
+ 
+ # add extra dependencies required for OpenCV
