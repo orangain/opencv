@@ -1,3 +1,12 @@
+opencv (2.3.1-10) unstable; urgency=high
+
+  * Update debian/control.
+    - Add Replaces and Breaks of libopencv-core-dev to libopencv-dev.
+     (Closes: #674242)
+    - Cleanup Depends of packages.
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Tue, 29 May 2012 08:43:39 +0900
+
 opencv (2.3.1-9) unstable; urgency=low
 
   * Update debian/control.

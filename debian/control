@@ -52,7 +52,6 @@ Package: libcv-dev
 Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
-	pkg-config,
 	libopencv-core-dev,
 	libopencv-imgproc-dev,
 	libopencv-flann-dev,
@@ -81,7 +80,7 @@ Description: Translation package for libcv-dev
  recognition, camera calibration and 3D reconstruction.
 
 Package: libcv2.3
-Architecture: all
+Architecture: any
 Depends: ${misc:Depends},
 	libopencv-core2.3,
 	libopencv-imgproc2.3,
@@ -109,7 +108,6 @@ Package: libhighgui-dev
 Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
-	pkg-config,
 	libopencv-highgui-dev
 Description: Translation package for libhighgui-dev
  This package provide files for translation from libhighgui-dev to
@@ -129,7 +127,7 @@ Description: Translation package for libhighgui-dev
  recognition, camera calibration and 3D reconstruction.
 
 Package: libhighgui2.3
-Architecture: all
+Architecture: any
 Depends: ${misc:Depends},
 	libopencv-highgui2.3
 Description: computer vision library - libhighgui translation package
@@ -149,7 +147,6 @@ Package: libcvaux-dev
 Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
-	pkg-config,
 	libopencv-core-dev,
 	libopencv-imgproc-dev,
 	libopencv-features2d-dev,
@@ -173,7 +170,7 @@ Description: Translation package for libcvaux-dev
  recognition, camera calibration and 3D reconstruction.
 
 Package: libcvaux2.3
-Architecture: all
+Architecture: any
 Depends: ${misc:Depends},
 	libopencv-core2.3,
 	libopencv-imgproc2.3,
@@ -181,7 +178,8 @@ Depends: ${misc:Depends},
 	libopencv-calib3d2.3,
 	libopencv-objdetect2.3,
 	libopencv-legacy2.3,
-	libopencv-video2.3
+	libopencv-video2.3,
+	libopencv-contrib2.3
 Description: computer vision library - libcvaux translation package
  This package provide files for translation from libcvaux2.1 to libcvaux2.3.
  .
@@ -211,7 +209,12 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
 	libopencv-features2d-dev (= ${binary:Version}),
 	libopencv-legacy-dev (= ${binary:Version}),
 	libopencv-contrib-dev (= ${binary:Version}),
+	libcv-dev (= ${binary:Version}),
+	libhighgui-dev (= ${binary:Version}),
+	libcvaux-dev (= ${binary:Version}),
 	pkg-config
+Replaces: libopencv-core-dev (<= 2.3.1-8)
+Breaks: libopencv-core-dev (<= 2.3.1-8)
 Description: development files for opencv
  This is a meta package providing development package necessary for
  development of OpenCV (Open Computer Vision).
