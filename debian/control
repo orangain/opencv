@@ -4,7 +4,6 @@ Section: devel
 Maintainer: Debian Science Team <debian-science-maintainers@lists.alioth.debian.org>
 Uploaders: Sam Hocevar (Debian packages) <sam+deb@zoy.org>, Nobuhiro Iwamatsu <iwamatsu@debian.org>
 Build-Depends: debhelper (>= 8),
- quilt (>= 0.46-7~),
  cmake,
  libavcodec-dev, libavformat-dev, libswscale-dev, libgtk2.0-dev,
  libjasper-dev (>= 1.900.1),
@@ -24,10 +23,10 @@ Build-Depends: debhelper (>= 8),
  python-sphinx,
  texlive-fonts-extra, texlive-latex-extra, texlive-latex-recommended,
  latex-xcolor, texlive-fonts-recommended
-Standards-Version: 3.9.2
+Standards-Version: 3.9.3
 Vcs-Svn: svn://svn.debian.org/svn/debian-science/packages/opencv/trunk/
 Vcs-Browser: http://svn.debian.org/viewsvn/debian-science/packages/opencv/trunk/
-Homepage: http://opencvlibrary.sourceforge.net/
+Homepage: http://opencv.willowgarage.com
 
 Package: opencv-doc
 Section: doc
@@ -728,7 +727,8 @@ Description: computer vision contrib library
 Package: python-opencv
 Section: python
 Architecture: any
-Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}
+Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}, python-numpy-abi9,
+	python-numpy (>= 1:1.6.1)
 Provides: ${python:Provides}
 Replaces: python2.3-opencv (<= 0.9.7-3)
 Conflicts: python2.3-opencv (<= 0.9.7-3)
