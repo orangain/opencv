@@ -3,6 +3,12 @@ opencv (2.4.2+dfsg-0exp1) experimental; urgency=low
   * New upstream release.
   * Update debian/control.
     Changed Depends from libtiff4-dev to libtiff-dev. (Closes: #682238)
+  * Update install file.
+    Change path of samples and add python2.
+  * Update debian/rules.
+    - Remove chmod line. Removed build_all.sh.
+    - Add -r for option of rm command.
+  *Update patches/build-static-libs.patch
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Mon, 16 Jul 2012 04:03:56 +0900
 
