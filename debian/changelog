@@ -1,6 +1,8 @@
 opencv (2.4.2+dfsg-0exp1) experimental; urgency=low
 
   * New upstream release.
+  * Update debian/control.
+    Drop versioning from libtiff-dev. (Closes: #682238)
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Mon, 16 Jul 2012 04:03:56 +0900
 
