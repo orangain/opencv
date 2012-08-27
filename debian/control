@@ -4,7 +4,6 @@ Section: devel
 Maintainer: Debian Science Team <debian-science-maintainers@lists.alioth.debian.org>
 Uploaders: Sam Hocevar (Debian packages) <sam+deb@zoy.org>, Nobuhiro Iwamatsu <iwamatsu@debian.org>
 Build-Depends: debhelper (>= 8),
- quilt (>= 0.46-7~),
  cmake,
  libavcodec-dev, libavformat-dev, libswscale-dev, libgtk2.0-dev,
  libjasper-dev (>= 1.900.1),
@@ -24,10 +23,10 @@ Build-Depends: debhelper (>= 8),
  python-sphinx,
  texlive-fonts-extra, texlive-latex-extra, texlive-latex-recommended,
  latex-xcolor, texlive-fonts-recommended
-Standards-Version: 3.9.2
+Standards-Version: 3.9.3
 Vcs-Svn: svn://svn.debian.org/svn/debian-science/packages/opencv/trunk/
 Vcs-Browser: http://svn.debian.org/viewsvn/debian-science/packages/opencv/trunk/
-Homepage: http://opencvlibrary.sourceforge.net/
+Homepage: http://opencv.willowgarage.com
 
 Package: opencv-doc
 Section: doc
@@ -251,6 +250,7 @@ Description: development files for libopencv-core
 Package: libopencv-core2.3
 Section: libs
 Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: computer vision core library
  This package contains the OpenCV (Open Computer Vision) core runtime libraries.
@@ -289,6 +289,7 @@ Description: development files for libopencv-ml
 Package: libopencv-ml2.3
 Section: libs
 Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends},
 		libopencv-core2.3 (= ${binary:Version})
 Description: computer vision Machine Learning library
@@ -329,6 +330,7 @@ Description: development files for libopencv-imgproc
 Package: libopencv-imgproc2.3
 Section: libs
 Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends},
 		libopencv-core2.3 (= ${binary:Version})
 Description: computer vision Image Processing library
@@ -369,6 +371,7 @@ Description: development files for libopencv-video
 Package: libopencv-video2.3
 Section: libs
 Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends},
 		libopencv-imgproc2.3 (= ${binary:Version})
 Description: computer vision Video analysis library
@@ -409,6 +412,7 @@ Description: development files for libopencv-objdetect
 Package: libopencv-objdetect2.3
 Section: libs
 Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends},
 		libopencv-calib3d2.3 (= ${binary:Version})
 Description: computer vision Object Detection library
@@ -449,6 +453,7 @@ Description: development files for libopencv-gpu
 Package: libopencv-gpu2.3
 Section: libs
 Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends},
 		libopencv-core2.3 (= ${binary:Version}),
 Description: computer vision GPU Processing library
@@ -502,6 +507,7 @@ Description: development files for libopencv-highgui
 Package: libopencv-highgui2.3
 Section: libs
 Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends},
 		${shlibs:Depends},
 		libopencv-imgproc2.3 (= ${binary:Version})
@@ -543,6 +549,7 @@ Description: development files for libopencv-calib3d
 Package: libopencv-calib3d2.3
 Section: libs
 Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends},
 		libopencv-features2d2.3 (= ${binary:Version}),
 Description: computer vision Camera Calibration library
@@ -584,6 +591,7 @@ Description: development files for libopencv-flann
 Package: libopencv-flann2.3
 Section: libs
 Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends},
 		libopencv-core2.3 (= ${binary:Version}),
 Description: computer vision Clustering and Search in Multi-Dimensional spaces library
@@ -626,6 +634,7 @@ Description: development files for libopencv-features2d
 Package: libopencv-features2d2.3
 Section: libs
 Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends},
 		libopencv-flann2.3 (= ${binary:Version}),
 		libopencv-highgui2.3 (= ${binary:Version}),
@@ -668,6 +677,7 @@ Description: development files for libopencv-legacy
 Package: libopencv-legacy2.3
 Section: libs
 Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends},
 		libopencv-video2.3 (= ${binary:Version}),
 		libopencv-calib3d2.3 (= ${binary:Version}),
@@ -709,6 +719,7 @@ Description: development files for libopencv-contrib
 Package: libopencv-contrib2.3
 Section: libs
 Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends},
 		libopencv-calib3d2.3 (= ${binary:Version})
 Description: computer vision contrib library
@@ -728,7 +739,8 @@ Description: computer vision contrib library
 Package: python-opencv
 Section: python
 Architecture: any
-Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}
+Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}, python-numpy-abi9,
+	python-numpy (>= 1:1.6.1)
 Provides: ${python:Provides}
 Replaces: python2.3-opencv (<= 0.9.7-3)
 Conflicts: python2.3-opencv (<= 0.9.7-3)
