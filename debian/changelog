@@ -2,7 +2,7 @@ opencv (2.4.2+dfsg-0exp2) experimental; urgency=low
 
   * Update debian/control.
     - Dump cmake version to 2.8.7.
-	When old cmake is used, building failed.
+      When old cmake is used, building failed.
   * Update libopencv-core-dev.install.
     - Add opencv2/opencv_modules.hpp.
 
