@@ -1,4 +1,4 @@
-build-static-libs.patch
-0013_drop_asm_types_h_kfreebsd.patch
+build-static-libs
+drop_asm_types_h_kfreebsd
 remove_path_nonfree_doc
-pkg-config.patch
+pkg-config
