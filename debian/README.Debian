@@ -16,6 +16,7 @@ necessary when Video function is not necessary.
  - libopencv-video*
  - libopencv-ml*
  - libopencv-gpu*
+ - libopencv-superres*
  - libopencv-imgproc*
  - libopencv-highgui*
  - libopencv-contrib*
