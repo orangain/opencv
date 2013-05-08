@@ -1,28 +1,18 @@
-diff --git a/modules/highgui/src/cap_libv4l.cpp b/modules/highgui/src/cap_libv4l.cpp
-index 233e6f6..75f8477 100644
---- a/modules/highgui/src/cap_libv4l.cpp
-+++ b/modules/highgui/src/cap_libv4l.cpp
-@@ -235,7 +235,9 @@ make & enjoy!
+--- a/modules/highgui/src/cap_libv4l.cpp	2013-05-08 01:49:19.000000000 +0900
++++ b/modules/highgui/src/cap_libv4l.cpp	2013-05-08 01:51:19.000000000 +0900
+@@ -235,7 +235,6 @@
  #include <sys/mman.h>
  #include <string.h>
  #include <stdlib.h>
-+#if defined(__linux__)
- #include <asm/types.h>          /* for videodev2.h */
-+#endif
+-#include <asm/types.h>          /* for videodev2.h */
  #include <assert.h>
  #include <sys/stat.h>
  #include <sys/ioctl.h>
-diff --git a/modules/highgui/src/cap_v4l.cpp b/modules/highgui/src/cap_v4l.cpp
-index 5f9e111..f3fb6f4 100644
---- a/modules/highgui/src/cap_v4l.cpp
-+++ b/modules/highgui/src/cap_v4l.cpp
-@@ -218,7 +218,9 @@ make & enjoy!
+@@ -244,6 +243,7 @@
+ #include <linux/videodev.h>
+ #endif
+ #ifdef HAVE_CAMV4L2
++#include <asm/types.h>          /* for videodev2.h */
+ #include <linux/videodev2.h>
+ #endif
  
- #include <string.h>
- #include <stdlib.h>
-+#if defined(__linux__)
- #include <asm/types.h>          /* for videodev2.h */
-+#endif
- #include <assert.h>
- #include <sys/stat.h>
- #include <sys/ioctl.h>
