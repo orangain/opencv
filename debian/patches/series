@@ -1,4 +1,3 @@
 build-static-libs
 drop_asm_types_h_kfreebsd
-remove_path_nonfree_doc
 pkg-config
