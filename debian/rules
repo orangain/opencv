@@ -21,7 +21,7 @@ CMAKE_ARCH_FLAGS = -DENABLE_SSE=OFF -DENABLE_SSE2=OFF -DENABLE_SSSE3=OFF
 endif
 
 # TBB support
-ifneq (,$(findstring $(DEB_HOST_ARCH), amd64 i386 ia64))
+ifneq (,$(findstring $(DEB_HOST_ARCH), i386 amd64 ia64 powerpc ppc64))
 CMAKE_ARCH_FLAGS += -DWITH_TBB=ON
 else
 CMAKE_ARCH_FLAGS += -DWITH_TBB=OFF
