@@ -75,3 +75,8 @@ override_dh_install:
 	for f in $$(ls obj-*/lib/libopencv_*_s.a); do \
 		cp --verbose --preserve=mode $$f debian/tmp/usr/lib/$$(basename $$f _s.a).a; done
 	dh_install -O--buildsystem=cmake --list-missing
+
+override_dh_fixperms:
+	dh_fixperms
+	chmod 644 $(CURDIR)/debian/opencv-doc/usr/share/doc/opencv-doc/examples/python/*
+	chmod 644 $(CURDIR)/debian/opencv-doc/usr/share/doc/opencv-doc/examples/python2/*
