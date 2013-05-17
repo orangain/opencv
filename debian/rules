@@ -49,7 +49,7 @@ CMAKE_FLAGS = \
 	-DWITH_CUDA=OFF
 
 %:
-	dh $@ --with quilt --buildsystem=cmake
+	dh $@ --buildsystem=cmake
 
 override_dh_clean:
 	rm -rf modules/python/src2/hdr_parser.pyc
