@@ -1,6 +1,8 @@
 opencv (2.4.5+dfsg-1) experimental; urgency=low
 
   * New upstream release.
+  * Update opencv_traincascade.1.
+    Fix typo.
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Wed, 08 May 2013 08:55:28 +0900
 
