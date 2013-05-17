@@ -1,3 +1,4 @@
 build-static-libs
 drop_asm_types_h_kfreebsd
 pkg-config
+support_multiarch
