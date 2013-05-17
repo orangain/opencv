@@ -4,8 +4,7 @@ Section: devel
 Maintainer: Debian Science Team <debian-science-maintainers@lists.alioth.debian.org>
 Uploaders: Sam Hocevar (Debian packages) <sam+deb@zoy.org>,
 		Nobuhiro Iwamatsu <iwamatsu@debian.org>
-Build-Depends: debhelper (>= 8),
- quilt (>= 0.46-7~),
+Build-Depends: debhelper (>= 9),
  cmake (>= 2.8.7),
  libavcodec-dev, libavformat-dev, libswscale-dev, libgtk2.0-dev,
  libjasper-dev (>= 1.900.1),
