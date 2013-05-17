@@ -1,1 +1,1 @@
-usr/lib/libopencv_videostab.so.*
+usr/lib/*/libopencv_videostab.so.*

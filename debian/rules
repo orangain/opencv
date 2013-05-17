@@ -2,6 +2,7 @@
 
 export DEB_BUILD_MAINT_OPTIONS=hardening=+all,-pie,+fortify
 DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
 # SSE options
 ifeq ($(DEB_HOST_ARCH),amd64)
@@ -19,13 +20,13 @@ endif
 
 CMAKE_FLAGS = \
 	-DCMAKE_INSTALL_PREFIX=/usr \
+	-DCMAKE_INSTALL_LIBDIR="lib/$(DEB_HOST_MULTIARCH)" \
 	-DCMAKE_VERBOSE_MAKEFILE=ON \
 	-DCMAKE_C_FLAGS_RELEASE="$(CFLAGS)" \
 	-DCMAKE_CXX_FLAGS_RELEASE="$(CXXFLAGS)" \
 	-DCMAKE_SHARED_LINKER_FLAGS_RELEASE="$(LDFLAGS)" \
 	-DCMAKE_EXE_LINKER_FLAGS_RELEASE="$(LDFLAGS)" \
 	-DCMAKE_BUILD_TYPE=Release	\
-	$(CMAKE_ARCH_FLAGS) \
 	-DBUILD_EXAMPLES=ON	\
 	-DINSTALL_C_EXAMPLES=ON	\
 	-DINSTALL_PYTHON_EXAMPLES=ON	\
@@ -46,7 +47,8 @@ CMAKE_FLAGS = \
 	-DWITH_XINE=OFF	\
 	-DBUILD_TESTS=OFF \
 	-DCMAKE_SKIP_RPATH=ON \
-	-DWITH_CUDA=OFF
+	-DWITH_CUDA=OFF \
+	$(CMAKE_ARCH_FLAGS)
 
 %:
 	dh $@ --buildsystem=cmake
@@ -65,8 +67,9 @@ override_dh_install:
 	-rm --verbose -rf debian/tmp/usr/share/opencv/samples/octave
 	-rm --verbose -rf debian/tmp/usr/share/opencv/samples/c/cvsample.dsp
 	-rm --verbose -rf debian/tmp/usr/share/OpenCV/doc/license.txt
+
 	for f in $$(ls obj-*/lib/libopencv_*_s.a); do \
-		cp --verbose --preserve=mode $$f debian/tmp/usr/lib/$$(basename $$f _s.a).a; done
+		cp --verbose --preserve=mode $$f debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/$$(basename $$f _s.a).a; done
 	dh_install -O--buildsystem=cmake --list-missing
 
 override_dh_fixperms:
