@@ -979,7 +979,8 @@ Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends}, ${shlibs:Depends},
 		libopencv-highgui-dev (= ${binary:Version}),
 		libopencv-video-dev (= ${binary:Version}),
-		libopencv-gpu-dev (= ${binary:Version})
+		libopencv-gpu-dev (= ${binary:Version}),
+		libopencv-superres2.4 (= ${binary:Version})
 Description: development files for libopencv-superres2.4
  This package contains the header files and static library needed to compile
  applications that use OpenCV (Open Computer Vision) Super Resolution library.
