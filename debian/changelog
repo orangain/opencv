@@ -1,6 +1,8 @@
 opencv (2.4.5+dfsg-1) experimental; urgency=low
 
   * New upstream release.
+  * Update debian/control.
+    Add support all arch with TBB support. (Closes: 701195)
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Wed, 08 May 2013 08:55:28 +0900
 

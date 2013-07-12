@@ -228,9 +228,29 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
 	libhighgui-dev (= ${binary:Version}),
 	libcvaux-dev (= ${binary:Version}),
 	pkg-config
+Recommends: opencv-data
 Replaces: libopencv-core-dev (<= 2.3.1-8)
+Conflicts: opencv-data (<= 2.4.5+dfsg-1)
 Breaks: libopencv-core-dev (<= 2.3.1-8)
 Description: development files for opencv
+ This is a metapackage providing development package necessary for
+ development of OpenCV (Open Computer Vision).
+ .
+ The Open Computer Vision Library is a collection of algorithms and sample
+ code for various computer vision problems. The library is compatible with
+ IPL (Intel's Image Processing Library) and, if available, can use IPP
+ (Intel's Integrated Performance Primitives) for better performance.
+ .
+ OpenCV provides low level portable data types and operators, and a set
+ of high level functionalities for video acquisition, image processing and
+ analysis, structural analysis, motion analysis and object tracking, object
+ recognition, camera calibration and 3D reconstruction.
+
+Package: opencv-data
+Section: libdevel
+Architecture: all
+Depends: ${misc:Depends}
+Description: development data for opencv
  This is a metapackage providing development package necessary for
  development of OpenCV (Open Computer Vision).
  .
