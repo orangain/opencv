@@ -1,9 +1,10 @@
 opencv (2.4.5+dfsg-0exp1) experimental; urgency=low
 
-  * New upstream release.
+  * New upstream release. (Closes: #716811)
   * Update debian/control.
     - Add support all arch with TBB support. (Closes: 701195)
     - Add opencv-data. Move haarcascades and lbpcascades's data to this.
+      (Closes: #711385)
   * Update debian/rules.
     - Add python2 to dh of sequence.
 
