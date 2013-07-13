@@ -1,4 +1,4 @@
-opencv (2.4.5+dfsg-1) experimental; urgency=low
+opencv (2.4.5+dfsg-0exp1) experimental; urgency=low
 
   * New upstream release.
   * Update debian/control.
