@@ -2,7 +2,9 @@ opencv (2.4.6.1+dfsg-0exp1) experimental; urgency=low
 
   * New upstream release.
   * Update debian/control.
-    - Add libgtkgl2.0-dev to Build-Depends.
+    - Add libgtkglext1-dev, libgl1-mesa-dev and libglu1-mesa-dev
+      to Build-Depends.
+    - Remove swig from Build-Depends.
   * Update debian/rules.
     - Enable OpenGL.
   * Update patches.
