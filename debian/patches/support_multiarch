@@ -1,11 +1,11 @@
 Description: Support multiarch
 Author: Nobuhiro Iwamatsu <iwamatsu@debian.org>
 Forwarded: no
-Last-Update: <2013-05-16>
+Last-Update: <2013-08-07>
 
---- opencv-2.4.5+dfsg.orig/CMakeLists.txt
-+++ opencv-2.4.5+dfsg/CMakeLists.txt
-@@ -241,13 +241,13 @@ if(ANDROID)
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -254,13 +254,13 @@ if(ANDROID)
  else()
    set(LIBRARY_OUTPUT_PATH         "${OpenCV_BINARY_DIR}/lib")
    set(3P_LIBRARY_OUTPUT_PATH      "${OpenCV_BINARY_DIR}/3rdparty/lib${LIB_SUFFIX}")
@@ -21,11 +21,11 @@ Last-Update: <2013-05-16>
    else()
      set(OPENCV_CONFIG_INSTALL_PATH share/OpenCV)
    endif()
-@@ -351,6 +351,7 @@ if(UNIX)
+@@ -368,6 +368,7 @@ if(UNIX)
    include(cmake/OpenCVFindPkgConfig.cmake OPTIONAL)
    include(CheckFunctionExists)
    include(CheckIncludeFile)
-+  INCLUDE(GNUInstallDirs)
++  include(GNUInstallDirs)
  
    if(NOT APPLE)
      CHECK_INCLUDE_FILE(alloca.h HAVE_ALLOCA_H)

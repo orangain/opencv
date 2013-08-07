@@ -1,6 +1,11 @@
---- a/modules/highgui/src/cap_libv4l.cpp	2013-05-08 01:49:19.000000000 +0900
-+++ b/modules/highgui/src/cap_libv4l.cpp	2013-05-08 01:51:19.000000000 +0900
-@@ -235,7 +235,6 @@
+Description: Fix FTBFS on kfreebsd
+Author: Nobuhiro Iwamatsu <iwamatsu@debian.org>
+Forwarded: no
+Last-Update: <2013-08-07>
+
+--- a/modules/highgui/src/cap_libv4l.cpp
++++ b/modules/highgui/src/cap_libv4l.cpp
+@@ -237,15 +237,16 @@ make & enjoy!
  #include <sys/mman.h>
  #include <string.h>
  #include <stdlib.h>
@@ -8,7 +13,9 @@
  #include <assert.h>
  #include <sys/stat.h>
  #include <sys/ioctl.h>
-@@ -244,6 +243,7 @@
+ 
+ #ifdef HAVE_CAMV4L
++#include <asm/types.h>          /* for videodev2.h */
  #include <linux/videodev.h>
  #endif
  #ifdef HAVE_CAMV4L2

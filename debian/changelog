@@ -5,6 +5,7 @@ opencv (2.4.6.1+dfsg-0exp1) experimental; urgency=low
     - Add libgtkgl2.0-dev to Build-Depends.
   * Update debian/rules.
     - Enable OpenGL.
+  * Update patches.
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Wed, 07 Aug 2013 12:37:41 +0900
 
