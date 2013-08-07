@@ -6,7 +6,7 @@ Uploaders: Sam Hocevar (Debian packages) <sam+deb@zoy.org>,
 		Nobuhiro Iwamatsu <iwamatsu@debian.org>
 Build-Depends: debhelper (>= 9),
  cmake (>= 2.8.7),
- libavcodec-dev, libavformat-dev, libswscale-dev, libgtk2.0-dev,
+ libavcodec-dev, libavformat-dev, libswscale-dev, libgtk2.0-dev, libgtkgl2.0-dev,
  libjasper-dev (>= 1.900.1),
  libjpeg-dev,
  libpng-dev,
