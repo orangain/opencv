@@ -3,6 +3,7 @@
 export DEB_BUILD_MAINT_OPTIONS=hardening=+all,-pie,+fortify
 DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+DEB_HOST_ARCH_OS ?= $(shell dpkg-architecture -qDEB_HOST_ARCH_OS)
 
 # SSE options
 ifeq ($(DEB_HOST_ARCH),amd64)
@@ -16,6 +17,13 @@ ifneq (,$(findstring $(DEB_HOST_ARCH), i386 amd64 ia64 powerpc ppc64))
 CMAKE_ARCH_FLAGS += -DWITH_TBB=ON
 else
 CMAKE_ARCH_FLAGS += -DWITH_TBB=OFF
+endif
+
+# Linux-specific stuff
+ifeq ($(DEB_HOST_ARCH_OS),linux)
+CMAKE_ARCH_FLAGS += -DWITH_1394=ON -DWITH_V4L=ON
+else
+CMAKE_ARCH_FLAGS += -DWITH_1394=OFF -DWITH_V4L=OFF
 endif
 
 CMAKE_FLAGS = \
@@ -42,8 +50,6 @@ CMAKE_FLAGS = \
 	-DWITH_OPENEXR=ON \
 	-DWITH_PVAPI=ON	\
 	-DWITH_UNICAP=OFF	\
-	-DWITH_1394=ON	\
-	-DWITH_V4L=ON	\
 	-DWITH_EIGEN=ON \
 	-DWITH_XINE=OFF	\
 	-DBUILD_TESTS=OFF \
