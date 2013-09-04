@@ -1,3 +1,15 @@
+opencv (2.4.6.1+dfsg-0exp2) unstable; urgency=low
+
+  * Update debian/rules.
+    - Move configuration for 1394 and V4L to CMAKE_ARCH_FLAGS.
+      Thanks to Pino Toscano.
+    - Change from target name from override_dh_fixperms to
+      override_dh_fixperms-indep.
+  * Add fix_ftbfs_on_non_linux.patch.
+    Fix FTBFS on non linux. (Closes: #719741)
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Wed, 04 Sep 2013 10:22:46 +0900
+
 opencv (2.4.6.1+dfsg-0exp1) experimental; urgency=low
 
   * New upstream release.
