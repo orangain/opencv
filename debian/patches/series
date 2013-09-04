@@ -2,3 +2,4 @@ build-static-libs
 drop_asm_types_h_kfreebsd
 #pkg-config
 support_multiarch
+fix_ftbfs_on_non_linux.patch
