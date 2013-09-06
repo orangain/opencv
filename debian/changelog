@@ -1,3 +1,11 @@
+opencv (2.4.6.1+dfsg-1) unstable; urgency=low
+
+  * Upload to unstable. (Closes: #719998, #716811)
+  * Update patches/pkg-config. (Closes: #678222, #721894)
+    Fix broken pkg-config file.
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Fri, 06 Sep 2013 13:51:39 +0900
+
 opencv (2.4.6.1+dfsg-0exp2) unstable; urgency=low
 
   * Update debian/rules.
