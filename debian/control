@@ -230,9 +230,6 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
 	libcvaux-dev (= ${binary:Version}),
 	pkg-config
 Recommends: opencv-data
-Replaces: libopencv-core-dev (<= 2.3.1-8)
-Conflicts: opencv-data (<= 2.4.5+dfsg-1)
-Breaks: libopencv-core-dev (<= 2.3.1-8)
 Description: development files for opencv
  This is a metapackage providing development package necessary for
  development of OpenCV (Open Computer Vision).
@@ -251,6 +248,7 @@ Package: opencv-data
 Section: libdevel
 Architecture: all
 Depends: ${misc:Depends}
+Conflicts: libopencv-core-dev (<= 2.3.1-12)
 Description: development data for opencv
  This is a metapackage providing development package necessary for
  development of OpenCV (Open Computer Vision).

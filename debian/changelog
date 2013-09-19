@@ -1,3 +1,10 @@
+opencv (2.4.6.1+dfsg-0exp4) experimental; urgency=low
+
+  * Update debian/control.
+    - Fix fails to upgrade from testing by opencv-data. (Closes: #722927)
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Fri, 20 Sep 2013 08:16:39 +0900
+
 opencv (2.4.6.1+dfsg-0exp3) experimental; urgency=low
 
   * Update patches/pkg-config. (Closes: #678222, #721894)
