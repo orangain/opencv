@@ -2,6 +2,7 @@ opencv (2.4.6.1+dfsg-0exp4) experimental; urgency=low
 
   * Update debian/control.
     - Fix fails to upgrade from testing by opencv-data. (Closes: #722927)
+    - Change Vcs host to anonscm.debian.org.
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Fri, 20 Sep 2013 08:16:39 +0900
 
