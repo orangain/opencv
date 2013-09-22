@@ -1,3 +1,9 @@
+opencv (2.4.6.1+dfsg-1) unstable; urgency=low
+
+  * Upload to unstable.
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Mon, 23 Sep 2013 06:28:00 +0900
+
 opencv (2.4.6.1+dfsg-0exp4) experimental; urgency=low
 
   * Update debian/control.
