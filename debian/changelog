@@ -1,6 +1,6 @@
 opencv (2.4.6.1+dfsg-1) unstable; urgency=low
 
-  * Upload to unstable.
+  * Upload to unstable. (Closes: #719998, #716811)
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Mon, 23 Sep 2013 06:28:00 +0900
 
