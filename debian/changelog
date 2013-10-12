@@ -1,3 +1,10 @@
+opencv (2.4.6.1+dfsg-2) UNRELEASED; urgency=low
+
+  * Team upload.
+  * Replace libeigen2-dev by libeigen3-dev. (Closes: #726155)
+
+ -- Anton Gladky <gladk@debian.org>  Sat, 12 Oct 2013 22:32:26 +0200
+
 opencv (2.4.6.1+dfsg-1) unstable; urgency=low
 
   * Upload to unstable. (Closes: #719998, #716811)
