@@ -3,3 +3,4 @@ drop_asm_types_h_kfreebsd
 support_multiarch
 fix_ftbfs_on_non_linux.patch
 pkg-config
+change_type_from_int_to_Atomic_word
