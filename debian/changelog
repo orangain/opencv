@@ -4,7 +4,7 @@ opencv (2.4.6.1+dfsg-2) unstable; urgency=low
   * Replace libeigen2-dev by libeigen3-dev. (Closes: #726155)
   
   [ Nobuhiro Iwamatsu ]
-  * FTBFS on sparc64. (#714923)
+  * FTBFS on sparc64. (Closes: #714923)
     Add patches/change_type_from_int_to_Atomic_word.
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Sat, 23 Nov 2013 11:31:08 +0900
