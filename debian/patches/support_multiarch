@@ -1,18 +1,19 @@
 Description: Support multiarch
 Author: Nobuhiro Iwamatsu <iwamatsu@debian.org>
 Forwarded: no
-Last-Update: <2013-08-07>
+Last-Update: <2013-11-23>
 
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -254,13 +254,13 @@ if(ANDROID)
- else()
-   set(LIBRARY_OUTPUT_PATH         "${OpenCV_BINARY_DIR}/lib")
-   set(3P_LIBRARY_OUTPUT_PATH      "${OpenCV_BINARY_DIR}/3rdparty/lib${LIB_SUFFIX}")
--  set(OPENCV_LIB_INSTALL_PATH     lib${LIB_SUFFIX})
-+  set(OPENCV_LIB_INSTALL_PATH     ${CMAKE_INSTALL_LIBDIR}${LIB_SUFFIX})
-   set(OPENCV_3P_LIB_INSTALL_PATH  share/OpenCV/3rdparty/${OPENCV_LIB_INSTALL_PATH})
-   set(OPENCV_INCLUDE_INSTALL_PATH include)
+--- a/CMakeLists.txt.x	2013-11-23 15:49:38.840209710 +0900
++++ b/CMakeLists.txt	2013-11-23 15:51:39.216210940 +0900
+@@ -281,14 +281,14 @@
+     endif()
+     set(OPENCV_3P_LIB_INSTALL_PATH  "${OpenCV_INSTALL_BINARIES_PREFIX}staticlib${LIB_SUFFIX}")
+   else()
+-    set(OPENCV_LIB_INSTALL_PATH     lib${LIB_SUFFIX})
++    set(OPENCV_LIB_INSTALL_PATH     ${CMAKE_INSTALL_LIBDIR}${LIB_SUFFIX})
+     set(OPENCV_3P_LIB_INSTALL_PATH  share/OpenCV/3rdparty/${OPENCV_LIB_INSTALL_PATH})
+   endif()
+   set(OPENCV_INCLUDE_INSTALL_PATH "include")
  
    math(EXPR SIZEOF_VOID_P_BITS "8 * ${CMAKE_SIZEOF_VOID_P}")
    if(LIB_SUFFIX AND NOT SIZEOF_VOID_P_BITS EQUAL LIB_SUFFIX)
@@ -21,11 +22,11 @@ Last-Update: <2013-08-07>
    else()
      set(OPENCV_CONFIG_INSTALL_PATH share/OpenCV)
    endif()
-@@ -368,6 +368,7 @@ if(UNIX)
+@@ -395,6 +395,7 @@
    include(cmake/OpenCVFindPkgConfig.cmake OPTIONAL)
    include(CheckFunctionExists)
    include(CheckIncludeFile)
 +  include(GNUInstallDirs)
  
    if(NOT APPLE)
-     CHECK_INCLUDE_FILE(alloca.h HAVE_ALLOCA_H)
+     CHECK_INCLUDE_FILE(pthread.h HAVE_LIBPTHREAD)
