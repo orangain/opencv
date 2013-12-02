@@ -1,0 +1,59 @@
+Description: Revert commit 131458847bbf2fe971c6b5e40a8b59d0d48b0d0c
+ This commit disable building shared library of TS.
+Author: Nobuhiro Iwamatsu <iwamatsu@debian.org>
+Forwarded: no
+Last-Update: <2013-121-03>  
+
+From 131458847bbf2fe971c6b5e40a8b59d0d48b0d0c Mon Sep 17 00:00:00 2001
+From: Roman Donchenko <roman.donchenko@itseez.com>
+Date: Tue, 6 Aug 2013 17:56:25 +0400
+Subject: [PATCH] Make ts always static.
+
+This allows us to forget about the GTEST_(CREATE|LINKED_AS)_SHARED_LIBRARY
+macros and to get rid of the dependency on cvconfig.h.
+
+diff --git a/modules/ts/CMakeLists.txt b/modules/ts/CMakeLists.txt
+index 4af917b..1eaeb39 100644
+--- a/modules/ts/CMakeLists.txt
++++ b/modules/ts/CMakeLists.txt
+@@ -4,7 +4,10 @@ if(IOS)
+   ocv_module_disable(ts)
+ endif()
+ 
+-set(OPENCV_MODULE_TYPE STATIC)
++if(MINGW)
++  set(OPENCV_MODULE_TYPE STATIC)
++endif()
++
+ set(OPENCV_MODULE_IS_PART_OF_WORLD FALSE)
+ 
+ if(HAVE_CUDA)
+@@ -19,4 +22,10 @@ ocv_glob_module_sources()
+ ocv_module_include_directories()
+ ocv_create_module()
+ 
++if(BUILD_SHARED_LIBS AND NOT MINGW)
++  add_definitions(-DGTEST_CREATE_SHARED_LIBRARY=1)
++else()
++  add_definitions(-DGTEST_CREATE_SHARED_LIBRARY=0)
++endif()
++
+ ocv_add_precompiled_headers(${the_module})
+diff --git a/modules/ts/include/opencv2/ts/ts.hpp b/modules/ts/include/opencv2/ts/ts.hpp
+index 2f32c24..384046f 100644
+--- a/modules/ts/include/opencv2/ts/ts.hpp
++++ b/modules/ts/include/opencv2/ts/ts.hpp
+@@ -1,6 +1,13 @@
+ #ifndef __OPENCV_GTESTCV_HPP__
+ #define __OPENCV_GTESTCV_HPP__
+ 
++#include "cvconfig.h"
++#ifndef GTEST_CREATE_SHARED_LIBRARY
++#ifdef BUILD_SHARED_LIBS
++#define GTEST_LINKED_AS_SHARED_LIBRARY 1
++#endif
++#endif
++
+ #include <stdarg.h> // for va_list
+ 
+ #ifdef HAVE_WINRT

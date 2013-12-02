@@ -4,3 +4,4 @@ support_multiarch
 fix_ftbfs_on_non_linux
 pkg-config
 change_type_from_int_to_Atomic_word
+revert-Make-ts-always-static
