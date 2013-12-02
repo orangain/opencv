@@ -27,8 +27,8 @@ Build-Depends: debhelper (>= 9),
  texlive-fonts-extra, texlive-latex-extra, texlive-latex-recommended,
  latex-xcolor, texlive-fonts-recommended
 Standards-Version: 3.9.4
-Vcs-Svn: svn://anonscm.debian.org/debian-science/packages/opencv/trunk/
-Vcs-Browser: http://anonscm.debian.org/viewsvn/debian-science/packages/opencv/trunk/
+Vcs-Git: git://anonscm.debian.org/debian-science/packages/opencv.git
+Vcs-Browser: http://anonscm.debian.org/gitweb/?p=debian-science/packages/opencv.git;a=summary
 Homepage: http://opencv.willowgarage.com
 
 Package: opencv-doc
