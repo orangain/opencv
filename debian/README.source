@@ -5,10 +5,13 @@ opencv source package infomation
 
   The deleted source code is the following directories. 
     * modules/nonfree
+    * 3rdparty/*
 
-  The module contains algorithms that may be patented in some countries or have
+  The module/nonfree contains algorithms that may be patented in some countries or have
   some other limitations on the use.
-
   This description is in modules/nonfree/doc/nonfree.rst of original.
 
- -- Nobuhiro Iwamatsu <iwamatsu@debian.org> Sat, 22 Sep 15:15:08 2012 +0900
+  3rdparty directory has some source code and binaries of 3rdparty project
+  (libjpeg, libpng, etc...). Since they use the binary of Debian, I have been removed.
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org> Tue, 03 Dec 2013 14:50:15 +0900
