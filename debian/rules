@@ -26,6 +26,9 @@ else
 CMAKE_ARCH_FLAGS += -DWITH_1394=OFF -DWITH_V4L=OFF
 endif
 
+# For Java
+export JAVA_HOME=/usr/lib/jvm/default-java
+
 CMAKE_FLAGS = \
 	-DCMAKE_INSTALL_PREFIX=/usr \
 	-DCMAKE_INSTALL_LIBDIR="lib/$(DEB_HOST_MULTIARCH)" \
