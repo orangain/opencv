@@ -59,6 +59,7 @@ CMAKE_FLAGS = \
 	-DCMAKE_SKIP_RPATH=ON \
 	-DWITH_CUDA=OFF \
 	$(CMAKE_ARCH_FLAGS)
+# -DOPENCL_INCLUDE_DIR:PATH="/usr/include/CL/"
 
 %:
 	dh $@ --buildsystem=cmake --with python2 --with javahelper
