@@ -27,7 +27,7 @@ Build-Depends: debhelper (>= 9),
  ant, default-jdk, javahelper,
  texlive-fonts-extra, texlive-latex-extra, texlive-latex-recommended,
  latex-xcolor, texlive-fonts-recommended
-Standards-Version: 3.9.4
+Standards-Version: 3.9.5
 Vcs-Git: git://anonscm.debian.org/debian-science/packages/opencv.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=debian-science/packages/opencv.git;a=summary
 Homepage: http://opencv.org/

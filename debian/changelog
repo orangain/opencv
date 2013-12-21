@@ -6,6 +6,7 @@ opencv (2.4.7+dfsg-1) unstable; urgency=low
     - Remove Vcs-Svn field and add Vcs-Git field.
     - Update Vcs-Browser field.
     - Update Homepage field.
+    - Bumped standards-version to 3.9.5.
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Tue, 03 Dec 2013 08:17:57 +0900
 
