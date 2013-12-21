@@ -1,6 +1,6 @@
 opencv (2.4.7+dfsg-1) unstable; urgency=low
 
-  * New upstream release.
+  * New upstream release. (Closes: #732063)
   * Add patches/revert-Make-ts-always-static.
   * Update debian/control.
     - Remove Vcs-Svn field and add Vcs-Git field.
