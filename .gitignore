@@ -4,6 +4,9 @@
 .*.swp
 .DS_Store
 .sw[a-z]
+<<<<<<< HEAD
 /modules/refman.rst
+=======
+>>>>>>> upstream/2.4.8+dfsg
 tags
 tegra/

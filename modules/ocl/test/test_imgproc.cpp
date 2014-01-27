@@ -254,8 +254,28 @@ OCL_TEST_P(CornerMinEigenVal, Mat)
 }
 
 ////////////////////////////////cornerHarris//////////////////////////////////////////
+struct CornerHarris :
+    public ImgprocTestBase
+{
+    void Near(double threshold = 0.0)
+    {
+        Mat whole, roi;
+        gdst_whole.download(whole);
+        gdst_roi.download(roi);
 
-typedef CornerTestBase CornerHarris;
+        absdiff(whole, dst_whole, whole);
+        absdiff(roi, dst_roi, roi);
+
+        divide(whole, dst_whole, whole);
+        divide(roi, dst_roi, roi);
+
+        absdiff(dst_whole, dst_whole, dst_whole);
+        absdiff(dst_roi, dst_roi, dst_roi);
+
+        EXPECT_MAT_NEAR(dst_whole, whole, threshold);
+        EXPECT_MAT_NEAR(dst_roi, roi, threshold);
+    }
+};
 
 OCL_TEST_P(CornerHarris, Mat)
 {
@@ -269,29 +289,39 @@ OCL_TEST_P(CornerHarris, Mat)
         cornerHarris(src_roi, dst_roi, blockSize, apertureSize, k, borderType);
         ocl::cornerHarris(gsrc_roi, gdst_roi, blockSize, apertureSize, k, borderType);
 
-        Near(1e-5, true);
+        Near(1e-5);
     }
 }
 
 //////////////////////////////////integral/////////////////////////////////////////////////
 
-typedef ImgprocTestBase Integral;
+struct Integral :
+        public ImgprocTestBase
+{
+    int sdepth;
 
+    virtual void SetUp()
+    {
+        type = GET_PARAM(0);
+        blockSize = GET_PARAM(1);
+        sdepth = GET_PARAM(2);
+        useRoi = GET_PARAM(3);
+    }
+};
 OCL_TEST_P(Integral, Mat1)
 {
     for (int j = 0; j < LOOP_TIMES; j++)
     {
         random_roi();
 
-        ocl::integral(gsrc_roi, gdst_roi);
-        integral(src_roi, dst_roi);
+        ocl::integral(gsrc_roi, gdst_roi, sdepth);
+        integral(src_roi, dst_roi, sdepth);
 
         Near();
     }
 }
 
-// TODO wrong output type
-OCL_TEST_P(Integral, DISABLED_Mat2)
+OCL_TEST_P(Integral, Mat2)
 {
     Mat dst1;
     ocl::oclMat gdst1;
@@ -300,10 +330,12 @@ OCL_TEST_P(Integral, DISABLED_Mat2)
     {
         random_roi();
 
-        integral(src_roi, dst1, dst_roi);
-        ocl::integral(gsrc_roi, gdst1, gdst_roi);
+        integral(src_roi, dst_roi, dst1, sdepth);
+        ocl::integral(gsrc_roi, gdst_roi, gdst1, sdepth);
 
         Near();
+        if(gdst1.clCxt->supportsFeature(ocl::FEATURE_CL_DOUBLE))
+            EXPECT_MAT_NEAR(dst1, Mat(gdst1), 0.);
     }
 }
 
@@ -543,7 +575,7 @@ INSTANTIATE_TEST_CASE_P(Imgproc, CornerHarris, Combine(
 INSTANTIATE_TEST_CASE_P(Imgproc, Integral, Combine(
                             Values((MatType)CV_8UC1), // TODO does not work with CV_32F, CV_64F
                             Values(0), // not used
-                            Values(0), // not used
+                            Values((MatType)CV_32SC1, (MatType)CV_32FC1),
                             Bool()));
 
 INSTANTIATE_TEST_CASE_P(Imgproc, Threshold, Combine(
