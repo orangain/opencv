@@ -1,3 +1,10 @@
+opencv (2.4.8+dfsg1-1) unstable; urgency=low
+
+  * Update to new source. (Closes: #736825)
+    Remove Milky directory in modules/highgui/src/files_Qt/. 
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Fri, 31 Jan 2014 12:13:29 +0900
+
 opencv (2.4.8+dfsg-1) unstable; urgency=low
 
   * New upstream release.
