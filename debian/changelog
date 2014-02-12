@@ -1,9 +1,13 @@
 opencv (2.4.8+dfsg1-1) unstable; urgency=low
 
-  * Update to new source. (Closes: #736825)
-    Remove Milky directory in modules/highgui/src/files_Qt/. 
+  * Update to new source.
+    Remove Milky directory in modules/highgui/src/files_Qt/.
+  * Update debian/control.
+    Add libopencv-ocl-dev to Depends of libopencv-dev. (Closes: #737584)
+  * Update libopencv-dev.install.
+    Install OpenCVModules-release.cmake and OpenCVModules.cmake. (Closes: #737153)
 
- -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Fri, 31 Jan 2014 12:13:29 +0900
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Wed, 12 Feb 2014 16:37:21 +0900
 
 opencv (2.4.8+dfsg-1) unstable; urgency=low
 
