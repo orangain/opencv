@@ -5,7 +5,8 @@ opencv (2.4.8+dfsg1-1) unstable; urgency=low
   * Update debian/control.
     Add libopencv-ocl-dev to Depends of libopencv-dev. (Closes: #737584)
   * Update libopencv-dev.install.
-    Install OpenCVModules-release.cmake and OpenCVModules.cmake. (Closes: #737153)
+    Install OpenCVModules-release.cmake and OpenCVModules.cmake.
+    (Closes: #737153)
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Wed, 12 Feb 2014 16:37:21 +0900
 
