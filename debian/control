@@ -226,7 +226,7 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
 	libopencv-gpu-dev (= ${binary:Version}),
 	libopencv-superres-dev (= ${binary:Version}),
 	libopencv-ocl-dev (= ${binary:Version}),
-	libopencv2.4-java (= ${binary:Version}),
+	libopencv2.4-java (= ${source:Version}),
 	libopencv2.4-jni (= ${binary:Version}),
 	libcv-dev (= ${binary:Version}),
 	libhighgui-dev (= ${binary:Version}),
@@ -1076,7 +1076,8 @@ Description: computer vision OpenCL support library
 Package: libopencv2.4-java
 Section: java
 Architecture: all
-Depends: ${java:Depends}, ${misc:Depends}
+Depends: ${java:Depends}, ${misc:Depends},
+	libopencv2.4-jni (>= ${source:Version})
 Recommends: ${java:Recommends}
 Description: Java bindings for the computer vision library
  This package contains Java bindings for the OpenCV (Open Computer Vision)
@@ -1094,7 +1095,14 @@ Description: Java bindings for the computer vision library
 
 Package: libopencv2.4-jni
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends},
+	libopencv-calib3d2.4 (= ${binary:Version}),
+	libopencv-ml2.4 (= ${binary:Version}),
+	libopencv-objdetect2.4 (= ${binary:Version}),
+	libopencv-highgui2.4 (= ${binary:Version}),
+	libopencv-video2.4 (= ${binary:Version}),
+	libopencv-contrib2.4 (= ${binary:Version}),
+	libopencv-photo2.4 (= ${binary:Version})
 Description: Java jni library for the computer vision library
  This package contains Java jni library for the OpenCV (Open Computer Vision)
  library.
