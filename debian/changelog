@@ -1,3 +1,11 @@
+opencv (2.4.8+dfsg1-2.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Add libav10.patch by Anton Khirnov to allow compilation against
+    Libav10 (Closes: #739440)
+
+ -- Reinhard Tartler <siretart@tauware.de>  Sun, 11 May 2014 09:57:31 -0400
+
 opencv (2.4.8+dfsg1-2) unstable; urgency=medium
 
   * Update debian/control. 
