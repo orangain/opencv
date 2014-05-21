@@ -1,3 +1,10 @@
+opencv (2.4.8+dfsg1-2.2) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Fix version in symbolic links for libopencv2.4-java (closes: #747500)
+
+ -- Gilles Filippini <pini@debian.org>  Wed, 21 May 2014 07:52:52 +0200
+
 opencv (2.4.8+dfsg1-2.1) unstable; urgency=medium
 
   * Non-maintainer upload.
