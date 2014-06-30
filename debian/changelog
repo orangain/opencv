@@ -1,3 +1,9 @@
+opencv (2.4.9+dfsg-1) UNRELEASED; urgency=medium
+
+  * New upstream release.
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Tue, 01 Jul 2014 07:58:34 +0900
+
 opencv (2.4.8+dfsg1-2.2) unstable; urgency=medium
 
   * Non-maintainer upload.
