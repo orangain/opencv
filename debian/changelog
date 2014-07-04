@@ -1,6 +1,6 @@
-opencv (2.4.9+dfsg-1) UNRELEASED; urgency=medium
+opencv (2.4.9+dfsg-1) unstable; urgency=medium
 
-  * New upstream release.
+  * New upstream release. (Closes:#753689)
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Tue, 01 Jul 2014 07:58:34 +0900
 
