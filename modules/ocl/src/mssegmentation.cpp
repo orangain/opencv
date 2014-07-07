@@ -42,6 +42,10 @@
 //
 //M*/
 
+#if (__GNUC__ == 4) && (__GNUC_MINOR__ == 6)
+# pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
+
 #include "precomp.hpp"
 #include "opencl_kernels.hpp"
 
@@ -348,7 +352,7 @@ namespace cv
             }
 
             // Sort all graph's edges connecting differnet components (in asceding order)
-            sort(edges.begin(), edges.end());
+            std::sort(edges.begin(), edges.end());
 
             // Exclude small components (starting from the nearest couple)
             for (size_t i = 0; i < edges.size(); ++i)

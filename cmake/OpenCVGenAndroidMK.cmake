@@ -44,6 +44,7 @@ if(ANDROID)
 
   # build the list of opencv libs and dependencies for all modules
   set(OPENCV_MODULES_CONFIGMAKE "")
+  set(OPENCV_HAVE_GPU_MODULE_CONFIGMAKE "off")
   set(OPENCV_EXTRA_COMPONENTS_CONFIGMAKE "")
   set(OPENCV_3RDPARTY_COMPONENTS_CONFIGMAKE "")
   foreach(m ${OPENCV_MODULES_PUBLIC})
@@ -53,6 +54,11 @@ if(ANDROID)
     endif()
   endforeach()
 
+  # remove CUDA runtime and NPP from regular deps
+  # it can be added separately if needed.
+  ocv_list_filterout(OPENCV_EXTRA_COMPONENTS_CONFIGMAKE "libcu")
+  ocv_list_filterout(OPENCV_EXTRA_COMPONENTS_CONFIGMAKE "libnpp")
+
   # split 3rdparty libs and modules
   foreach(mod ${OPENCV_MODULES_CONFIGMAKE})
     if(NOT mod MATCHES "^opencv_.+$")
@@ -61,6 +67,14 @@ if(ANDROID)
   endforeach()
   if(OPENCV_3RDPARTY_COMPONENTS_CONFIGMAKE)
     list(REMOVE_ITEM OPENCV_MODULES_CONFIGMAKE ${OPENCV_3RDPARTY_COMPONENTS_CONFIGMAKE})
+  endif()
+
+  # GPU module enabled separately
+  list(REMOVE_ITEM OPENCV_MODULES_CONFIGMAKE "opencv_gpu")
+  list(REMOVE_ITEM OPENCV_MODULES_CONFIGMAKE "opencv_dynamicuda")
+
+  if(HAVE_opencv_gpu)
+    set(OPENCV_HAVE_GPU_MODULE_CONFIGMAKE "on")
   endif()
 
   # convert CMake lists to makefile literals

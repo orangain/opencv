@@ -192,6 +192,7 @@ void openCLMallocPitchEx(Context *ctx, void **dev_ptr, size_t *pitch,
         clFinish(getClCommandQueue(ctx));
 #endif
         CheckBuffers data(mainBuffer, size, widthInBytes, height);
+        cv::AutoLock lock(getInitializationMutex());
         __check_buffers.insert(std::pair<cl_mem, CheckBuffers>((cl_mem)*dev_ptr, data));
     }
 #endif
@@ -253,10 +254,17 @@ void openCLFree(void *devPtr)
     bool failBefore = false, failAfter = false;
 #endif
     CheckBuffers data;
-    std::map<cl_mem, CheckBuffers>::iterator i = __check_buffers.find((cl_mem)devPtr);
-    if (i != __check_buffers.end())
     {
-        data = i->second;
+        cv::AutoLock lock(getInitializationMutex());
+        std::map<cl_mem, CheckBuffers>::iterator i = __check_buffers.find((cl_mem)devPtr);
+        if (i != __check_buffers.end())
+        {
+            data = i->second;
+            __check_buffers.erase(i);
+        }
+    }
+    if (data.mainBuffer != NULL)
+    {
 #ifdef CHECK_MEMORY_CORRUPTION
         Context* ctx = Context::getContext();
         std::vector<uchar> checkBefore(__memory_corruption_guard_bytes);
@@ -282,11 +290,11 @@ void openCLFree(void *devPtr)
         }
 #else
         // TODO FIXIT Attach clReleaseMemObject call to event completion callback
-        Context* ctx = Context::getContext();
-        clFinish(getClCommandQueue(ctx));
+        // TODO 2013/12/04 Disable workaround
+        // Context* ctx = Context::getContext();
+        // clFinish(getClCommandQueue(ctx));
 #endif
         openCLSafeCall(clReleaseMemObject(data.mainBuffer));
-        __check_buffers.erase(i);
     }
 #if defined(CHECK_MEMORY_CORRUPTION)
     if (failBefore)
