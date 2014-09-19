@@ -1,3 +1,10 @@
+opencv (2.4.9.1+dfsg-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Add support ppc64el. (Closes: #754094)
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Fri, 19 Sep 2014 11:04:13 +0900
+
 opencv (2.4.9+dfsg-1) unstable; urgency=medium
 
   * New upstream release. (Closes:#753689)
