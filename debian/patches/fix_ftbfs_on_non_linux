@@ -1,7 +1,7 @@
 Description: Fix FTBFS on non linux
 Forwarded: not yet
 Author: Pino Toscano <pino@debian.org>
-Last-Update: 2014-01-14
+Last-Update: 2015-04-27
 
 diff --git a/modules/core/src/parallel.cpp b/modules/core/src/parallel.cpp
 index 27d7ecc..2c0b7c1 100644
@@ -33,7 +33,7 @@ index 27d7ecc..2c0b7c1 100644
  #elif defined __APPLE__
      int numCPU=0;
 diff --git a/modules/core/src/system.cpp b/modules/core/src/system.cpp
-index 09dacee..26b0240 100644
+index 5a970d5..1abcef4 100644
 --- a/modules/core/src/system.cpp
 +++ b/modules/core/src/system.cpp
 @@ -157,13 +157,13 @@ std::wstring GetTempFileNameWinRT(std::wstring prefix)
