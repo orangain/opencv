@@ -42,6 +42,8 @@
 
 #include "test_precomp.hpp"
 
+#if BUILD_WITH_VIDEO_INPUT_SUPPORT
+
 class AllignedFrameSource : public cv::superres::FrameSource
 {
 public:
@@ -278,6 +280,18 @@ TEST_F(SuperResolution, BTVL1_GPU)
 #if defined(HAVE_OPENCV_OCL) && defined(HAVE_OPENCL)
 TEST_F(SuperResolution, BTVL1_OCL)
 {
+    try
+    {
+        const cv::ocl::DeviceInfo& dev = cv::ocl::Context::getContext()->getDeviceInfo();
+        std::cout << "Device name:" << dev.deviceName << std::endl;
+    }
+    catch (...)
+    {
+        std::cout << "Device name: N/A" << std::endl;
+        return; // skip test
+    }
     RunTest(cv::superres::createSuperResolution_BTVL1_OCL());
 }
 #endif
+
+#endif // BUILD_WITH_VIDEO_INPUT_SUPPORT

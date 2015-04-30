@@ -9,6 +9,10 @@ ocv_add_module(highgui opencv_imgproc OPTIONAL opencv_androidcamera)
 
 ocv_clear_vars(GRFMT_LIBS)
 
+if(HAVE_WINRT_CX)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /ZW")
+endif()
+
 if(HAVE_PNG OR HAVE_TIFF OR HAVE_OPENEXR)
   ocv_include_directories(${ZLIB_INCLUDE_DIR})
   list(APPEND GRFMT_LIBS ${ZLIB_LIBRARIES})
@@ -50,13 +54,11 @@ source_group("Src\\grfmts" FILES ${grfmt_hdrs} ${grfmt_srcs})
 set(highgui_hdrs
     src/precomp.hpp
     src/utils.hpp
-    src/cap_ffmpeg_impl.hpp
     )
 
 set(highgui_srcs
     src/cap.cpp
     src/cap_images.cpp
-    src/cap_ffmpeg.cpp
     src/loadsave.cpp
     src/utils.cpp
     src/window.cpp
@@ -119,6 +121,7 @@ if (WIN32 AND HAVE_DSHOW)
 endif()
 
 if (WIN32 AND HAVE_MSMF)
+  list(APPEND highgui_srcs src/cap_msmf.hpp)
   list(APPEND highgui_srcs src/cap_msmf.cpp)
 endif()
 
@@ -165,18 +168,24 @@ endif(HAVE_opencv_androidcamera)
 
 if(HAVE_XIMEA)
   list(APPEND highgui_srcs src/cap_ximea.cpp)
-  ocv_include_directories(${XIMEA_PATH})
+  if(XIMEA_PATH)
+    ocv_include_directories(${XIMEA_PATH})
+  endif()
   if(XIMEA_LIBRARY_DIR)
     link_directories("${XIMEA_LIBRARY_DIR}")
   endif()
-  if(X86_64)
+  if(WIN32 AND X86_64)
     list(APPEND HIGHGUI_LIBRARIES m3apiX64)
+  elseif(APPLE)
+    list(APPEND HIGHGUI_LIBRARIES "-framework m3api")
   else()
     list(APPEND HIGHGUI_LIBRARIES m3api)
   endif()
 endif(HAVE_XIMEA)
 
 if(HAVE_FFMPEG)
+  list(APPEND highgui_hdrs src/cap_ffmpeg_impl.hpp)
+  list(APPEND highgui_srcs src/cap_ffmpeg.cpp)
   if(UNIX AND BZIP2_LIBRARIES)
     list(APPEND HIGHGUI_LIBRARIES ${BZIP2_LIBRARIES})
   endif()
