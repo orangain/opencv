@@ -1,6 +1,8 @@
 opencv (2.4.11+dfsg-1) unstable; urgency=medium
 
   * Update to 2.4.11.
+  * Update debian/control.
+    - Bumped standards-version to 3.9.6.
 
  -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Wed, 06 May 2015 06:20:14 +0900
 
