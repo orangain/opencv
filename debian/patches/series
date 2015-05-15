@@ -7,3 +7,4 @@ change_type_from_int_to_Atomic_word
 revert-Make-ts-always-static
 fix_path_of_opencl_headers
 libav10.patch
+optimize_i586.patch
