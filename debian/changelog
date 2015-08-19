@@ -1,3 +1,20 @@
+opencv (2.4.9.1+dfsg-1.2) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Rename library packages for g++5 ABI transition.
+    Patch provided by Matthias Klose. (Closes: #791226)
+  * Remove Lintian overrides from Matthias' patch, current Lintian accepts
+    v5 package names as-is.
+  * Build-depend on the version of openexr that started its transition.
+  * Add patch to stop checking the version of sphinx-build (which makes
+    no difference anyway), fixing arch-indep build (#792715; not closing
+    that bug here because it is unclear whether it is considered to be a
+    sphinx bug).
+  * Deliberately not addressing #794856 in this upload, since it requires
+    repacking the orig.tar and is not a regression.
+
+ -- Simon McVittie <smcv@debian.org>  Wed, 19 Aug 2015 22:36:43 +0100
+
 opencv (2.4.9.1+dfsg-1.1) unstable; urgency=medium
 
   * Non-maintainer upload.
