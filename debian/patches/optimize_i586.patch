@@ -5,11 +5,12 @@ Description: Optimize of i386 changed from 686 to 586.
 Author: Bernhard Übelacker <bernhardu@vr-web.de>
 Bug-Debian: https://bugs.debian.org/784647
 Origin: other, https://sources.debian.net/src/opencv/2.3.1-11%2Bdeb7u1/debian/patches/0011_optimize_i486.patch/
-Last-Update: 2015-05-09
+Last-Update: 2015-12-08
 
-
---- opencv-2.4.9.1+dfsg.orig/cmake/OpenCVCompilerOptions.cmake
-+++ opencv-2.4.9.1+dfsg/cmake/OpenCVCompilerOptions.cmake
+diff --git a/cmake/OpenCVCompilerOptions.cmake b/cmake/OpenCVCompilerOptions.cmake
+index 9477d9c..c752ee5 100644
+--- a/cmake/OpenCVCompilerOptions.cmake
++++ b/cmake/OpenCVCompilerOptions.cmake
 @@ -109,7 +109,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
    endif()
  
@@ -18,4 +19,4 @@ Last-Update: 2015-05-09
 +    add_extra_compiler_option(-march=i586)
    endif()
  
-   # Other optimizations
+   if(APPLE)
