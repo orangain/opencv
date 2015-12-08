@@ -728,10 +728,10 @@ void cv::meanStdDev( InputArray _src, OutputArray _mean, OutputArray _sdv, Input
             dcn_stddev = (int)stddev.total();
             pstddev = (Ipp64f *)stddev.data;
         }
-        for( int k = cn; k < dcn_mean; k++ )
-            pmean[k] = 0;
-        for( int k = cn; k < dcn_stddev; k++ )
-            pstddev[k] = 0;
+        for( int c = cn; c < dcn_mean; c++ )
+            pmean[c] = 0;
+        for( int c = cn; c < dcn_stddev; c++ )
+            pstddev[c] = 0;
         IppiSize sz = { cols, rows };
         int type = src.type();
         if( !mask.empty() )
@@ -2463,14 +2463,14 @@ struct BatchDistInvoker : public ParallelLoopBody
 }
 
 void cv::batchDistance( InputArray _src1, InputArray _src2,
-                        OutputArray _dist, int dtype, OutputArray _nidx,
-                        int normType, int K, InputArray _mask,
-                        int update, bool crosscheck )
+                       OutputArray _dist, int dtype, OutputArray _nidx,
+                       int normType, int K, InputArray _mask,
+                       int update, bool crosscheck )
 {
     Mat src1 = _src1.getMat(), src2 = _src2.getMat(), mask = _mask.getMat();
     int type = src1.type();
     CV_Assert( type == src2.type() && src1.cols == src2.cols &&
-               (type == CV_32F || type == CV_8U));
+              (type == CV_32F || type == CV_8U));
     CV_Assert( _nidx.needed() == (K > 0) );
 
     if( dtype == -1 )

@@ -558,6 +558,8 @@ Constructs the Gaussian pyramid for an image.
 
     :param maxlevel: 0-based index of the last (the smallest) pyramid layer. It must be non-negative.
 
+    :param borderType: Pixel extrapolation method (BORDER_CONSTANT don't supported). See  :ocv:func:`borderInterpolate` for details.
+
 The function constructs a vector of images and builds the Gaussian pyramid by recursively applying
 :ocv:func:`pyrDown` to the previously built pyramid layers, starting from ``dst[0]==src`` .
 
@@ -1211,7 +1213,7 @@ Performs advanced morphological transformations.
 .. ocv:cfunction:: void cvMorphologyEx( const CvArr* src, CvArr* dst, CvArr* temp, IplConvKernel* element, int operation, int iterations=1 )
 .. ocv:pyoldfunction:: cv.MorphologyEx(src, dst, temp, element, operation, iterations=1)-> None
 
-    :param src: Source image. The number of channels can be arbitrary. The depth should be one of ``CV_8U``, ``CV_16U``, ``CV_16S``,  ``CV_32F` or ``CV_64F``.
+    :param src: Source image. The number of channels can be arbitrary. The depth should be one of ``CV_8U``, ``CV_16U``, ``CV_16S``,  ``CV_32F`` or ``CV_64F``.
 
     :param dst: Destination image of the same size and type as  ``src`` .
 
@@ -1343,12 +1345,16 @@ Blurs an image and downsamples it.
 
     :param dst: output image; it has the specified size and the same type as ``src``.
 
-    :param dstsize: size of the output image; by default, it is computed as ``Size((src.cols+1)/2, (src.rows+1)/2)``, but in any case, the following conditions should be satisfied:
+    :param dstsize: size of the output image.
 
-        .. math::
+    :param borderType: Pixel extrapolation method (BORDER_CONSTANT don't supported). See  :ocv:func:`borderInterpolate` for details.
 
-            \begin{array}{l}
-            | \texttt{dstsize.width} *2-src.cols| \leq  2  \\ | \texttt{dstsize.height} *2-src.rows| \leq  2 \end{array}
+By default, size of the output image is computed as ``Size((src.cols+1)/2, (src.rows+1)/2)``, but in any case, the following conditions should be satisfied:
+
+.. math::
+
+    \begin{array}{l}
+    | \texttt{dstsize.width} *2-src.cols| \leq  2  \\ | \texttt{dstsize.height} *2-src.rows| \leq  2 \end{array}
 
 The function performs the downsampling step of the Gaussian pyramid construction. First, it convolves the source image with the kernel:
 
@@ -1357,8 +1363,6 @@ The function performs the downsampling step of the Gaussian pyramid construction
     \frac{1}{256} \begin{bmatrix} 1 & 4 & 6 & 4 & 1  \\ 4 & 16 & 24 & 16 & 4  \\ 6 & 24 & 36 & 24 & 6  \\ 4 & 16 & 24 & 16 & 4  \\ 1 & 4 & 6 & 4 & 1 \end{bmatrix}
 
 Then, it downsamples the image by rejecting even rows and columns.
-
-
 
 pyrUp
 -----
@@ -1376,12 +1380,16 @@ Upsamples an image and then blurs it.
 
     :param dst: output image. It has the specified size and the same type as  ``src`` .
 
-    :param dstsize: size of the output image; by default, it is computed as ``Size(src.cols*2, (src.rows*2)``, but in any case, the following conditions should be satisfied:
+    :param dstsize: size of the output image.
 
-        .. math::
+    :param borderType: Pixel extrapolation method (only BORDER_DEFAULT supported). See  :ocv:func:`borderInterpolate` for details.
 
-            \begin{array}{l}
-            | \texttt{dstsize.width} -src.cols*2| \leq  ( \texttt{dstsize.width}   \mod  2)  \\ | \texttt{dstsize.height} -src.rows*2| \leq  ( \texttt{dstsize.height}   \mod  2) \end{array}
+By default, size of the output image is computed as ``Size(src.cols*2, (src.rows*2)``, but in any case, the following conditions should be satisfied:
+
+.. math::
+
+    \begin{array}{l}
+    | \texttt{dstsize.width} -src.cols*2| \leq  ( \texttt{dstsize.width}   \mod  2)  \\ | \texttt{dstsize.height} -src.rows*2| \leq  ( \texttt{dstsize.height}   \mod  2) \end{array}
 
 The function performs the upsampling step of the Gaussian pyramid construction, though it can actually be used to construct the Laplacian pyramid. First, it upsamples the source image by injecting even zero rows and columns and then convolves the result with the same kernel as in
 :ocv:func:`pyrDown`  multiplied by 4.
