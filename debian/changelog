@@ -5,7 +5,7 @@ opencv (2.4.11+dfsg-1) unstable; urgency=medium
     - Bumped standards-version to 3.9.6.
   * Remove image files of Lena (Closes: #794856)
 
- -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Wed, 06 May 2015 06:20:14 +0900
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Wed, 09 Dec 2015 00:36:05 +0900
 
 opencv (2.4.9.1+dfsg-1.2) unstable; urgency=medium
 
