@@ -239,7 +239,7 @@ Line( Mat& img, Point pt1, Point pt2,
 {
     if( connectivity == 0 )
         connectivity = 8;
-    if( connectivity == 1 )
+    else if( connectivity == 1 )
         connectivity = 4;
 
     LineIterator iterator(img, pt1, pt2, connectivity, true);
@@ -288,14 +288,14 @@ LineAA( Mat& img, Point pt1, Point pt2, const void* color )
     int x_step, y_step;
     int i, j;
     int ep_table[9];
-    int cb = ((uchar*)color)[0], cg = ((uchar*)color)[1], cr = ((uchar*)color)[2];
-    int _cb, _cg, _cr;
+    int cb = ((uchar*)color)[0], cg = ((uchar*)color)[1], cr = ((uchar*)color)[2], ca = ((uchar*)color)[3];
+    int _cb, _cg, _cr, _ca;
     int nch = img.channels();
     uchar* ptr = img.data;
     size_t step = img.step;
     Size size = img.size();
 
-    if( !((nch == 1 || nch == 3) && img.depth() == CV_8U) )
+    if( !((nch == 1 || nch == 3 || nch == 4) && img.depth() == CV_8U) )
     {
         Line(img, pt1, pt2, color);
         return;
@@ -468,7 +468,7 @@ LineAA( Mat& img, Point pt1, Point pt2, const void* color )
         }
         #undef ICV_PUT_POINT
     }
-    else
+    else if (nch == 1)
     {
         #define  ICV_PUT_POINT()            \
         {                                   \
@@ -531,6 +531,89 @@ LineAA( Mat& img, Point pt1, Point pt2, const void* color )
                 ICV_PUT_POINT();
 
                 tptr++;
+                a = (ep_corr * FilterTable[63 - dist] >> 8) & 0xff;
+                ICV_PUT_POINT();
+                ICV_PUT_POINT();
+
+                pt1.x += x_step;
+                ptr += step;
+                scount++;
+                ecount--;
+            }
+        }
+        #undef ICV_PUT_POINT
+    }
+    else
+    {
+        #define  ICV_PUT_POINT()            \
+        {                                   \
+            _cb = tptr[0];                  \
+            _cb += ((cb - _cb)*a + 127)>> 8;\
+            _cg = tptr[1];                  \
+            _cg += ((cg - _cg)*a + 127)>> 8;\
+            _cr = tptr[2];                  \
+            _cr += ((cr - _cr)*a + 127)>> 8;\
+            _ca = tptr[3];                  \
+            _ca += ((ca - _ca)*a + 127)>> 8;\
+            tptr[0] = (uchar)_cb;           \
+            tptr[1] = (uchar)_cg;           \
+            tptr[2] = (uchar)_cr;           \
+            tptr[3] = (uchar)_ca;           \
+        }
+        if( ax > ay )
+        {
+            ptr += (pt1.x >> XY_SHIFT) * 4;
+
+            while( ecount >= 0 )
+            {
+                uchar *tptr = ptr + ((pt1.y >> XY_SHIFT) - 1) * step;
+
+                int ep_corr = ep_table[(((scount >= 2) + 1) & (scount | 2)) * 3 +
+                                       (((ecount >= 2) + 1) & (ecount | 2))];
+                int a, dist = (pt1.y >> (XY_SHIFT - 5)) & 31;
+
+                a = (ep_corr * FilterTable[dist + 32] >> 8) & 0xff;
+                ICV_PUT_POINT();
+                ICV_PUT_POINT();
+
+                tptr += step;
+                a = (ep_corr * FilterTable[dist] >> 8) & 0xff;
+                ICV_PUT_POINT();
+                ICV_PUT_POINT();
+
+                tptr += step;
+                a = (ep_corr * FilterTable[63 - dist] >> 8) & 0xff;
+                ICV_PUT_POINT();
+                ICV_PUT_POINT();
+
+                pt1.y += y_step;
+                ptr += 4;
+                scount++;
+                ecount--;
+            }
+        }
+        else
+        {
+            ptr += (pt1.y >> XY_SHIFT) * step;
+
+            while( ecount >= 0 )
+            {
+                uchar *tptr = ptr + ((pt1.x >> XY_SHIFT) - 1) * 4;
+
+                int ep_corr = ep_table[(((scount >= 2) + 1) & (scount | 2)) * 3 +
+                                       (((ecount >= 2) + 1) & (ecount | 2))];
+                int a, dist = (pt1.x >> (XY_SHIFT - 5)) & 31;
+
+                a = (ep_corr * FilterTable[dist + 32] >> 8) & 0xff;
+                ICV_PUT_POINT();
+                ICV_PUT_POINT();
+
+                tptr += step;
+                a = (ep_corr * FilterTable[dist] >> 8) & 0xff;
+                ICV_PUT_POINT();
+                ICV_PUT_POINT();
+
+                tptr += step;
                 a = (ep_corr * FilterTable[63 - dist] >> 8) & 0xff;
                 ICV_PUT_POINT();
                 ICV_PUT_POINT();
@@ -1188,10 +1271,15 @@ FillEdgeCollection( Mat& img, vector<PolyEdge>& edges, const void* color )
     {
         PolyEdge& e1 = edges[i];
         assert( e1.y0 < e1.y1 );
+        // Determine x-coordinate of the end of the edge.
+        // (This is not necessary x-coordinate of any vertex in the array.)
+        int x1 = e1.x + (e1.y1 - e1.y0) * e1.dx;
         y_min = std::min( y_min, e1.y0 );
         y_max = std::max( y_max, e1.y1 );
         x_min = std::min( x_min, e1.x );
         x_max = std::max( x_max, e1.x );
+        x_min = std::min( x_min, x1 );
+        x_max = std::max( x_max, x1 );
     }
 
     if( y_max < 0 || y_min >= size.height || x_max < 0 || x_min >= (size.width<<XY_SHIFT) )
@@ -1842,7 +1930,11 @@ static const int HersheyComplex[] = {
 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026, 2223, 2084,
 2224, 2247, 587, 2249, 2101, 2102, 2103, 2104, 2105, 2106, 2107, 2108, 2109, 2110, 2111,
 2112, 2113, 2114, 2115, 2116, 2117, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 2126,
-2225, 2229, 2226, 2246 };
+2225, 2229, 2226, 2246, 2801, 2802, 2803, 2804, 2805, 2806, 2807, 2808, 2809, 2810, 2811,
+2812, 2813, 2814, 2815, 2816, 2817, 2818, 2819, 2820, 2821, 2822, 2823, 2824, 2825, 2826,
+2827, 2828, 2829, 2830, 2831, 2832, 2901, 2902, 2903, 2904, 2905, 2906, 2907, 2908, 2909,
+2910, 2911, 2912, 2913, 2914, 2915, 2916, 2917, 2918, 2919, 2920, 2921, 2922, 2923, 2924,
+2925, 2926, 2927, 2928, 2929, 2930, 2931, 2932};
 
 static const int HersheyComplexItalic[] = {
 (9 + 12*16) + FONT_ITALIC_ALPHA + FONT_ITALIC_DIGIT + FONT_ITALIC_PUNCT +
@@ -1934,6 +2026,49 @@ static const int* getFontData(int fontFace)
     return ascii;
 }
 
+inline void readCheck(int &c, int &i, const string &text, int fontFace)
+{
+
+    int leftBoundary = ' ', rightBoundary = 127;
+
+    if(c >= 0x80 && fontFace == FONT_HERSHEY_COMPLEX)
+    {
+        if(c == 0xD0 && (uchar)text[i + 1] >= 0x90 && (uchar)text[i + 1] <= 0xBF)
+        {
+            c = (uchar)text[++i] - 17;
+            leftBoundary = 127;
+            rightBoundary = 175;
+        }
+        else if(c == 0xD1 && (uchar)text[i + 1] >= 0x80 && (uchar)text[i + 1] <= 0x8F)
+        {
+            c = (uchar)text[++i] + 47;
+            leftBoundary = 175;
+            rightBoundary = 191;
+        }
+        else
+        {
+            if(c >= 0xC0 && text[i+1] != 0) //2 bytes utf
+                i++;
+
+            if(c >= 0xE0 && text[i+1] != 0) //3 bytes utf
+                i++;
+
+            if(c >= 0xF0 && text[i+1] != 0) //4 bytes utf
+                i++;
+
+            if(c >= 0xF8 && text[i+1] != 0) //5 bytes utf
+                i++;
+
+            if(c >= 0xFC && text[i+1] != 0) //6 bytes utf
+                i++;
+
+            c = '?';
+        }
+    }
+
+    if(c >= rightBoundary || c < leftBoundary)
+        c = '?';
+}
 
 void putText( Mat& img, const string& text, Point org,
               int fontFace, double fontScale, Scalar color,
@@ -1965,8 +2100,7 @@ void putText( Mat& img, const string& text, Point org,
         int c = (uchar)text[i];
         Point p;
 
-        if( c >= 127 || c < ' ' )
-            c = '?';
+        readCheck(c, i, text, fontFace);
 
         const char* ptr = faces[ascii[(c-' ')+1]];
         p.x = (uchar)ptr[0] - 'R';
@@ -2013,8 +2147,7 @@ Size getTextSize( const string& text, int fontFace, double fontScale, int thickn
         int c = (uchar)text[i];
         Point p;
 
-        if( c >= 127 || c < ' ' )
-            c = '?';
+        readCheck(c, i, text, fontFace);
 
         const char* ptr = faces[ascii[(c-' ')+1]];
         p.x = (uchar)ptr[0] - 'R';

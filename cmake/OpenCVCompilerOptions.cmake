@@ -112,6 +112,10 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     add_extra_compiler_option(-march=i686)
   endif()
 
+  if(APPLE)
+    add_extra_compiler_option(-Wno-semicolon-before-method-body)
+  endif()
+
   # Other optimizations
   if(ENABLE_OMIT_FRAME_POINTER)
     add_extra_compiler_option(-fomit-frame-pointer)
@@ -140,11 +144,11 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   # SSE3 and further should be disabled under MingW because it generates compiler errors
   if(NOT MINGW)
     if(ENABLE_AVX)
-      ocv_check_flag_support(CXX "-mavx" _varname)
+      add_extra_compiler_option("-mavx")
     endif()
 
     if(ENABLE_AVX2)
-      ocv_check_flag_support(CXX "-mavx2" _varname)
+      add_extra_compiler_option("-mavx2")
     endif()
 
     # GCC depresses SSEx instructions when -mavx is used. Instead, it generates new AVX instructions or AVX equivalence for all SSEx instructions when needed.
@@ -254,7 +258,7 @@ if(MSVC)
 endif()
 
 # Extra link libs if the user selects building static libs:
-if(NOT BUILD_SHARED_LIBS AND CMAKE_COMPILER_IS_GNUCXX AND NOT ANDROID)
+if(NOT BUILD_SHARED_LIBS AND ((CMAKE_COMPILER_IS_GNUCXX AND NOT ANDROID) OR QNX))
   # Android does not need these settings because they are already set by toolchain file
   set(OPENCV_LINKER_LIBS ${OPENCV_LINKER_LIBS} stdc++)
   set(OPENCV_EXTRA_FLAGS "-fPIC ${OPENCV_EXTRA_FLAGS}")

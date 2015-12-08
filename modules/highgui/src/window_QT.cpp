@@ -117,7 +117,7 @@ CV_IMPL void cvAddText(const CvArr* img, const char* text, CvPoint org, CvFont* 
         "putText",
         autoBlockingConnection(),
         Q_ARG(void*, (void*) img),
-        Q_ARG(QString,QString(text)),
+        Q_ARG(QString,QString::fromUtf8(text)),
         Q_ARG(QPoint, QPoint(org.x,org.y)),
         Q_ARG(void*,(void*) font));
 }
@@ -640,6 +640,19 @@ CV_IMPL void cvSetTrackbarPos(const char* name_bar, const char* window_name, int
 
     if (t)
         t->slider->setValue(pos);
+}
+
+
+CV_IMPL void cvSetTrackbarMax(const char* name_bar, const char* window_name, int maxval)
+{
+    if (maxval >= 0)
+    {
+        QPointer<CvTrackbar> t = icvFindTrackBarByName(name_bar, window_name);
+        if (t)
+        {
+            t->slider->setMaximum(maxval);
+        }
+    }
 }
 
 

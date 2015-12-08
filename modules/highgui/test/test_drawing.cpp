@@ -75,11 +75,11 @@ void CV_DrawingTest::run( int )
     }
     else
     {
-        float err = (float)norm( testImg, valImg, CV_RELATIVE_L1 );
-        float Eps = 0.9f;
+        float err = (float)norm( testImg, valImg, NORM_L1 );
+        float Eps = 1;
         if( err > Eps)
         {
-            ts->printf( ts->LOG, "CV_RELATIVE_L1 between testImg and valImg is equal %f (larger than %f)\n", err, Eps );
+            ts->printf( ts->LOG, "NORM_L1 between testImg and valImg is equal %f (larger than %f)\n", err, Eps );
             ts->set_failed_test_info(cvtest::TS::FAIL_BAD_ACCURACY);
         }
         else
@@ -261,6 +261,7 @@ void CV_DrawingTest_C::draw( Mat& _img )
     polyline[3] = cvPoint(0, imgSize.height);
     CvPoint* pts = &polyline[0];
     int n = (int)polyline.size();
+    int actualSize = 0;
     cvFillPoly( &img, &pts, &n, 1, cvScalar(255,255,255) );
 
     CvPoint p1 = cvPoint(1,1), p2 = cvPoint(3,3);
@@ -290,7 +291,8 @@ void CV_DrawingTest_C::draw( Mat& _img )
     polyline.resize(9);
     pts = &polyline[0];
     n = (int)polyline.size();
-    assert( cvEllipse2Poly( cvPoint(430,180), cvSize(100,150), 30, 0, 150, &polyline[0], 20 ) == n );
+    actualSize = cvEllipse2Poly( cvPoint(430,180), cvSize(100,150), 30, 0, 150, &polyline[0], 20 );
+    CV_Assert(actualSize == n);
     cvPolyLine( &img, &pts, &n, 1, false, cvScalar(0,0,150), 4, CV_AA );
     n = 0;
     for( vector<CvPoint>::const_iterator it = polyline.begin(); n < (int)polyline.size()-1; ++it, n++ )
@@ -301,7 +303,8 @@ void CV_DrawingTest_C::draw( Mat& _img )
     polyline.resize(19);
     pts = &polyline[0];
     n = (int)polyline.size();
-    assert( cvEllipse2Poly( cvPoint(500,300), cvSize(50,80), 0, 0, 180, &polyline[0], 10 ) == n );
+    actualSize = cvEllipse2Poly( cvPoint(500,300), cvSize(50,80), 0, 0, 180, &polyline[0], 10 );
+    CV_Assert(actualSize == n);
     cvPolyLine( &img, &pts, &n, 1, true, Scalar(100,200,100), 20 );
     cvFillConvexPoly( &img, pts, n, cvScalar(0, 80, 0) );
 
@@ -444,3 +447,81 @@ protected:
 };
 
 TEST(Highgui_Drawing, fillconvexpoly_clipping) { CV_FillConvexPolyTest test; test.safe_run(); }
+
+class CV_DrawingTest_UTF8 : public cvtest::BaseTest
+{
+public:
+    CV_DrawingTest_UTF8() {}
+    ~CV_DrawingTest_UTF8() {}
+protected:
+    void run(int)
+    {
+        vector<string> lines;
+        lines.push_back("abcdefghijklmnopqrstuvwxyz1234567890");
+        // cyrillic letters small
+        lines.push_back("\xD0\xB0\xD0\xB1\xD0\xB2\xD0\xB3\xD0\xB4\xD0\xB5\xD1\x91\xD0\xB6\xD0\xB7"
+                        "\xD0\xB8\xD0\xB9\xD0\xBA\xD0\xBB\xD0\xBC\xD0\xBD\xD0\xBE\xD0\xBF\xD1\x80"
+                        "\xD1\x81\xD1\x82\xD1\x83\xD1\x84\xD1\x85\xD1\x86\xD1\x87\xD1\x88\xD1\x89"
+                        "\xD1\x8A\xD1\x8B\xD1\x8C\xD1\x8D\xD1\x8E\xD1\x8F");
+        // cyrillic letters capital
+        lines.push_back("\xD0\x90\xD0\x91\xD0\x92\xD0\x93\xD0\x94\xD0\x95\xD0\x81\xD0\x96\xD0\x97"
+                        "\xD0\x98\xD0\x99\xD0\x9A\xD0\x9B\xD0\x9C\xD0\x9D\xD0\x9E\xD0\x9F\xD0\xA0"
+                        "\xD0\xA1\xD0\xA2\xD0\xA3\xD0\xA4\xD0\xA5\xD0\xA6\xD0\xA7\xD0\xA8\xD0\xA9"
+                        "\xD0\xAA\xD0\xAB\xD0\xAC\xD0\xAD\xD0\xAE\xD0\xAF");
+        // bounds
+        lines.push_back("-\xD0\x80-\xD0\x8E-\xD0\x8F-");
+        lines.push_back("-\xD1\x90-\xD1\x91-\xD1\xBF-");
+        // bad utf8
+        lines.push_back("-\x81-\x82-\x83-");
+        lines.push_back("--\xF0--");
+        lines.push_back("-\xF0");
+
+        vector<int> fonts;
+        fonts.push_back(FONT_HERSHEY_SIMPLEX);
+        fonts.push_back(FONT_HERSHEY_PLAIN);
+        fonts.push_back(FONT_HERSHEY_DUPLEX);
+        fonts.push_back(FONT_HERSHEY_COMPLEX);
+        fonts.push_back(FONT_HERSHEY_TRIPLEX);
+        fonts.push_back(FONT_HERSHEY_COMPLEX_SMALL);
+        fonts.push_back(FONT_HERSHEY_SCRIPT_SIMPLEX);
+        fonts.push_back(FONT_HERSHEY_SCRIPT_COMPLEX);
+
+        vector<Mat> results;
+        Size bigSize(0, 0);
+        for (vector<int>::const_iterator font = fonts.begin(); font != fonts.end(); ++font)
+        {
+            for (int italic = 0; italic <= FONT_ITALIC; italic += FONT_ITALIC)
+            {
+                for (vector<string>::const_iterator line = lines.begin(); line != lines.end(); ++line)
+                {
+                    const float fontScale = 1;
+                    const int thickness = 1;
+                    const Scalar color(20,20,20);
+                    int baseline = 0;
+
+                    Size textSize = getTextSize(*line, *font | italic, fontScale, thickness, &baseline);
+                    Point textOrg(0, textSize.height + 2);
+                    Mat img(textSize + Size(0, baseline), CV_8UC3, Scalar(255, 255, 255));
+                    putText(img, *line, textOrg, *font | italic, fontScale, color, thickness, CV_AA);
+
+                    results.push_back(img);
+                    bigSize.width = max(bigSize.width, img.size().width);
+                    bigSize.height += img.size().height + 1;
+                }
+            }
+        }
+
+        int shift = 0;
+        Mat result(bigSize, CV_8UC3, Scalar(100, 100, 100));
+        for (vector<Mat>::const_iterator img = results.begin(); img != results.end(); ++img)
+        {
+            Rect roi(Point(0, shift), img->size());
+            Mat sub(result, roi);
+            img->copyTo(sub);
+            shift += img->size().height + 1;
+        }
+        // imwrite("all_fonts.png", result);
+    }
+};
+
+TEST(Highgui_Drawing, utf8_support) { CV_DrawingTest_UTF8 test; test.safe_run(); }

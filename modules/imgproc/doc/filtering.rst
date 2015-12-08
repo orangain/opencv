@@ -418,7 +418,7 @@ Applies the adaptive bilateral filter to an image.
 
 .. ocv:function:: void adaptiveBilateralFilter( InputArray src, OutputArray dst, Size ksize, double sigmaSpace, double maxSigmaColor = 20.0, Point anchor=Point(-1, -1), int borderType=BORDER_DEFAULT )
 
-.. ocv:pyfunction:: cv2.adaptiveBilateralFilter(src, ksize, sigmaSpace[, dst[, anchor[, borderType]]]) -> dst
+.. ocv:pyfunction:: cv2.adaptiveBilateralFilter(src, ksize, sigmaSpace[, dst[, maxSigmaColor[, anchor[, borderType]]]]) -> dst
 
     :param src: The source image
 
@@ -1078,7 +1078,7 @@ The function computes and returns the
 
 .. math::
 
-    G_i= \alpha *e^{-(i-( \texttt{ksize} -1)/2)^2/(2* \texttt{sigma} )^2},
+    G_i= \alpha *e^{-(i-( \texttt{ksize} -1)/2)^2/(2* \texttt{sigma}^2 )},
 
 where
 :math:`i=0..\texttt{ksize}-1` and

@@ -15,19 +15,10 @@ endif()
 
 set(CMAKE_MODULE_PATH "${OpenCV_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
-foreach(var INCLUDE LIBRARY PROGRAM)
-  set(__old_frpm_${var} "${CMAKE_FIND_ROOT_PATH_MODE_${var}}")
-endforeach()
-
-set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY BOTH)
-set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE NEVER)
-
-find_package(CUDA 4.2 QUIET)
-
-foreach(var INCLUDE LIBRARY PROGRAM)
-  set(CMAKE_FIND_ROOT_PATH_MODE_${var} "${__old_frpm_${var}}")
-endforeach()
+if(ANDROID AND "${CUDA_VERSION}" VERSION_LESS "7.0")
+  set(CUDA_TARGET_OS_VARIANT "Android")
+endif()
+find_host_package(CUDA 4.2 QUIET)
 
 list(REMOVE_AT CMAKE_MODULE_PATH 0)
 
@@ -91,8 +82,13 @@ if(CUDA_FOUND)
 
   if(NOT DEFINED __cuda_arch_bin)
     if(ANDROID)
-      set(__cuda_arch_bin "3.2")
-      set(__cuda_arch_ptx "")
+      if (ARM)
+        set(__cuda_arch_bin "3.2")
+        set(__cuda_arch_ptx "")
+      elseif(AARCH64)
+        set(__cuda_arch_bin "5.2")
+        set(__cuda_arch_ptx "")
+      endif()
     else()
       if(${CUDA_VERSION} VERSION_LESS "5.0")
         set(__cuda_arch_bin "1.1 1.2 1.3 2.0 2.1(2.0) 3.0")
@@ -154,7 +150,6 @@ if(CUDA_FOUND)
 
   if(ANDROID)
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-Xptxas;-dlcm=ca")
-    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-target-os-variant=Android")
   endif()
 
   message(STATUS "CUDA NVCC target flags: ${CUDA_NVCC_FLAGS}")

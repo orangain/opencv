@@ -37,6 +37,21 @@
 #
 # ===================================================================================
 
+# Search packages for host system instead of packages for target system.
+# in case of cross compilation thess macro should be defined by toolchain file
+
+if(NOT COMMAND find_host_package)
+    macro(find_host_package)
+        find_package(${ARGN})
+    endmacro()
+endif()
+
+if(NOT COMMAND find_host_program)
+    macro(find_host_program)
+        find_program(${ARGN})
+    endmacro()
+endif()
+
 if(NOT DEFINED OpenCV_MODULES_SUFFIX)
   if(ANDROID)
     string(REPLACE - _ OpenCV_MODULES_SUFFIX "_${ANDROID_NDK_ABI_NAME}")
@@ -46,6 +61,13 @@ if(NOT DEFINED OpenCV_MODULES_SUFFIX)
 endif()
 
 if(NOT TARGET opencv_core)
+  # Extract directory name from full path of the file currently being processed.
+  # Note that CMake 2.8.3 introduced CMAKE_CURRENT_LIST_DIR. We reimplement it
+  # for older versions of CMake to support these as well.
+  if(CMAKE_VERSION VERSION_LESS "2.8.3")
+    get_filename_component(CMAKE_CURRENT_LIST_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+  endif()
+
   include(${CMAKE_CURRENT_LIST_DIR}/OpenCVModules${OpenCV_MODULES_SUFFIX}.cmake)
 endif()
 
@@ -216,7 +238,7 @@ foreach(__opttype OPT DBG)
   # CUDA
   if(OpenCV_CUDA_VERSION)
     if(NOT CUDA_FOUND)
-      find_package(CUDA ${OpenCV_CUDA_VERSION} EXACT REQUIRED)
+      find_host_package(CUDA ${OpenCV_CUDA_VERSION} EXACT REQUIRED)
     else()
       if(NOT CUDA_VERSION_STRING VERSION_EQUAL OpenCV_CUDA_VERSION)
         message(FATAL_ERROR "OpenCV static library was compiled with CUDA ${OpenCV_CUDA_VERSION} support. Please, use the same version or rebuild OpenCV with CUDA ${CUDA_VERSION_STRING}")

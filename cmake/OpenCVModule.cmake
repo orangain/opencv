@@ -106,7 +106,6 @@ endmacro()
 #   ocv_add_module(yaom INTERNAL opencv_core opencv_highgui opencv_flann OPTIONAL opencv_gpu)
 macro(ocv_add_module _name)
   string(TOLOWER "${_name}" name)
-  string(REGEX REPLACE "^opencv_" "" ${name} "${name}")
   set(the_module opencv_${name})
 
   # the first pass - collect modules info, the second pass - create targets
@@ -617,9 +616,14 @@ macro(ocv_create_module)
 
   ocv_install_target(${the_module} EXPORT OpenCVModules
     RUNTIME DESTINATION ${OPENCV_BIN_INSTALL_PATH} COMPONENT libs
-    LIBRARY DESTINATION ${OPENCV_LIB_INSTALL_PATH} COMPONENT libs
+    LIBRARY DESTINATION ${OPENCV_LIB_INSTALL_PATH} COMPONENT libs NAMELINK_SKIP
     ARCHIVE DESTINATION ${OPENCV_LIB_INSTALL_PATH} COMPONENT dev
     )
+  get_target_property(_target_type ${the_module} TYPE)
+  if("${_target_type}" STREQUAL "SHARED_LIBRARY")
+    install(TARGETS ${the_module}
+      LIBRARY DESTINATION ${OPENCV_LIB_INSTALL_PATH} COMPONENT dev NAMELINK_ONLY)
+  endif()
 
   # only "public" headers need to be installed
   if(OPENCV_MODULE_${the_module}_HEADERS AND ";${OPENCV_MODULES_PUBLIC};" MATCHES ";${the_module};")
@@ -702,7 +706,7 @@ macro(__ocv_parse_test_sources tests_type)
       set(__file_group_sources "")
     elseif(arg STREQUAL "DEPENDS_ON")
       set(__currentvar "OPENCV_TEST_${the_module}_DEPS")
-    elseif("${__currentvar}" STREQUAL "__file_group_sources" AND NOT __file_group_name)
+    elseif(" ${__currentvar}" STREQUAL " __file_group_sources" AND NOT __file_group_name) # spaces to avoid CMP0054
       set(__file_group_name "${arg}")
     else()
       list(APPEND ${__currentvar} "${arg}")
@@ -756,6 +760,22 @@ function(ocv_add_perf_tests)
 
       ocv_add_precompiled_headers(${the_target})
 
+      if(CMAKE_VERSION VERSION_GREATER "2.8" AND OPENCV_TEST_DATA_PATH)
+        add_test(NAME ${the_target} COMMAND ${the_target} --perf_min_samples=1 --perf_force_samples=1 --perf_verify_sanity)
+
+        get_filename_component(cur_modules_loc "${CMAKE_CURRENT_SOURCE_DIR}/.." ABSOLUTE)
+        get_filename_component(default_modules_loc "${CMAKE_SOURCE_DIR}/modules" ABSOLUTE)
+        if("${cur_modules_loc}" STREQUAL "${default_modules_loc}")
+          set(test_category "Public")
+        else()
+          set(test_category "Extra")
+        endif()
+
+        set_tests_properties(${the_target} PROPERTIES
+          LABELS "${test_category};Sanity"
+          ENVIRONMENT "OPENCV_TEST_DATA_PATH=${OPENCV_TEST_DATA_PATH}")
+      endif()
+
     else(OCV_DEPENDENCIES_FOUND)
       # TODO: warn about unsatisfied dependencies
     endif(OCV_DEPENDENCIES_FOUND)
@@ -807,11 +827,24 @@ function(ocv_add_accuracy_tests)
         set_target_properties(${the_target} PROPERTIES FOLDER "tests accuracy")
       endif()
 
-      enable_testing()
-      get_target_property(LOC ${the_target} LOCATION)
-      add_test(${the_target} "${LOC}")
-
       ocv_add_precompiled_headers(${the_target})
+
+      if(CMAKE_VERSION VERSION_GREATER "2.8" AND OPENCV_TEST_DATA_PATH AND NOT "${the_target}" MATCHES "opencv_test_viz")
+        add_test(NAME ${the_target} COMMAND ${the_target})
+
+        get_filename_component(cur_modules_loc "${CMAKE_CURRENT_SOURCE_DIR}/.." ABSOLUTE)
+        get_filename_component(default_modules_loc "${CMAKE_SOURCE_DIR}/modules" ABSOLUTE)
+        if("${cur_modules_loc}" STREQUAL "${default_modules_loc}")
+          set(test_category "Public")
+        else()
+          set(test_category "Extra")
+        endif()
+
+        set_tests_properties(${the_target} PROPERTIES
+          LABELS "${test_category};Accuracy"
+          ENVIRONMENT "OPENCV_TEST_DATA_PATH=${OPENCV_TEST_DATA_PATH}")
+      endif()
+
     else(OCV_DEPENDENCIES_FOUND)
       # TODO: warn about unsatisfied dependencies
     endif(OCV_DEPENDENCIES_FOUND)
@@ -860,7 +893,7 @@ function(ocv_add_samples)
     file(GLOB sample_files "${samples_path}/*")
     install(FILES ${sample_files}
             DESTINATION ${OPENCV_SAMPLES_SRC_INSTALL_PATH}/${module_id}
-            PERMISSIONS OWNER_READ GROUP_READ WORLD_READ COMPONENT samples)
+            PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ COMPONENT samples)
   endif()
 endfunction()
 
@@ -891,7 +924,7 @@ macro(__ocv_track_module_link_dependencies the_module optkind)
         if(__resolved_deps MATCHES "(^|;)${__rdep}(;|$)")
           #all dependencies of this module are already resolved
           list(APPEND ${the_module}_MODULE_DEPS_${optkind} "${__dep}")
-        else()
+        elseif(TARGET ${__dep})
           get_target_property(__module_type ${__dep} TYPE)
           if(__module_type STREQUAL "STATIC_LIBRARY")
             if(NOT DEFINED ${__dep}_LIB_DEPENDS_${optkind})
@@ -899,9 +932,9 @@ macro(__ocv_track_module_link_dependencies the_module optkind)
             endif()
             list(INSERT __mod_depends 0 ${${__dep}_LIB_DEPENDS_${optkind}} ${__dep})
             list(APPEND __resolved_deps "${__dep}")
-          elseif(NOT __module_type)
-            list(APPEND  ${the_module}_EXTRA_DEPS_${optkind} "${__dep}")
           endif()
+        else()
+          list(APPEND  ${the_module}_EXTRA_DEPS_${optkind} "${__dep}")
         endif()
       #else()
        # get_target_property(__dep_location "${__dep}" LOCATION)

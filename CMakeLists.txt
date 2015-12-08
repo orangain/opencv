@@ -47,11 +47,18 @@ if(POLICY CMP0022)
   cmake_policy(SET CMP0022 OLD)
 endif()
 
+if(POLICY CMP0026)
+  # silence cmake 3.0+ warnings about reading LOCATION attribute
+  cmake_policy(SET CMP0026 OLD)
+endif()
+
 # must go before the project command
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Configs" FORCE)
 if(DEFINED CMAKE_BUILD_TYPE AND CMAKE_VERSION VERSION_GREATER "2.8")
   set_property( CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_CONFIGURATION_TYPES} )
 endif()
+
+enable_testing()
 
 project(OpenCV CXX C)
 
@@ -135,7 +142,7 @@ OCV_OPTION(WITH_NVCUVID        "Include NVidia Video Decoding library support"  
 OCV_OPTION(WITH_EIGEN          "Include Eigen2/Eigen3 support"               ON)
 OCV_OPTION(WITH_VFW            "Include Video for Windows support"           ON   IF WIN32 )
 OCV_OPTION(WITH_FFMPEG         "Include FFMPEG support"                      ON   IF (NOT ANDROID AND NOT IOS))
-OCV_OPTION(WITH_GSTREAMER      "Include Gstreamer support"                   ON   IF (UNIX AND NOT APPLE AND NOT ANDROID) )
+OCV_OPTION(WITH_GSTREAMER      "Include Gstreamer support"                   ON   IF (UNIX AND NOT ANDROID) )
 OCV_OPTION(WITH_GSTREAMER_0_10 "Enable Gstreamer 0.10 support (instead of 1.x)"   OFF )
 OCV_OPTION(WITH_GTK            "Include GTK support"                         ON   IF (UNIX AND NOT APPLE AND NOT ANDROID) )
 OCV_OPTION(WITH_IMAGEIO        "ImageIO support for OS X"                    OFF  IF APPLE )
@@ -219,8 +226,8 @@ OCV_OPTION(ENABLE_SSE41               "Enable SSE4.1 instructions"              
 OCV_OPTION(ENABLE_SSE42               "Enable SSE4.2 instructions"                               OFF  IF (CMAKE_COMPILER_IS_GNUCXX AND (X86 OR X86_64)) )
 OCV_OPTION(ENABLE_AVX                 "Enable AVX instructions"                                  OFF  IF ((MSVC OR CMAKE_COMPILER_IS_GNUCXX) AND (X86 OR X86_64)) )
 OCV_OPTION(ENABLE_AVX2                "Enable AVX2 instructions"                                 OFF  IF ((MSVC OR CMAKE_COMPILER_IS_GNUCXX) AND (X86 OR X86_64)) )
-OCV_OPTION(ENABLE_NEON                "Enable NEON instructions"                                 OFF  IF CMAKE_COMPILER_IS_GNUCXX AND ARM )
-OCV_OPTION(ENABLE_VFPV3               "Enable VFPv3-D32 instructions"                            OFF  IF CMAKE_COMPILER_IS_GNUCXX AND ARM )
+OCV_OPTION(ENABLE_NEON                "Enable NEON instructions"                                 AARCH64 IF CMAKE_COMPILER_IS_GNUCXX AND (ARM OR AARCH64))
+OCV_OPTION(ENABLE_VFPV3               "Enable VFPv3-D32 instructions"                            AARCH64 IF CMAKE_COMPILER_IS_GNUCXX AND (ARM OR AARCH64))
 OCV_OPTION(ENABLE_NOISY_WARNINGS      "Show all warnings even if they are too noisy"             OFF )
 OCV_OPTION(OPENCV_WARNINGS_ARE_ERRORS "Treat warnings as errors"                                 OFF )
 OCV_OPTION(ENABLE_WINRT_MODE          "Build with Windows Runtime support"                       OFF  IF WIN32 )
@@ -440,6 +447,8 @@ if(UNIX)
       set(OPENCV_LINKER_LIBS ${OPENCV_LINKER_LIBS} dl m log)
     elseif(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD|NetBSD|DragonFly")
       set(OPENCV_LINKER_LIBS ${OPENCV_LINKER_LIBS} m pthread)
+    elseif(${CMAKE_SYSTEM_NAME} MATCHES "QNX")
+      set(OPENCV_LINKER_LIBS ${OPENCV_LINKER_LIBS} m)
     else()
       set(OPENCV_LINKER_LIBS ${OPENCV_LINKER_LIBS} dl m pthread rt)
     endif()
@@ -478,8 +487,13 @@ include(cmake/OpenCVFindLibsPerf.cmake)
 # ----------------------------------------------------------------------------
 
 # --- LATEX for pdf documentation ---
+unset(HAVE_DOXYGEN CACHE)
 if(BUILD_DOCS)
   include(cmake/OpenCVFindLATEX.cmake)
+  find_host_program(DOXYGEN_BUILD doxygen)
+  if (DOXYGEN_BUILD)
+    set(HAVE_DOXYGEN 1)
+  endif (DOXYGEN_BUILD)
 endif(BUILD_DOCS)
 
 # --- Python Support ---
@@ -599,28 +613,31 @@ include(cmake/OpenCVGenConfig.cmake)
 include(cmake/OpenCVGenInfoPlist.cmake)
 
 # Generate environment setup file
-if(INSTALL_TESTS AND OPENCV_TEST_DATA_PATH AND UNIX)
+if(INSTALL_TESTS AND OPENCV_TEST_DATA_PATH)
   if(ANDROID)
     get_filename_component(TEST_PATH ${OPENCV_TEST_INSTALL_PATH} DIRECTORY)
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/templates/opencv_run_all_tests_android.sh.in"
                    "${CMAKE_BINARY_DIR}/unix-install/opencv_run_all_tests.sh" @ONLY)
     install(PROGRAMS "${CMAKE_BINARY_DIR}/unix-install/opencv_run_all_tests.sh"
-            DESTINATION ${CMAKE_INSTALL_PREFIX} COMPONENT tests)
-  else()
+            DESTINATION . COMPONENT tests)
+  elseif(WIN32 OR UNIX)
     set(OPENCV_PYTHON_TESTS_LIST "")
     if(BUILD_opencv_python)
       file(GLOB py_tests modules/python/test/*.py)
       install(PROGRAMS ${py_tests} DESTINATION ${OPENCV_TEST_INSTALL_PATH} COMPONENT tests)
       set(OPENCV_PYTHON_TESTS_LIST "test2.py")
     endif()
-    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/templates/opencv_testing.sh.in"
-                   "${CMAKE_BINARY_DIR}/unix-install/opencv_testing.sh" @ONLY)
-    install(FILES "${CMAKE_BINARY_DIR}/unix-install/opencv_testing.sh"
-            DESTINATION /etc/profile.d/ COMPONENT tests)
-    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/templates/opencv_run_all_tests_unix.sh.in"
-                   "${CMAKE_BINARY_DIR}/unix-install/opencv_run_all_tests.sh" @ONLY)
-    install(PROGRAMS "${CMAKE_BINARY_DIR}/unix-install/opencv_run_all_tests.sh"
-            DESTINATION ${OPENCV_TEST_INSTALL_PATH} COMPONENT tests)
+    if(WIN32)
+        configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/templates/opencv_run_all_tests_windows.cmd.in"
+                       "${CMAKE_BINARY_DIR}/win-install/opencv_run_all_tests.cmd" @ONLY)
+        install(PROGRAMS "${CMAKE_BINARY_DIR}/win-install/opencv_run_all_tests.cmd"
+                DESTINATION ${OPENCV_TEST_INSTALL_PATH} COMPONENT tests)
+    else()
+        configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/templates/opencv_run_all_tests_unix.sh.in"
+                       "${CMAKE_BINARY_DIR}/unix-install/opencv_run_all_tests.sh" @ONLY)
+        install(PROGRAMS "${CMAKE_BINARY_DIR}/unix-install/opencv_run_all_tests.sh"
+                DESTINATION ${OPENCV_TEST_INSTALL_PATH} COMPONENT tests)
+    endif()
   endif()
 endif()
 
@@ -638,11 +655,11 @@ endif()
 if(ANDROID OR NOT UNIX)
   install(FILES ${OPENCV_LICENSE_FILE}
         PERMISSIONS OWNER_READ GROUP_READ WORLD_READ
-        DESTINATION ${CMAKE_INSTALL_PREFIX} COMPONENT libs)
+        DESTINATION . COMPONENT libs)
   if(OPENCV_README_FILE)
     install(FILES ${OPENCV_README_FILE}
             PERMISSIONS OWNER_READ GROUP_READ WORLD_READ
-            DESTINATION ${CMAKE_INSTALL_PREFIX} COMPONENT libs)
+            DESTINATION . COMPONENT libs)
   endif()
 endif()
 
@@ -1042,6 +1059,7 @@ if(BUILD_DOCS)
   endif()
   status("    Sphinx:"              HAVE_SPHINX              THEN "${SPHINX_BUILD} (ver ${SPHINX_VERSION})" ELSE NO)
   status("    PdfLaTeX compiler:"   PDFLATEX_COMPILER        THEN "${PDFLATEX_COMPILER}" ELSE NO)
+  status("    Doxygen:"             HAVE_DOXYGEN             THEN "YES (${DOXYGEN_BUILD})" ELSE NO)
 endif()
 
 # ========================== samples and tests ==========================

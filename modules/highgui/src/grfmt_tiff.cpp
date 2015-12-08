@@ -45,19 +45,26 @@
     (see otherlibs/_graphics/readme.txt for copyright notice)
 \****************************************************************************************/
 
+#include <stdarg.h>
+
 #include "precomp.hpp"
 #include "grfmt_tiff.hpp"
+
+#define int64 int64_tiff
+#define uint64 uint64_tiff
+
+#ifdef HAVE_TIFF
+# include "tiff.h"
+# include "tiffio.h"
+#endif
 
 namespace cv
 {
 static const char fmtSignTiffII[] = "II\x2a\x00";
-static const char fmtSignTiffMM[] = "MM\x00\x2a";
 
 #ifdef HAVE_TIFF
 
-#include "tiff.h"
-#include "tiffio.h"
-
+static const char fmtSignTiffMM[] = "MM\x00\x2a";
 static int grfmt_tiff_err_handler_init = 0;
 static void GrFmtSilentTIFFErrorHandler( const char*, const char*, va_list ) {}
 
@@ -210,10 +217,12 @@ bool  TiffDecoder::readData( Mat& img )
             if( tile_width0 <= 0 )
                 tile_width0 = m_width;
 
-            if( tile_height0 <= 0 )
+            if( tile_height0 <= 0 ||
+                (!is_tiled && tile_height0 == std::numeric_limits<uint32>::max()) )
                 tile_height0 = m_height;
 
-            AutoBuffer<uchar> _buffer( size_t(8) * tile_height0*tile_width0);
+            const size_t buffer_size = bpp * ncn * tile_height0 * tile_width0;
+            AutoBuffer<uchar> _buffer( buffer_size );
             uchar* buffer = _buffer;
             ushort* buffer16 = (ushort*)buffer;
             float* buffer32 = (float*)buffer;
@@ -268,9 +277,9 @@ bool  TiffDecoder::readData( Mat& img )
                         case 16:
                         {
                             if( !is_tiled )
-                                ok = (int)TIFFReadEncodedStrip( tif, tileidx, (uint32*)buffer, (tsize_t)-1 ) >= 0;
+                                ok = (int)TIFFReadEncodedStrip( tif, tileidx, (uint32*)buffer, buffer_size ) >= 0;
                             else
-                                ok = (int)TIFFReadEncodedTile( tif, tileidx, (uint32*)buffer, (tsize_t)-1 ) >= 0;
+                                ok = (int)TIFFReadEncodedTile( tif, tileidx, (uint32*)buffer, buffer_size ) >= 0;
 
                             if( !ok )
                             {
@@ -324,9 +333,9 @@ bool  TiffDecoder::readData( Mat& img )
                         case 64:
                         {
                             if( !is_tiled )
-                                ok = (int)TIFFReadEncodedStrip( tif, tileidx, buffer, (tsize_t)-1 ) >= 0;
+                                ok = (int)TIFFReadEncodedStrip( tif, tileidx, buffer, buffer_size ) >= 0;
                             else
-                                ok = (int)TIFFReadEncodedTile( tif, tileidx, buffer, (tsize_t)-1 ) >= 0;
+                                ok = (int)TIFFReadEncodedTile( tif, tileidx, buffer, buffer_size ) >= 0;
 
                             if( !ok || ncn != 1 )
                             {
