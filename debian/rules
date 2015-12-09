@@ -35,13 +35,11 @@ CMAKE_FLAGS = \
 	-DCMAKE_VERBOSE_MAKEFILE=ON \
 	-DCMAKE_C_FLAGS_RELEASE="$(CFLAGS)" \
 	-DCMAKE_CXX_FLAGS_RELEASE="$(CXXFLAGS)" \
-	-DCMAKE_SHARED_LINKER_FLAGS_RELEASE="$(LDFLAGS)" \
 	-DCMAKE_EXE_LINKER_FLAGS_RELEASE="$(LDFLAGS)" \
 	-DCMAKE_BUILD_TYPE=Release	\
 	-DBUILD_EXAMPLES=ON	\
 	-DINSTALL_C_EXAMPLES=ON	\
 	-DINSTALL_PYTHON_EXAMPLES=ON	\
-	-DBUILD_NEW_PYTHON_SUPPORT=ON	\
 	-DWITH_FFMPEG=ON	\
 	-DWITH_GSTREAMER=OFF	\
 	-DWITH_GTK=ON	\
@@ -54,15 +52,18 @@ CMAKE_FLAGS = \
 	-DWITH_PVAPI=ON	\
 	-DWITH_UNICAP=OFF	\
 	-DWITH_EIGEN=ON \
+	-DWITH_VTK=ON \
+	-DWITH_GDAL=ON \
 	-DWITH_XINE=OFF	\
 	-DBUILD_TESTS=OFF \
 	-DCMAKE_SKIP_RPATH=ON \
 	-DWITH_CUDA=OFF \
-	$(CMAKE_ARCH_FLAGS)
-# -DOPENCL_INCLUDE_DIR:PATH="/usr/include/CL/"
+	-DWITH_IPP=OFF \
+	-DOPENCL_INCLUDE_DIR:PATH="/usr/include/CL/" \
+	$(CMAKE_ARCH_FLAGS) 
 
 %:
-	dh $@ --buildsystem=cmake --with python2 --with javahelper
+	dh $@ --buildsystem=cmake --with python2 --with javahelper --parallel
 
 override_dh_clean:
 	rm -rf modules/python/src2/hdr_parser.pyc
@@ -70,9 +71,28 @@ override_dh_clean:
 	rm -rf modules/refman.rst
 
 	dh_clean -O--buildsystem=cmake
+	-rm -rf obj-$(DEB_HOST_MULTIARCH)-static
+	-rm -rf modules/python/src2/__pycache__/hdr_parser.cpython-34.pyc
 
-override_dh_auto_configure:
-	dh_auto_configure -- $(CMAKE_FLAGS)
+override_dh_auto_configure: configure_dyn configure_static
+configure_dyn:
+	dh_auto_configure -B obj-$(DEB_HOST_MULTIARCH) \
+		-- $(CMAKE_FLAGS) \
+		-DCMAKE_SHARED_LINKER_FLAGS_RELEASE="$(LDFLAGS)" \
+		-DBUILD_SHARED_LIBS=ON -DBUILD_DOCS=ON
+
+configure_static:
+	dh_auto_configure -B obj-$(DEB_HOST_MULTIARCH)-static \
+		-- $(CMAKE_FLAGS) \
+		-DBUILD_SHARED_LIBS=OFF -DBUILD_DOCS=OFF
+
+override_dh_auto_build: build_dyn build_static
+	
+build_dyn:
+	dh_auto_build -B obj-$(DEB_HOST_MULTIARCH)
+	dh_auto_build -B obj-$(DEB_HOST_MULTIARCH) -- doxygen
+build_static:
+	dh_auto_build -B obj-$(DEB_HOST_MULTIARCH)-static
 
 override_dh_install:
 	-rm --verbose -rf debian/tmp/usr/share/opencv/samples/octave
@@ -83,11 +103,32 @@ override_dh_install:
 	sed -i -e "s@share\/OpenCV\/java\/@lib\/jni\/@g" \
 		debian/tmp/usr/share/OpenCV/OpenCVModules-release.cmake
 
-	for f in $$(ls obj-*/lib/libopencv_*_s.a); do \
-		cp --verbose --preserve=mode $$f debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/$$(basename $$f _s.a).a; done
+	for f in $$(ls obj-*/lib/libopencv_*.a); do \
+		cp --verbose --preserve=mode $$f debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/; done
 	dh_install -O--buildsystem=cmake --list-missing
 
 override_dh_fixperms-indep:
 	dh_fixperms
-	chmod 644 $(CURDIR)/debian/opencv-doc/usr/share/doc/opencv-doc/examples/python/*.py
-	chmod 644 $(CURDIR)/debian/opencv-doc/usr/share/doc/opencv-doc/examples/python2/*.py
+	#chmod 644 $(CURDIR)/debian/opencv-doc/usr/share/doc/opencv-doc/examples/python/*.py
+	#chmod 644 $(CURDIR)/debian/opencv-doc/usr/share/doc/opencv-doc/examples/python2/*.py
+
+override_dh_strip:
+	dh_strip -plibopencv-core3.0 --dbg-package=libopencv-core3.0-dbg
+	dh_strip -plibopencv-ml3.0 --dbg-package=libopencv-ml3.0-dbg
+	dh_strip -plibopencv-imgproc3.0 --dbg-package=libopencv-imgproc3.0-dbg
+	dh_strip -plibopencv-imgcodecs3.0 --dbg-package=libopencv-imgcodecs3.0-dbg
+	dh_strip -plibopencv-video3.0 --dbg-package=libopencv-video3.0-dbg
+	dh_strip -plibopencv-videoio3.0 --dbg-package=libopencv-videoio3.0-dbg
+	dh_strip -plibopencv-objdetect3.0 --dbg-package=libopencv-objdetect3.0-dbg
+	dh_strip -plibopencv-highgui3.0 --dbg-package=libopencv-highgui3.0-dbg
+	dh_strip -plibopencv-calib3d3.0 --dbg-package=libopencv-calib3d3.0-dbg
+	dh_strip -plibopencv-flann3.0 --dbg-package=libopencv-flann3.0-dbg
+	dh_strip -plibopencv-features2d3.0 --dbg-package=libopencv-features2d3.0-dbg
+	dh_strip -plibopencv-photo3.0 --dbg-package=libopencv-photo3.0-dbg
+	dh_strip -plibopencv-videostab3.0 --dbg-package=libopencv-videostab3.0-dbg
+	dh_strip -plibopencv-stitching3.0 --dbg-package=libopencv-stitching3.0-dbg
+	dh_strip -plibopencv-shape3.0 --dbg-package=libopencv-shape3.0-dbg
+	dh_strip -plibopencv-superres3.0 --dbg-package=libopencv-superres3.0-dbg
+	dh_strip -plibopencv-viz3.0 --dbg-package=libopencv-viz3.0-dbg
+
+	dh_strip

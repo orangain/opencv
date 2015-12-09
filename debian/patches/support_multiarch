@@ -1,21 +1,15 @@
-Description: Support multiarch
-Author: Nobuhiro Iwamatsu <iwamatsu@debian.org>
-Forwarded: no
-Last-Update: <2014-07-01>
-
-index b610ecf..3ebacf3 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -312,7 +312,7 @@ else()
-     set(OPENCV_3P_LIB_INSTALL_PATH  "${OpenCV_INSTALL_BINARIES_PREFIX}staticlib${LIB_SUFFIX}")
-     set(OPENCV_SAMPLES_SRC_INSTALL_PATH    samples/native)
+--- a/CMakeLists.txt	2015-06-04 02:21:34.000000000 +0900
++++ b/CMakeLists.txt	2015-08-27 13:21:10.739071547 +0900
+@@ -370,7 +370,7 @@
+     set(OPENCV_JAR_INSTALL_PATH java)
+     set(OPENCV_OTHER_INSTALL_PATH   etc)
    else()
 -    set(OPENCV_LIB_INSTALL_PATH     lib${LIB_SUFFIX})
 +    set(OPENCV_LIB_INSTALL_PATH     ${CMAKE_INSTALL_LIBDIR}${LIB_SUFFIX})
      set(OPENCV_3P_LIB_INSTALL_PATH  share/OpenCV/3rdparty/${OPENCV_LIB_INSTALL_PATH})
      set(OPENCV_SAMPLES_SRC_INSTALL_PATH    share/OpenCV/samples)
-   endif()
-@@ -320,7 +320,7 @@ else()
+     set(OPENCV_JAR_INSTALL_PATH share/OpenCV/java)
+@@ -380,7 +380,7 @@
  
    math(EXPR SIZEOF_VOID_P_BITS "8 * ${CMAKE_SIZEOF_VOID_P}")
    if(LIB_SUFFIX AND NOT SIZEOF_VOID_P_BITS EQUAL LIB_SUFFIX)
@@ -24,8 +18,8 @@ index b610ecf..3ebacf3 100644
    else()
      set(OPENCV_CONFIG_INSTALL_PATH share/OpenCV)
    endif()
-@@ -427,6 +427,7 @@ if(UNIX)
-   include(cmake/OpenCVFindPkgConfig.cmake OPTIONAL)
+@@ -483,6 +483,7 @@
+   find_package(PkgConfig QUIET)
    include(CheckFunctionExists)
    include(CheckIncludeFile)
 +  include(GNUInstallDirs)
