@@ -3,20 +3,28 @@ set(the_target "example_gpu_performance")
 file(GLOB sources "performance/*.cpp")
 file(GLOB headers "performance/*.h")
 
-if(HAVE_opencv_nonfree)
-  ocv_include_directories("${OpenCV_SOURCE_DIR}/modules/nonfree/include")
+if(HAVE_opencv_xfeatures2d)
+  ocv_include_directories("${opencv_xfeatures2d_SOURCE_DIR}/include")
+endif()
+
+if(HAVE_opencv_bgsegm)
+  ocv_include_directories("${opencv_bgsegm_SOURCE_DIR}/include")
 endif()
 
 add_executable(${the_target} ${sources} ${headers})
-target_link_libraries(${the_target} ${OPENCV_LINKER_LIBS} ${OPENCV_GPU_SAMPLES_REQUIRED_DEPS})
+ocv_target_link_libraries(${the_target} ${OPENCV_LINKER_LIBS} ${OPENCV_CUDA_SAMPLES_REQUIRED_DEPS})
 
-if(HAVE_opencv_nonfree)
-  target_link_libraries(${the_target} opencv_nonfree)
+if(HAVE_opencv_xfeatures2d)
+  ocv_target_link_libraries(${the_target} opencv_xfeatures2d)
+endif()
+
+if(HAVE_opencv_bgsegm)
+  ocv_target_link_libraries(${the_target} opencv_bgsegm)
 endif()
 
 set_target_properties(${the_target} PROPERTIES
     OUTPUT_NAME "performance_gpu"
-    PROJECT_LABEL "(EXAMPLE_GPU) performance")
+    PROJECT_LABEL "(EXAMPLE_CUDA) performance")
 
 if(ENABLE_SOLUTION_FOLDERS)
   set_target_properties(${the_target} PROPERTIES FOLDER "samples//gpu")
@@ -27,8 +35,8 @@ if(WIN32)
 endif()
 
 if(INSTALL_C_EXAMPLES AND NOT WIN32)
-  file(GLOB GPU_FILES performance/*.cpp performance/*.h performance/CMakeLists.txt)
-  install(FILES ${GPU_FILES}
+  file(GLOB CUDA_FILES performance/*.cpp performance/*.h)
+  install(FILES ${CUDA_FILES}
           DESTINATION ${OPENCV_SAMPLES_SRC_INSTALL_PATH}/gpu/performance
           PERMISSIONS OWNER_READ GROUP_READ WORLD_READ
           COMPONENT samples)

@@ -53,7 +53,7 @@ namespace cv { namespace
         double dalpha;
     };
 
-    void subMatrix(const Mat& src, Mat& dst, const vector<int>& cols, const vector<int>& rows);
+    void subMatrix(const Mat& src, Mat& dst, const std::vector<int>& cols, const std::vector<int>& rows);
 }}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -794,8 +794,20 @@ double cv::fisheye::calibrate(InputArrayOfArrays objectPoints, InputArrayOfArray
 
     if (K.needed()) cv::Mat(_K).convertTo(K, K.empty() ? CV_64FC1 : K.type());
     if (D.needed()) cv::Mat(finalParam.k).convertTo(D, D.empty() ? CV_64FC1 : D.type());
-    if (rvecs.needed()) cv::Mat(omc).convertTo(rvecs, rvecs.empty() ? CV_64FC3 : rvecs.type());
-    if (tvecs.needed()) cv::Mat(Tc).convertTo(tvecs, tvecs.empty() ? CV_64FC3 : tvecs.type());
+    if (rvecs.kind()==_InputArray::STD_VECTOR_MAT)
+    {
+        int i;
+        for( i = 0; i < (int)objectPoints.total(); i++ )
+        {
+            rvecs.getMat(i)=omc[i];
+            tvecs.getMat(i)=Tc[i];
+        }
+    }
+    else
+    {
+        if (rvecs.needed()) cv::Mat(omc).convertTo(rvecs, rvecs.empty() ? CV_64FC3 : rvecs.type());
+        if (tvecs.needed()) cv::Mat(Tc).convertTo(tvecs, tvecs.empty() ? CV_64FC3 : tvecs.type());
+    }
 
     return rms;
 }
@@ -860,8 +872,8 @@ double cv::fisheye::stereoCalibrate(InputArrayOfArrays objectPoints, InputArrayO
 
     if ((flags & CALIB_FIX_INTRINSIC))
     {
-        internal::CalibrateExtrinsics(objectPoints,  imagePoints1, intrinsicLeft, check_cond, thresh_cond, rvecs1, tvecs1);
-        internal::CalibrateExtrinsics(objectPoints,  imagePoints2, intrinsicRight, check_cond, thresh_cond, rvecs2, tvecs2);
+        cv::internal::CalibrateExtrinsics(objectPoints,  imagePoints1, intrinsicLeft, check_cond, thresh_cond, rvecs1, tvecs1);
+        cv::internal::CalibrateExtrinsics(objectPoints,  imagePoints2, intrinsicRight, check_cond, thresh_cond, rvecs2, tvecs2);
     }
 
     intrinsicLeft.isEstimate[0] = flags & CALIB_FIX_INTRINSIC ? 0 : 1;
@@ -906,8 +918,8 @@ double cv::fisheye::stereoCalibrate(InputArrayOfArrays objectPoints, InputArrayO
         om_ref.reshape(3, 1).copyTo(om_list.col(image_idx));
         T_ref.reshape(3, 1).copyTo(T_list.col(image_idx));
     }
-    cv::Vec3d omcur = internal::median3d(om_list);
-    cv::Vec3d Tcur  = internal::median3d(T_list);
+    cv::Vec3d omcur = cv::internal::median3d(om_list);
+    cv::Vec3d Tcur  = cv::internal::median3d(T_list);
 
     cv::Mat J = cv::Mat::zeros(4 * n_points * n_images, 18 + 6 * (n_images + 1), CV_64FC1),
             e = cv::Mat::zeros(4 * n_points * n_images, 1, CV_64FC1), Jkk, ekk;
@@ -949,7 +961,7 @@ double cv::fisheye::stereoCalibrate(InputArrayOfArrays objectPoints, InputArrayO
             jacobians.col(14).copyTo(Jkk.col(4).rowRange(0, 2 * n_points));
 
             //right camera jacobian
-            internal::compose_motion(rvec, tvec, omcur, Tcur, omr, Tr, domrdomckk, domrdTckk, domrdom, domrdT, dTrdomckk, dTrdTckk, dTrdom, dTrdT);
+            cv::internal::compose_motion(rvec, tvec, omcur, Tcur, omr, Tr, domrdomckk, domrdTckk, domrdom, domrdT, dTrdomckk, dTrdTckk, dTrdom, dTrdT);
             rvec = cv::Mat(rvecs2[image_idx]);
             tvec  = cv::Mat(tvecs2[image_idx]);
 
@@ -1040,7 +1052,7 @@ double cv::fisheye::stereoCalibrate(InputArrayOfArrays objectPoints, InputArrayO
 }
 
 namespace cv{ namespace {
-void subMatrix(const Mat& src, Mat& dst, const vector<int>& cols, const vector<int>& rows)
+void subMatrix(const Mat& src, Mat& dst, const std::vector<int>& cols, const std::vector<int>& rows)
 {
     CV_Assert(src.type() == CV_64FC1);
 
@@ -1309,7 +1321,7 @@ void cv::internal::InitExtrinsics(const Mat& _imagePoints, const Mat& _objectPoi
     Mat objectPointsMean, covObjectPoints;
     Mat Rckk;
     int Np = imagePointsNormalized.cols;
-    calcCovarMatrix(objectPoints, covObjectPoints, objectPointsMean, CV_COVAR_NORMAL | CV_COVAR_COLS);
+    calcCovarMatrix(objectPoints, covObjectPoints, objectPointsMean, COVAR_NORMAL | COVAR_COLS);
     SVD svd(covObjectPoints);
     Mat R(svd.vt);
     if (norm(R(Rect(2, 0, 1, 2))) < 1e-6)
@@ -1429,7 +1441,7 @@ void cv::internal::ComputeJacobians(InputArrayOfArrays objectPoints, InputArrayO
         }
     }
 
-    vector<int> idxs(param.isEstimate);
+    std::vector<int> idxs(param.isEstimate);
     idxs.insert(idxs.end(), 6 * n, 1);
 
     subMatrix(JJ3, JJ3, idxs, idxs);

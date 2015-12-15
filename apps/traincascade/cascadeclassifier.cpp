@@ -1,5 +1,4 @@
-#include "opencv2/core/core.hpp"
-#include "opencv2/core/internal.hpp"
+#include "opencv2/core.hpp"
 
 #include "cascadeclassifier.h"
 #include <queue>
@@ -136,7 +135,8 @@ bool CvCascadeClassifier::train( const string _cascadeDirName,
                                 const CvCascadeParams& _cascadeParams,
                                 const CvFeatureParams& _featureParams,
                                 const CvCascadeBoostParams& _stageParams,
-                                bool baseFormatSave )
+                                bool baseFormatSave,
+                                double acceptanceRatioBreakValue )
 {
     // Start recording clock ticks for training time output
     const clock_t begin_time = clock();
@@ -164,10 +164,10 @@ bool CvCascadeClassifier::train( const string _cascadeDirName,
         cascadeParams = _cascadeParams;
         featureParams = CvFeatureParams::create(cascadeParams.featureType);
         featureParams->init(_featureParams);
-        stageParams = new CvCascadeBoostParams;
+        stageParams = makePtr<CvCascadeBoostParams>();
         *stageParams = _stageParams;
         featureEvaluator = CvFeatureEvaluator::create(cascadeParams.featureType);
-        featureEvaluator->init( (CvFeatureParams*)featureParams, numPos + numNeg, cascadeParams.winSize );
+        featureEvaluator->init( featureParams, numPos + numNeg, cascadeParams.winSize );
         stageClassifiers.reserve( numStages );
     }else{
         // Make sure that if model parameters are preloaded, that people are aware of this,
@@ -186,6 +186,7 @@ bool CvCascadeClassifier::train( const string _cascadeDirName,
     cout << "numStages: " << numStages << endl;
     cout << "precalcValBufSize[Mb] : " << _precalcValBufSize << endl;
     cout << "precalcIdxBufSize[Mb] : " << _precalcIdxBufSize << endl;
+    cout << "acceptanceRatioBreakValue : " << acceptanceRatioBreakValue << endl;
     cascadeParams.printAttrs();
     stageParams->printAttrs();
     featureParams->printAttrs();
@@ -205,23 +206,28 @@ bool CvCascadeClassifier::train( const string _cascadeDirName,
         cout << endl << "===== TRAINING " << i << "-stage =====" << endl;
         cout << "<BEGIN" << endl;
 
-        if ( !updateTrainingSet( requiredLeafFARate, tempLeafFARate ) )
+        if ( !updateTrainingSet( tempLeafFARate ) )
         {
             cout << "Train dataset for temp stage can not be filled. "
-                "Branch training terminated." << endl;
+                    "Branch training terminated." << endl;
             break;
         }
         if( tempLeafFARate <= requiredLeafFARate )
         {
             cout << "Required leaf false alarm rate achieved. "
-                 "Branch training terminated." << endl;
+                    "Branch training terminated." << endl;
+            break;
+        }
+        if( (tempLeafFARate <= acceptanceRatioBreakValue) && (acceptanceRatioBreakValue >= 0) ){
+            cout << "The required acceptanceRatio for the model has been reached to avoid overfitting of trainingdata. "
+                    "Branch training terminated." << endl;
             break;
         }
 
-        CvCascadeBoost* tempStage = new CvCascadeBoost;
-        bool isStageTrained = tempStage->train( (CvFeatureEvaluator*)featureEvaluator,
+        Ptr<CvCascadeBoost> tempStage = makePtr<CvCascadeBoost>();
+        bool isStageTrained = tempStage->train( featureEvaluator,
                                                 curNumSamples, _precalcValBufSize, _precalcIdxBufSize,
-                                                *((CvCascadeBoostParams*)stageParams) );
+                                                *stageParams );
         cout << "END>" << endl;
 
         if(!isStageTrained)
@@ -291,17 +297,17 @@ int CvCascadeClassifier::predict( int sampleIdx )
     return 1;
 }
 
-bool CvCascadeClassifier::updateTrainingSet( double minimumAcceptanceRatio, double& acceptanceRatio)
+bool CvCascadeClassifier::updateTrainingSet( double& acceptanceRatio)
 {
     int64 posConsumed = 0, negConsumed = 0;
     imgReader.restart();
-    int posCount = fillPassedSamples( 0, numPos, true, 0, posConsumed );
+    int posCount = fillPassedSamples( 0, numPos, true, posConsumed );
     if( !posCount )
         return false;
     cout << "POS count : consumed   " << posCount << " : " << (int)posConsumed << endl;
 
     int proNumNeg = cvRound( ( ((double)numNeg) * ((double)posCount) ) / numPos ); // apply only a fraction of negative samples. double is required since overflow is possible
-    int negCount = fillPassedSamples( posCount, proNumNeg, false, minimumAcceptanceRatio, negConsumed );
+    int negCount = fillPassedSamples( posCount, proNumNeg, false, negConsumed );
     if ( !negCount )
         return false;
 
@@ -311,7 +317,7 @@ bool CvCascadeClassifier::updateTrainingSet( double minimumAcceptanceRatio, doub
     return true;
 }
 
-int CvCascadeClassifier::fillPassedSamples( int first, int count, bool isPositive, double minimumAcceptanceRatio, int64& consumed )
+int CvCascadeClassifier::fillPassedSamples( int first, int count, bool isPositive, int64& consumed )
 {
     int getcount = 0;
     Mat img(cascadeParams.winSize, CV_8UC1);
@@ -319,9 +325,6 @@ int CvCascadeClassifier::fillPassedSamples( int first, int count, bool isPositiv
     {
         for( ; ; )
         {
-            if( consumed != 0 && ((double)getcount+1)/(double)(int64)consumed <= minimumAcceptanceRatio )
-                return getcount;
-
             bool isGetImg = isPositive ? imgReader.getPos( img ) :
                                            imgReader.getNeg( img );
             if( !isGetImg )
@@ -349,7 +352,7 @@ void CvCascadeClassifier::writeParams( FileStorage &fs ) const
 
 void CvCascadeClassifier::writeFeatures( FileStorage &fs, const Mat& featureMap ) const
 {
-    ((CvFeatureEvaluator*)((Ptr<CvFeatureEvaluator>)featureEvaluator))->writeFeatures( fs, featureMap );
+    featureEvaluator->writeFeatures( fs, featureMap );
 }
 
 void CvCascadeClassifier::writeStages( FileStorage &fs, const Mat& featureMap ) const
@@ -363,7 +366,7 @@ void CvCascadeClassifier::writeStages( FileStorage &fs, const Mat& featureMap ) 
         sprintf( cmnt, "stage %d", i );
         cvWriteComment( fs.fs, cmnt, 0 );
         fs << "{";
-        ((CvCascadeBoost*)((Ptr<CvCascadeBoost>)*it))->write( fs, featureMap );
+        (*it)->write( fs, featureMap );
         fs << "}";
     }
     fs << "]";
@@ -374,7 +377,7 @@ bool CvCascadeClassifier::readParams( const FileNode &node )
     if ( !node.isMap() || !cascadeParams.read( node ) )
         return false;
 
-    stageParams = new CvCascadeBoostParams;
+    stageParams = makePtr<CvCascadeBoostParams>();
     FileNode rnode = node[CC_STAGE_PARAMS];
     if ( !stageParams->read( rnode ) )
         return false;
@@ -395,12 +398,9 @@ bool CvCascadeClassifier::readStages( const FileNode &node)
     FileNodeIterator it = rnode.begin();
     for( int i = 0; i < min( (int)rnode.size(), numStages ); i++, it++ )
     {
-        CvCascadeBoost* tempStage = new CvCascadeBoost;
-        if ( !tempStage->read( *it, (CvFeatureEvaluator *)featureEvaluator, *((CvCascadeBoostParams*)stageParams) ) )
-        {
-            delete tempStage;
+        Ptr<CvCascadeBoost> tempStage = makePtr<CvCascadeBoost>();
+        if ( !tempStage->read( *it, featureEvaluator, *stageParams) )
             return false;
-        }
         stageClassifiers.push_back(tempStage);
     }
     return true;
@@ -477,7 +477,7 @@ void CvCascadeClassifier::save( const string filename, bool baseFormat )
 
                     fs << "{";
                     fs << ICV_HAAR_FEATURE_NAME << "{";
-                    ((CvHaarEvaluator*)((CvFeatureEvaluator*)featureEvaluator))->writeFeature( fs, tempNode->split->var_idx );
+                    ((CvHaarEvaluator*)featureEvaluator.get())->writeFeature( fs, tempNode->split->var_idx );
                     fs << "}";
 
                     fs << ICV_HAAR_THRESHOLD_NAME << tempNode->split->ord.c;
@@ -523,7 +523,7 @@ bool CvCascadeClassifier::load( const string cascadeDirName )
     if ( !readParams( node ) )
         return false;
     featureEvaluator = CvFeatureEvaluator::create(cascadeParams.featureType);
-    featureEvaluator->init( ((CvFeatureParams*)featureParams), numPos + numNeg, cascadeParams.winSize );
+    featureEvaluator->init( featureParams, numPos + numNeg, cascadeParams.winSize );
     fs.release();
 
     char buf[10];
@@ -534,11 +534,10 @@ bool CvCascadeClassifier::load( const string cascadeDirName )
         node = fs.getFirstTopLevelNode();
         if ( !fs.isOpened() )
             break;
-        CvCascadeBoost *tempStage = new CvCascadeBoost;
+        Ptr<CvCascadeBoost> tempStage = makePtr<CvCascadeBoost>();
 
-        if ( !tempStage->read( node, (CvFeatureEvaluator*)featureEvaluator, *((CvCascadeBoostParams*)stageParams )) )
+        if ( !tempStage->read( node, featureEvaluator, *stageParams ))
         {
-            delete tempStage;
             fs.release();
             break;
         }
@@ -555,7 +554,7 @@ void CvCascadeClassifier::getUsedFeaturesIdxMap( Mat& featureMap )
 
     for( vector< Ptr<CvCascadeBoost> >::const_iterator it = stageClassifiers.begin();
         it != stageClassifiers.end(); it++ )
-        ((CvCascadeBoost*)((Ptr<CvCascadeBoost>)(*it)))->markUsedFeaturesInMap( featureMap );
+        (*it)->markUsedFeaturesInMap( featureMap );
 
     for( int fi = 0, idx = 0; fi < varCount; fi++ )
         if ( featureMap.at<int>(0, fi) >= 0 )

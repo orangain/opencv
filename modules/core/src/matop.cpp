@@ -224,6 +224,10 @@ static inline bool isInitializer(const MatExpr& e) { return e.op == getGlobalMat
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
+MatOp::MatOp() {}
+MatOp::~MatOp() {}
+
+
 bool MatOp::elementWise(const MatExpr& /*expr*/) const
 {
     return false;
@@ -1588,8 +1592,6 @@ inline void MatOp_Initializer::makeExpr(MatExpr& res, int method, int ndims, con
     res = MatExpr(getGlobalMatOpInitializer(), method, Mat(ndims, sizes, type, (void*)0), Mat(), Mat(), alpha, 0);
 }
 
-
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 MatExpr Mat::t() const
@@ -1612,7 +1614,7 @@ MatExpr Mat::mul(InputArray m, double scale) const
     MatExpr e;
     if(m.kind() == _InputArray::EXPR)
     {
-        const MatExpr& me = *(const MatExpr*)m.obj;
+        const MatExpr& me = *(const MatExpr*)m.getObj();
         me.op->multiply(MatExpr(*this), me, e, scale);
     }
     else
@@ -1634,6 +1636,13 @@ MatExpr Mat::zeros(Size size, int type)
     return e;
 }
 
+MatExpr Mat::zeros(int ndims, const int* sizes, int type)
+{
+    MatExpr e;
+    MatOp_Initializer::makeExpr(e, '0', ndims, sizes, type);
+    return e;
+}
+
 MatExpr Mat::ones(int rows, int cols, int type)
 {
     MatExpr e;
@@ -1645,13 +1654,6 @@ MatExpr Mat::ones(Size size, int type)
 {
     MatExpr e;
     MatOp_Initializer::makeExpr(e, '1', size, type);
-    return e;
-}
-
-MatExpr Mat::zeros(int ndims, const int* sizes, int type)
-{
-    MatExpr e;
-    MatOp_Initializer::makeExpr(e, '0', ndims, sizes, type);
     return e;
 }
 

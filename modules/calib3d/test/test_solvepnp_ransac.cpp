@@ -41,7 +41,10 @@
 //M*/
 
 #include "test_precomp.hpp"
-#include "opencv2/core/internal.hpp"
+
+#ifdef HAVE_TBB
+#include "tbb/task_scheduler_init.h"
+#endif
 
 using namespace cv;
 using namespace std;
@@ -51,9 +54,11 @@ class CV_solvePnPRansac_Test : public cvtest::BaseTest
 public:
     CV_solvePnPRansac_Test()
     {
-        eps[CV_ITERATIVE] = 1.0e-2;
-        eps[CV_EPNP] = 1.0e-2;
-        eps[CV_P3P] = 1.0e-2;
+        eps[SOLVEPNP_ITERATIVE] = 1.0e-2;
+        eps[SOLVEPNP_EPNP] = 1.0e-2;
+        eps[SOLVEPNP_P3P] = 1.0e-2;
+        eps[SOLVEPNP_DLS] = 1.0e-2;
+        eps[SOLVEPNP_UPNP] = 1.0e-2;
         totalTestsCount = 10;
     }
     ~CV_solvePnPRansac_Test() {}
@@ -114,6 +119,7 @@ protected:
         Mat trueRvec, trueTvec;
         Mat intrinsics, distCoeffs;
         generateCameraMatrix(intrinsics, rng);
+        if (method == 4) intrinsics.at<double>(1,1) = intrinsics.at<double>(0,0);
         if (mode == 0)
             distCoeffs = Mat::zeros(4, 1, CV_64FC1);
         else
@@ -132,7 +138,7 @@ protected:
         }
 
         solvePnPRansac(points, projectedPoints, intrinsics, distCoeffs, rvec, tvec,
-            false, 500, 0.5, -1, inliers, method);
+            false, 500, 0.5f, 0.99, inliers, method);
 
         bool isTestSuccess = inliers.size() >= points.size()*0.95;
 
@@ -150,13 +156,12 @@ protected:
     {
         ts->set_failed_test_info(cvtest::TS::OK);
 
-        vector<Point3f> points;
+        vector<Point3f> points, points_dls;
         const int pointsCount = 500;
         points.resize(pointsCount);
         generate3DPointCloud(points);
 
-
-        const int methodsCount = 3;
+        const int methodsCount = 5;
         RNG rng = ts->get_rng();
 
 
@@ -178,10 +183,13 @@ protected:
                         method, totalTestsCount - successfulTestsCount, totalTestsCount, maxError, mode);
                     ts->set_failed_test_info(cvtest::TS::FAIL_BAD_ACCURACY);
                 }
+                cout << "mode: " << mode << ", method: " << method << " -> "
+                     << ((double)successfulTestsCount / totalTestsCount) * 100 << "%"
+                     << " (err < " << maxError << ")" << endl;
             }
         }
     }
-    double eps[3];
+    double eps[5];
     int totalTestsCount;
 };
 
@@ -190,9 +198,11 @@ class CV_solvePnP_Test : public CV_solvePnPRansac_Test
 public:
     CV_solvePnP_Test()
     {
-        eps[CV_ITERATIVE] = 1.0e-6;
-        eps[CV_EPNP] = 1.0e-6;
-        eps[CV_P3P] = 1.0e-4;
+        eps[SOLVEPNP_ITERATIVE] = 1.0e-6;
+        eps[SOLVEPNP_EPNP] = 1.0e-6;
+        eps[SOLVEPNP_P3P] = 1.0e-4;
+        eps[SOLVEPNP_DLS] = 1.0e-4;
+        eps[SOLVEPNP_UPNP] = 1.0e-4;
         totalTestsCount = 1000;
     }
 
@@ -204,6 +214,7 @@ protected:
         Mat trueRvec, trueTvec;
         Mat intrinsics, distCoeffs;
         generateCameraMatrix(intrinsics, rng);
+        if (method == 4) intrinsics.at<double>(1,1) = intrinsics.at<double>(0,0);
         if (mode == 0)
             distCoeffs = Mat::zeros(4, 1, CV_64FC1);
         else
@@ -214,6 +225,10 @@ protected:
         if (method == 2)
         {
             opoints = std::vector<Point3f>(points.begin(), points.begin()+4);
+        }
+        else if(method == 3)
+        {
+            opoints = std::vector<Point3f>(points.begin(), points.begin()+50);
         }
         else
             opoints = points;
@@ -236,13 +251,10 @@ protected:
     }
 };
 
-TEST(DISABLED_Calib3d_SolvePnPRansac, accuracy) { CV_solvePnPRansac_Test test; test.safe_run(); }
+TEST(Calib3d_SolvePnPRansac, accuracy) { CV_solvePnPRansac_Test test; test.safe_run(); }
 TEST(Calib3d_SolvePnP, accuracy) { CV_solvePnP_Test test; test.safe_run(); }
 
-
-#ifdef HAVE_TBB
-
-TEST(DISABLED_Calib3d_SolvePnPRansac, concurrency)
+TEST(Calib3d_SolvePnPRansac, concurrency)
 {
     int count = 7*13;
 
@@ -272,12 +284,11 @@ TEST(DISABLED_Calib3d_SolvePnPRansac, concurrency)
 
     {
         // limit concurrency to get deterministic result
-        cv::theRNG().state = 20121010;
-        cv::Ptr<tbb::task_scheduler_init> one_thread = new tbb::task_scheduler_init(1);
+        theRNG().state = 20121010;
+        setNumThreads(1);
         solvePnPRansac(object, image, camera_mat, dist_coef, rvec1, tvec1);
     }
 
-    if(1)
     {
         Mat rvec;
         Mat tvec;
@@ -291,16 +302,79 @@ TEST(DISABLED_Calib3d_SolvePnPRansac, concurrency)
 
     {
         // single thread again
-        cv::theRNG().state = 20121010;
-        cv::Ptr<tbb::task_scheduler_init> one_thread = new tbb::task_scheduler_init(1);
+        theRNG().state = 20121010;
+        setNumThreads(1);
         solvePnPRansac(object, image, camera_mat, dist_coef, rvec2, tvec2);
     }
 
-    double rnorm = cv::norm(rvec1, rvec2, NORM_INF);
-    double tnorm = cv::norm(tvec1, tvec2, NORM_INF);
+    double rnorm = cvtest::norm(rvec1, rvec2, NORM_INF);
+    double tnorm = cvtest::norm(tvec1, tvec2, NORM_INF);
 
     EXPECT_LT(rnorm, 1e-6);
     EXPECT_LT(tnorm, 1e-6);
-
 }
-#endif
+
+TEST(Calib3d_SolvePnP, double_support)
+{
+    Matx33d intrinsics(5.4794130238156129e+002, 0., 2.9835545700043139e+002, 0.,
+                       5.4817724002728005e+002, 2.3062194051986233e+002, 0., 0., 1.);
+    std::vector<cv::Point3d> points3d;
+    std::vector<cv::Point2d> points2d;
+    std::vector<cv::Point3f> points3dF;
+    std::vector<cv::Point2f> points2dF;
+    for (int i = 0; i < 10 ; i++)
+    {
+        points3d.push_back(cv::Point3d(i,0,0));
+        points3dF.push_back(cv::Point3d(i,0,0));
+        points2d.push_back(cv::Point2d(i,0));
+        points2dF.push_back(cv::Point2d(i,0));
+    }
+    Mat R,t, RF, tF;
+    vector<int> inliers;
+
+    solvePnPRansac(points3dF, points2dF, intrinsics, cv::Mat(), RF, tF, true, 100, 8.f, 0.999, inliers, cv::SOLVEPNP_P3P);
+    solvePnPRansac(points3d, points2d, intrinsics, cv::Mat(), R, t, true, 100, 8.f, 0.999, inliers, cv::SOLVEPNP_P3P);
+
+    ASSERT_LE(norm(R, Mat_<double>(RF), NORM_INF), 1e-3);
+    ASSERT_LE(norm(t, Mat_<double>(tF), NORM_INF), 1e-3);
+}
+
+TEST(Calib3d_SolvePnP, translation)
+{
+    Mat cameraIntrinsic = Mat::eye(3,3, CV_32FC1);
+    vector<float> crvec;
+    crvec.push_back(0.f);
+    crvec.push_back(0.f);
+    crvec.push_back(0.f);
+    vector<float> ctvec;
+    ctvec.push_back(100.f);
+    ctvec.push_back(100.f);
+    ctvec.push_back(0.f);
+    vector<Point3f> p3d;
+    p3d.push_back(Point3f(0,0,0));
+    p3d.push_back(Point3f(0,0,10));
+    p3d.push_back(Point3f(0,10,10));
+    p3d.push_back(Point3f(10,10,10));
+    p3d.push_back(Point3f(2,5,5));
+
+    vector<Point2f> p2d;
+    projectPoints(p3d, crvec, ctvec, cameraIntrinsic, noArray(), p2d);
+    Mat rvec;
+    Mat tvec;
+    rvec =(Mat_<float>(3,1) << 0, 0, 0);
+    tvec = (Mat_<float>(3,1) << 100, 100, 0);
+
+    solvePnP(p3d, p2d, cameraIntrinsic, noArray(), rvec, tvec, true);
+    ASSERT_TRUE(checkRange(rvec));
+    ASSERT_TRUE(checkRange(tvec));
+
+    rvec =(Mat_<double>(3,1) << 0, 0, 0);
+    tvec = (Mat_<double>(3,1) << 100, 100, 0);
+    solvePnP(p3d, p2d, cameraIntrinsic, noArray(), rvec, tvec, true);
+    ASSERT_TRUE(checkRange(rvec));
+    ASSERT_TRUE(checkRange(tvec));
+
+    solvePnP(p3d, p2d, cameraIntrinsic, noArray(), rvec, tvec, false);
+    ASSERT_TRUE(checkRange(rvec));
+    ASSERT_TRUE(checkRange(tvec));
+}

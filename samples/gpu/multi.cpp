@@ -7,47 +7,44 @@
 #endif
 
 #include <iostream>
+#include "cvconfig.h"
 #include "opencv2/core/core.hpp"
-#include "opencv2/gpu/gpu.hpp"
+#include "opencv2/cudaarithm.hpp"
+
+#ifdef HAVE_TBB
+#  include "tbb/tbb_stddef.h"
+#  if TBB_VERSION_MAJOR*100 + TBB_VERSION_MINOR >= 202
+#    include "tbb/tbb.h"
+#    include "tbb/task.h"
+#    undef min
+#    undef max
+#  else
+#    undef HAVE_TBB
+#  endif
+#endif
+
+#if !defined(HAVE_CUDA) || !defined(HAVE_TBB)
+
+int main()
+{
+#if !defined(HAVE_CUDA)
+    std::cout << "CUDA support is required (CMake key 'WITH_CUDA' must be true).\n";
+#endif
+
+#if !defined(HAVE_TBB)
+    std::cout << "TBB support is required (CMake key 'WITH_TBB' must be true).\n";
+#endif
+
+    return 0;
+}
+
+#else
 
 using namespace std;
 using namespace cv;
-using namespace cv::gpu;
+using namespace cv::cuda;
 
-struct Worker: public ParallelLoopBody
-{
-    virtual void operator() (const Range& range) const
-    {
-        for (int device_id = range.start; device_id != range.end; ++device_id)
-        {
-            setDevice(device_id);
-
-            Mat src(1000, 1000, CV_32F);
-            Mat dst;
-
-            RNG rng(0);
-            rng.fill(src, RNG::UNIFORM, 0, 1);
-
-            // CPU works
-            transpose(src, dst);
-
-            // GPU works
-            GpuMat d_src(src);
-            GpuMat d_dst;
-            transpose(d_src, d_dst);
-
-            // Check results
-            bool passed = norm(dst - Mat(d_dst), NORM_INF) < 1e-3;
-            std::cout << "GPU #" << device_id << " (" << DeviceInfo().name() << "): "
-            << (passed ? "passed" : "FAILED") << endl;
-
-            // Deallocate data here, otherwise deallocation will be performed
-            // after context is extracted from the stack
-            d_src.release();
-            d_dst.release();
-        }
-    }
-};
+struct Worker { void operator()(int device_id) const; };
 
 int main()
 {
@@ -59,20 +56,53 @@ int main()
     }
     for (int i = 0; i < num_devices; ++i)
     {
-        cv::gpu::printShortCudaDeviceInfo(i);
+        cv::cuda::printShortCudaDeviceInfo(i);
 
         DeviceInfo dev_info(i);
         if (!dev_info.isCompatible())
         {
-            std::cout << "GPU module isn't built for GPU #" << i << " ("
+            std::cout << "CUDA module isn't built for GPU #" << i << " ("
                  << dev_info.name() << ", CC " << dev_info.majorVersion()
                  << dev_info.minorVersion() << "\n";
             return -1;
         }
     }
 
-    // Execute calculation in several threads, 1 GPU per thread
-    parallel_for_(cv::Range(0, num_devices), Worker());
+    // Execute calculation in two threads using two GPUs
+    int devices[] = {0, 1};
+    tbb::parallel_do(devices, devices + 2, Worker());
 
     return 0;
 }
+
+
+void Worker::operator()(int device_id) const
+{
+    setDevice(device_id);
+
+    Mat src(1000, 1000, CV_32F);
+    Mat dst;
+
+    RNG rng(0);
+    rng.fill(src, RNG::UNIFORM, 0, 1);
+
+    // CPU works
+    cv::transpose(src, dst);
+
+    // GPU works
+    GpuMat d_src(src);
+    GpuMat d_dst;
+    cuda::transpose(d_src, d_dst);
+
+    // Check results
+    bool passed = cv::norm(dst - Mat(d_dst), NORM_INF) < 1e-3;
+    std::cout << "GPU #" << device_id << " (" << DeviceInfo().name() << "): "
+        << (passed ? "passed" : "FAILED") << endl;
+
+    // Deallocate data here, otherwise deallocation will be performed
+    // after context is extracted from the stack
+    d_src.release();
+    d_dst.release();
+}
+
+#endif

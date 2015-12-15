@@ -40,6 +40,7 @@
 //M*/
 
 #include "precomp.hpp"
+#include "opencv2/calib3d/calib3d_c.h"
 
 // cvCorrectMatches function is Copyright (C) 2009, Jostein Austvik Jacobsen.
 // cvTriangulatePoints function is derived from icvReconstructPointsFor3View, originally by Valery Mosyagin.
@@ -62,8 +63,7 @@ cvTriangulatePoints(CvMat* projMatr1, CvMat* projMatr2, CvMat* projPoints1, CvMa
       !CV_IS_MAT(points4D) )
       CV_Error( CV_StsUnsupportedFormat, "Input parameters must be matrices" );
 
-    int numPoints;
-    numPoints = projPoints1->cols;
+    int numPoints = projPoints1->cols;
 
     if( numPoints < 1 )
         CV_Error( CV_StsOutOfRange, "Number of points must be more than zero" );
@@ -81,57 +81,38 @@ cvTriangulatePoints(CvMat* projMatr1, CvMat* projMatr2, CvMat* projPoints1, CvMa
        projMatr2->cols != 4 || projMatr2->rows != 3)
         CV_Error( CV_StsUnmatchedSizes, "Size of projection matrices must be 3x4" );
 
-    CvMat matrA;
-    double matrA_dat[24];
-    matrA = cvMat(6,4,CV_64F,matrA_dat);
+    // preallocate SVD matrices on stack
+    cv::Matx<double, 4, 4> matrA;
+    cv::Matx<double, 4, 4> matrU;
+    cv::Matx<double, 4, 1> matrW;
+    cv::Matx<double, 4, 4> matrV;
 
-    //CvMat matrU;
-    CvMat matrW;
-    CvMat matrV;
-    //double matrU_dat[9*9];
-    double matrW_dat[6*4];
-    double matrV_dat[4*4];
-
-    //matrU = cvMat(6,6,CV_64F,matrU_dat);
-    matrW = cvMat(6,4,CV_64F,matrW_dat);
-    matrV = cvMat(4,4,CV_64F,matrV_dat);
-
-    CvMat* projPoints[2];
-    CvMat* projMatrs[2];
-
-    projPoints[0] = projPoints1;
-    projPoints[1] = projPoints2;
-
-    projMatrs[0] = projMatr1;
-    projMatrs[1] = projMatr2;
+    CvMat* projPoints[2] = {projPoints1, projPoints2};
+    CvMat* projMatrs[2] = {projMatr1, projMatr2};
 
     /* Solve system for each point */
-    int i,j;
-    for( i = 0; i < numPoints; i++ )/* For each point */
+    for( int i = 0; i < numPoints; i++ )/* For each point */
     {
         /* Fill matrix for current point */
-        for( j = 0; j < 2; j++ )/* For each view */
+        for( int j = 0; j < 2; j++ )/* For each view */
         {
             double x,y;
             x = cvmGet(projPoints[j],0,i);
             y = cvmGet(projPoints[j],1,i);
             for( int k = 0; k < 4; k++ )
             {
-                cvmSet(&matrA, j*3+0, k, x * cvmGet(projMatrs[j],2,k) -     cvmGet(projMatrs[j],0,k) );
-                cvmSet(&matrA, j*3+1, k, y * cvmGet(projMatrs[j],2,k) -     cvmGet(projMatrs[j],1,k) );
-                cvmSet(&matrA, j*3+2, k, x * cvmGet(projMatrs[j],1,k) - y * cvmGet(projMatrs[j],0,k) );
+                matrA(j*2+0, k) = x * cvmGet(projMatrs[j],2,k) - cvmGet(projMatrs[j],0,k);
+                matrA(j*2+1, k) = y * cvmGet(projMatrs[j],2,k) - cvmGet(projMatrs[j],1,k);
             }
         }
         /* Solve system for current point */
-        {
-            cvSVD(&matrA,&matrW,0,&matrV,CV_SVD_V_T);
+        cv::SVD::compute(matrA, matrW, matrU, matrV);
 
-            /* Copy computed point */
-            cvmSet(points4D,0,i,cvmGet(&matrV,3,0));/* X */
-            cvmSet(points4D,1,i,cvmGet(&matrV,3,1));/* Y */
-            cvmSet(points4D,2,i,cvmGet(&matrV,3,2));/* Z */
-            cvmSet(points4D,3,i,cvmGet(&matrV,3,3));/* W */
-        }
+        /* Copy computed point */
+        cvmSet(points4D,0,i,matrV(3,0));/* X */
+        cvmSet(points4D,1,i,matrV(3,1));/* Y */
+        cvmSet(points4D,2,i,matrV(3,2));/* Z */
+        cvmSet(points4D,3,i,matrV(3,3));/* W */
     }
 
 #if 0
@@ -239,32 +220,32 @@ cvCorrectMatches(CvMat *F_, CvMat *points1_, CvMat *points2_, CvMat *new_points1
     }
 
     // Make sure F uses double precision
-    F = cvCreateMat(3,3,CV_64FC1);
+    F.reset(cvCreateMat(3,3,CV_64FC1));
     cvConvert(F_, F);
 
     // Make sure points1 uses double precision
-    points1 = cvCreateMat(points1_->rows,points1_->cols,CV_64FC2);
+    points1.reset(cvCreateMat(points1_->rows,points1_->cols,CV_64FC2));
     cvConvert(points1_, points1);
 
     // Make sure points2 uses double precision
-    points2 = cvCreateMat(points2_->rows,points2_->cols,CV_64FC2);
+    points2.reset(cvCreateMat(points2_->rows,points2_->cols,CV_64FC2));
     cvConvert(points2_, points2);
 
-    tmp33 = cvCreateMat(3,3,CV_64FC1);
-    tmp31 = cvCreateMat(3,1,CV_64FC1), tmp31_2 = cvCreateMat(3,1,CV_64FC1);
-    T1i = cvCreateMat(3,3,CV_64FC1), T2i = cvCreateMat(3,3,CV_64FC1);
-    R1 = cvCreateMat(3,3,CV_64FC1), R2 = cvCreateMat(3,3,CV_64FC1);
-    TFT = cvCreateMat(3,3,CV_64FC1), TFTt = cvCreateMat(3,3,CV_64FC1), RTFTR = cvCreateMat(3,3,CV_64FC1);
-    U = cvCreateMat(3,3,CV_64FC1);
-    S = cvCreateMat(3,3,CV_64FC1);
-    V = cvCreateMat(3,3,CV_64FC1);
-    e1 = cvCreateMat(3,1,CV_64FC1), e2 = cvCreateMat(3,1,CV_64FC1);
+    tmp33.reset(cvCreateMat(3,3,CV_64FC1));
+    tmp31.reset(cvCreateMat(3,1,CV_64FC1)), tmp31_2.reset(cvCreateMat(3,1,CV_64FC1));
+    T1i.reset(cvCreateMat(3,3,CV_64FC1)), T2i.reset(cvCreateMat(3,3,CV_64FC1));
+    R1.reset(cvCreateMat(3,3,CV_64FC1)), R2.reset(cvCreateMat(3,3,CV_64FC1));
+    TFT.reset(cvCreateMat(3,3,CV_64FC1)), TFTt.reset(cvCreateMat(3,3,CV_64FC1)), RTFTR.reset(cvCreateMat(3,3,CV_64FC1));
+    U.reset(cvCreateMat(3,3,CV_64FC1));
+    S.reset(cvCreateMat(3,3,CV_64FC1));
+    V.reset(cvCreateMat(3,3,CV_64FC1));
+    e1.reset(cvCreateMat(3,1,CV_64FC1)), e2.reset(cvCreateMat(3,1,CV_64FC1));
 
     double x1, y1, x2, y2;
     double scale;
     double f1, f2, a, b, c, d;
-    polynomial = cvCreateMat(1,7,CV_64FC1);
-    result = cvCreateMat(1,6,CV_64FC2);
+    polynomial.reset(cvCreateMat(1,7,CV_64FC1));
+    result.reset(cvCreateMat(1,6,CV_64FC2));
     double t_min, s_val, t, s;
     for (int p = 0; p < points1->cols; ++p) {
         // Replace F by T2-t * F * T1-t

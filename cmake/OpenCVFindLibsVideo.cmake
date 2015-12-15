@@ -13,7 +13,7 @@ endif(WITH_VFW)
 # --- GStreamer ---
 ocv_clear_vars(HAVE_GSTREAMER)
 # try to find gstreamer 1.x first
-if(WITH_GSTREAMER)
+if(WITH_GSTREAMER AND NOT WITH_GSTREAMER_0_10)
   CHECK_MODULE(gstreamer-base-1.0 HAVE_GSTREAMER_BASE)
   CHECK_MODULE(gstreamer-video-1.0 HAVE_GSTREAMER_VIDEO)
   CHECK_MODULE(gstreamer-app-1.0 HAVE_GSTREAMER_APP)
@@ -29,18 +29,10 @@ if(WITH_GSTREAMER)
       set(GSTREAMER_PBUTILS_VERSION ${ALIASOF_gstreamer-pbutils-1.0_VERSION})
   endif()
 
-endif(WITH_GSTREAMER)
+endif(WITH_GSTREAMER AND NOT WITH_GSTREAMER_0_10)
 
-# gstreamer support was requested but could not find gstreamer 1.x,
-# so fallback/try to find gstreamer 0.10
-if(WITH_GSTREAMER AND NOT HAVE_GSTREAMER)
-  set(WITH_GSTREAMER_0_10 ON)
-endif()
-
-# if gstreamer 1.x was not found (fallback on gstreamer 0.10), or we specified
-# we wanted gstreamer 0.10 support,
-# then try to find it if not gstreamer support has not been found so far.
-if(WITH_GSTREAMER_0_10 AND NOT HAVE_GSTREAMER)
+# if gstreamer 1.x was not found, or we specified we wanted 0.10, try to find it
+if(WITH_GSTREAMER AND NOT HAVE_GSTREAMER OR WITH_GSTREAMER_0_10)
   CHECK_MODULE(gstreamer-base-0.10 HAVE_GSTREAMER_BASE)
   CHECK_MODULE(gstreamer-video-0.10 HAVE_GSTREAMER_VIDEO)
   CHECK_MODULE(gstreamer-app-0.10 HAVE_GSTREAMER_APP)
@@ -55,7 +47,7 @@ if(WITH_GSTREAMER_0_10 AND NOT HAVE_GSTREAMER)
       set(GSTREAMER_RIFF_VERSION ${ALIASOF_gstreamer-riff-0.10_VERSION})
       set(GSTREAMER_PBUTILS_VERSION ${ALIASOF_gstreamer-pbutils-0.10_VERSION})
   endif()
-endif(WITH_GSTREAMER_0_10 AND NOT HAVE_GSTREAMER)
+endif(WITH_GSTREAMER AND NOT HAVE_GSTREAMER OR WITH_GSTREAMER_0_10)
 
 # --- unicap ---
 ocv_clear_vars(HAVE_UNICAP)
@@ -139,7 +131,7 @@ if(WITH_1394)
       if(HAVE_DC1394_2)
         ocv_parse_pkg("libdc1394-2" "${DC1394_2_LIB_DIR}/pkgconfig" "")
         ocv_include_directories(${DC1394_2_INCLUDE_PATH})
-        set(HIGHGUI_LIBRARIES ${HIGHGUI_LIBRARIES}
+        set(VIDEOIO_LIBRARIES ${VIDEOIO_LIBRARIES}
             "${DC1394_2_LIB_DIR}/libdc1394.a"
             "${CMU1394_LIB_DIR}/lib1394camera.a")
       endif(HAVE_DC1394_2)
@@ -180,6 +172,11 @@ if(WITH_OPENNI)
   include("${OpenCV_SOURCE_DIR}/cmake/OpenCVFindOpenNI.cmake")
 endif(WITH_OPENNI)
 
+ocv_clear_vars(HAVE_OPENNI2)
+if(WITH_OPENNI2)
+  include("${OpenCV_SOURCE_DIR}/cmake/OpenCVFindOpenNI2.cmake")
+endif(WITH_OPENNI2)
+
 # --- XIMEA ---
 ocv_clear_vars(HAVE_XIMEA)
 if(WITH_XIMEA)
@@ -190,7 +187,7 @@ if(WITH_XIMEA)
 endif(WITH_XIMEA)
 
 # --- FFMPEG ---
-ocv_clear_vars(HAVE_FFMPEG HAVE_FFMPEG_CODEC HAVE_FFMPEG_FORMAT HAVE_FFMPEG_UTIL HAVE_FFMPEG_SWSCALE HAVE_GENTOO_FFMPEG HAVE_FFMPEG_FFMPEG)
+ocv_clear_vars(HAVE_FFMPEG HAVE_FFMPEG_CODEC HAVE_FFMPEG_FORMAT HAVE_FFMPEG_UTIL HAVE_FFMPEG_SWSCALE HAVE_FFMPEG_RESAMPLE HAVE_GENTOO_FFMPEG HAVE_FFMPEG_FFMPEG)
 if(WITH_FFMPEG)
   if(WIN32 AND NOT ARM)
     include("${OpenCV_SOURCE_DIR}/3rdparty/ffmpeg/ffmpeg_version.cmake")
@@ -199,6 +196,7 @@ if(WITH_FFMPEG)
     CHECK_MODULE(libavformat HAVE_FFMPEG_FORMAT)
     CHECK_MODULE(libavutil HAVE_FFMPEG_UTIL)
     CHECK_MODULE(libswscale HAVE_FFMPEG_SWSCALE)
+    CHECK_MODULE(libavresample HAVE_FFMPEG_RESAMPLE)
 
     CHECK_INCLUDE_FILE(libavformat/avformat.h HAVE_GENTOO_FFMPEG)
     CHECK_INCLUDE_FILE(ffmpeg/avformat.h HAVE_FFMPEG_FFMPEG)
@@ -230,6 +228,19 @@ if(WITH_FFMPEG)
         find_library(FFMPEG_FORMAT_LIB "avformat" HINTS "${FFMPEG_LIB_DIR}")
         find_library(FFMPEG_UTIL_LIB "avutil" HINTS "${FFMPEG_LIB_DIR}")
         find_library(FFMPEG_SWSCALE_LIB "swscale" HINTS "${FFMPEG_LIB_DIR}")
+        find_library(FFMPEG_RESAMPLE_LIB "avresample" HINTS "${FFMPEG_LIB_DIR}")
+        if(FFMPEG_CODEC_LIB)
+          set(HAVE_FFMPEG_CODEC 1)
+        endif()
+        if(FFMPEG_FORMAT_LIB)
+          set(HAVE_FFMPEG_FORMAT 1)
+        endif()
+        if(FFMPEG_UTIL_LIB)
+          set(HAVE_FFMPEG_UTIL 1)
+        endif()
+        if(FFMPEG_SWSCALE_LIB)
+          set(HAVE_FFMPEG_SWSCALE 1)
+        endif()
         if(FFMPEG_CODEC_LIB AND FFMPEG_FORMAT_LIB AND
            FFMPEG_UTIL_LIB AND FFMPEG_SWSCALE_LIB)
           set(ALIASOF_libavcodec_VERSION "Unknown")
@@ -237,12 +248,19 @@ if(WITH_FFMPEG)
           set(ALIASOF_libavutil_VERSION "Unknown")
           set(ALIASOF_libswscale_VERSION "Unknown")
           set(HAVE_FFMPEG 1)
+          if(FFMPEG_RESAMPLE_LIB)
+            set(HAVE_FFMPEG_RESAMPLE 1)
+            set(ALIASOF_libavresample_VERSION "Unknown")
+          endif()
         endif()
       endif(FFMPEG_INCLUDE_DIR)
       if(HAVE_FFMPEG)
-        set(HIGHGUI_LIBRARIES ${HIGHGUI_LIBRARIES}
-            ${FFMPEG_CODEC_LIB} ${FFMPEG_FORMAT_LIB}
-            ${FFMPEG_UTIL_LIB} ${FFMPEG_SWSCALE_LIB})
+        set(VIDEOIO_LIBRARIES ${VIDEOIO_LIBRARIES} "${FFMPEG_LIB_DIR}/libavcodec.a"
+            "${FFMPEG_LIB_DIR}/libavformat.a" "${FFMPEG_LIB_DIR}/libavutil.a"
+            "${FFMPEG_LIB_DIR}/libswscale.a")
+        if(HAVE_FFMPEG_RESAMPLE)
+          set(VIDEOIO_LIBRARIES ${VIDEOIO_LIBRARIES} "${FFMPEG_LIB_DIR}/libavresample.a")
+        endif()
         ocv_include_directories(${FFMPEG_INCLUDE_DIR})
       endif(HAVE_FFMPEG)
     endif()
@@ -261,14 +279,17 @@ if(WITH_MSMF)
   check_include_file(Mfapi.h HAVE_MSMF)
 endif(WITH_MSMF)
 
-# --- Extra HighGUI libs on Windows ---
+# --- Extra HighGUI and VideoIO libs on Windows ---
 if(WIN32)
-  list(APPEND HIGHGUI_LIBRARIES comctl32 gdi32 ole32 setupapi ws2_32 vfw32)
+  list(APPEND HIGHGUI_LIBRARIES comctl32 gdi32 ole32 setupapi ws2_32)
+  if(HAVE_VFW)
+    list(APPEND VIDEOIO_LIBRARIES vfw32)
+  endif()
   if(MINGW64)
-    list(APPEND HIGHGUI_LIBRARIES avifil32 avicap32 winmm msvfw32)
-    list(REMOVE_ITEM HIGHGUI_LIBRARIES vfw32)
+    list(APPEND VIDEOIO_LIBRARIES avifil32 avicap32 winmm msvfw32)
+    list(REMOVE_ITEM VIDEOIO_LIBRARIES vfw32)
   elseif(MINGW)
-    list(APPEND HIGHGUI_LIBRARIES winmm)
+    list(APPEND VIDEOIO_LIBRARIES winmm)
   endif()
 endif(WIN32)
 
@@ -281,7 +302,7 @@ endif()
 if (NOT IOS)
   if(WITH_QUICKTIME)
     set(HAVE_QUICKTIME YES)
-  elseif(APPLE)
+  elseif(APPLE AND CMAKE_COMPILER_IS_CLANGCXX)
     set(HAVE_QTKIT YES)
   endif()
 endif()
@@ -290,3 +311,9 @@ endif()
 if(WITH_INTELPERC)
   include("${OpenCV_SOURCE_DIR}/cmake/OpenCVFindIntelPerCSDK.cmake")
 endif(WITH_INTELPERC)
+
+# --- gPhoto2 ---
+ocv_clear_vars(HAVE_GPHOTO2)
+if(WITH_GPHOTO2)
+  CHECK_MODULE(libgphoto2 HAVE_GPHOTO2)
+endif(WITH_GPHOTO2)

@@ -40,7 +40,7 @@
 //M*/
 
 #include "test_precomp.hpp"
-#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/highgui.hpp"
 
 using namespace std;
 using namespace cv;
@@ -57,9 +57,6 @@ public:
     CV_DescriptorMatcherTest( const string& _name, const Ptr<DescriptorMatcher>& _dmatcher, float _badPart ) :
         badPart(_badPart), name(_name), dmatcher(_dmatcher)
         {}
-
-    static void generateData( Mat& query, Mat& train );
-
 protected:
     static const int dim = 500;
     static const int queryDescCount = 300; // must be even number because we split train data in some cases in two
@@ -67,6 +64,7 @@ protected:
     const float badPart;
 
     virtual void run( int );
+    void generateData( Mat& query, Mat& train );
 
     void emptyDataTest();
     void matchTest( const Mat& query, const Mat& train );
@@ -528,105 +526,30 @@ void CV_DescriptorMatcherTest::run( int )
     radiusMatchTest( query, train );
 }
 
-// bug #3172: test that knnMatch() can handle images with fewer than knn keypoints
-class CV_DescriptorMatcherLowKeypointTest : public cvtest::BaseTest
-{
-public:
-    CV_DescriptorMatcherLowKeypointTest( const string& _name, const Ptr<DescriptorMatcher>& _dmatcher ) :
-        name(_name), dmatcher(_dmatcher)
-        {}
-protected:
-    virtual void run(int);
-
-    void knnMatchTest( const Mat& query, const Mat& train );
-
-private:
-    string name;
-    Ptr<DescriptorMatcher> dmatcher;
-};
-
-void CV_DescriptorMatcherLowKeypointTest::knnMatchTest( const Mat& query, const Mat& train )
-{
-    const int knn = 6;
-    const int queryDescCount = query.rows;
-    vector<vector<DMatch> > matches;
-
-    // three train images, the third one with only one keypoint
-    dmatcher->add( vector<Mat>(1,train.rowRange(0, train.rows/2)) );
-    dmatcher->add( vector<Mat>(1,train.rowRange(train.rows/2, train.rows-1)) );
-    dmatcher->add( vector<Mat>(1,train.rowRange(train.rows-1, train.rows)) );
-    const int trainImgCount = (int)dmatcher->getTrainDescriptors().size();
-
-    dmatcher->knnMatch( query, matches, knn, std::vector<Mat>(), true );
-
-    if( matches.empty() )
-    {
-        ts->printf(cvtest::TS::LOG, "No matches while testing knnMatch() function (3).\n");
-        ts->set_failed_test_info( cvtest::TS::FAIL_INVALID_OUTPUT );
-    }
-    else
-    {
-        int badImgIdxCount = 0, badQueryIdxCount = 0, badTrainIdxCount = 0;
-        for( size_t i = 0; i < matches.size(); i++ )
-        {
-            for( size_t j = 0; j < matches[i].size(); j++ )
-            {
-                const DMatch& match = matches[i][j];
-                if( match.imgIdx < 0 || match.imgIdx >= trainImgCount )
-                {
-                    ++badImgIdxCount;
-                }
-                if( match.queryIdx < 0 || match.queryIdx >= queryDescCount )
-                {
-                    ++badQueryIdxCount;
-                }
-                if( match.trainIdx < 0 )
-                {
-                    ++badTrainIdxCount;
-                }
-            }
-        }
-        if( badImgIdxCount > 0 || badQueryIdxCount > 0 || badTrainIdxCount > 0 )
-        {
-            ts->printf( cvtest::TS::LOG, "%d/%d/%d - wrong image/query/train indices while testing knnMatch() function (3).\n",
-                        badImgIdxCount, badQueryIdxCount, badTrainIdxCount );
-            ts->set_failed_test_info( cvtest::TS::FAIL_INVALID_OUTPUT );
-        }
-    }
-}
-
-void CV_DescriptorMatcherLowKeypointTest::run( int )
-{
-    Mat query, train;
-    CV_DescriptorMatcherTest::generateData( query, train );
-
-    knnMatchTest( query, train );
-}
-
 /****************************************************************************************\
 *                                Tests registrations                                     *
 \****************************************************************************************/
 
 TEST( Features2d_DescriptorMatcher_BruteForce, regression )
 {
-    CV_DescriptorMatcherTest test( "descriptor-matcher-brute-force", Algorithm::create<DescriptorMatcher>("DescriptorMatcher.BFMatcher"), 0.01f );
+    CV_DescriptorMatcherTest test( "descriptor-matcher-brute-force",
+                                  DescriptorMatcher::create("BruteForce"), 0.01f );
     test.safe_run();
 }
 
 TEST( Features2d_DescriptorMatcher_FlannBased, regression )
 {
-    CV_DescriptorMatcherTest test( "descriptor-matcher-flann-based", Algorithm::create<DescriptorMatcher>("DescriptorMatcher.FlannBasedMatcher"), 0.04f );
+    CV_DescriptorMatcherTest test( "descriptor-matcher-flann-based",
+                                  DescriptorMatcher::create("FlannBased"), 0.04f );
     test.safe_run();
 }
 
-TEST( Features2d_DescriptorMatcher_LowKeypoint_BruteForce, regression )
+TEST( Features2d_DMatch, read_write )
 {
-    CV_DescriptorMatcherLowKeypointTest test( "descriptor-matcher-low-keypoint-brute-force", Algorithm::create<DescriptorMatcher>("DescriptorMatcher.BFMatcher") );
-    test.safe_run();
-}
-
-TEST(Features2d_DescriptorMatcher_LowKeypoint_FlannBased, regression)
-{
-    CV_DescriptorMatcherLowKeypointTest test( "descriptor-matcher-low-keypoint-flann-based", Algorithm::create<DescriptorMatcher>("DescriptorMatcher.FlannBasedMatcher") );
-    test.safe_run();
+    FileStorage fs(".xml", FileStorage::WRITE + FileStorage::MEMORY);
+    vector<DMatch> matches;
+    matches.push_back(DMatch(1,2,3,4.5f));
+    fs << "Match" << matches;
+    String str = fs.releaseAndGetString();
+    ASSERT_NE( strstr(str.c_str(), "4.5"), (char*)0 );
 }

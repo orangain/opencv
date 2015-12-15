@@ -1,8 +1,3 @@
-if(${CMAKE_VERSION} VERSION_LESS "2.8.3")
-  message(STATUS "WITH_CUDA flag requires CMake 2.8.3 or newer. CUDA support is disabled.")
-  return()
-endif()
-
 if(WIN32 AND NOT MSVC)
   message(STATUS "CUDA compilation is disabled (due to only Visual Studio compiler supported on your platform).")
   return()
@@ -15,10 +10,10 @@ endif()
 
 set(CMAKE_MODULE_PATH "${OpenCV_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
-if(ANDROID AND "${CUDA_VERSION}" VERSION_LESS "7.0")
+if(ANDROID)
   set(CUDA_TARGET_OS_VARIANT "Android")
 endif()
-find_host_package(CUDA 4.2 QUIET)
+find_host_package(CUDA "${MIN_VER_CUDA}" QUIET)
 
 list(REMOVE_AT CMAKE_MODULE_PATH 0)
 
@@ -35,6 +30,9 @@ if(CUDA_FOUND)
 
   if(WITH_NVCUVID)
     find_cuda_helper_libs(nvcuvid)
+    if(WIN32)
+      find_cuda_helper_libs(nvcuvenc)
+    endif()
     set(HAVE_NVCUVID 1)
   endif()
 
@@ -82,16 +80,18 @@ if(CUDA_FOUND)
 
   if(NOT DEFINED __cuda_arch_bin)
     if(ANDROID)
-      if (ARM)
+      if(ARM)
         set(__cuda_arch_bin "3.2")
         set(__cuda_arch_ptx "")
       elseif(AARCH64)
-        set(__cuda_arch_bin "5.2")
+        set(__cuda_arch_bin "5.3")
         set(__cuda_arch_ptx "")
       endif()
     else()
       if(${CUDA_VERSION} VERSION_LESS "5.0")
         set(__cuda_arch_bin "1.1 1.2 1.3 2.0 2.1(2.0) 3.0")
+      elseif(${CUDA_VERSION} VERSION_GREATER "6.5")
+        set(__cuda_arch_bin "2.0 2.1(2.0) 3.0 3.5")
       else()
         set(__cuda_arch_bin "1.1 1.2 1.3 2.0 2.1(2.0) 3.0 3.5")
       endif()
@@ -185,6 +185,8 @@ if(CUDA_FOUND)
       # we remove -frtti because it's used for C++ compiler
       # but NVCC uses C compiler by default
       string(REPLACE "-frtti" "" ${var} "${${var}}")
+
+      string(REPLACE "-fvisibility-inlines-hidden" "" ${var} "${${var}}")
     endforeach()
 
     if(BUILD_SHARED_LIBS)

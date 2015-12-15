@@ -41,10 +41,13 @@
 //M*/
 
 #include "precomp.hpp"
-#include "opencv2/video/video.hpp"
+#include "opencv2/video.hpp"
 #include "opencv2/videostab/optical_flow.hpp"
+#include "opencv2/videostab/ring_buffer.hpp"
 
-using namespace std;
+#ifdef HAVE_OPENCV_CUDAARITHM
+  #include "opencv2/cudaarithm.hpp"
+#endif
 
 namespace cv
 {
@@ -59,10 +62,60 @@ void SparsePyrLkOptFlowEstimator::run(
 }
 
 
-#if defined(HAVE_OPENCV_GPU) && !defined(ANDROID)
+#ifdef HAVE_OPENCV_CUDAOPTFLOW
+
+SparsePyrLkOptFlowEstimatorGpu::SparsePyrLkOptFlowEstimatorGpu()
+{
+    CV_Assert(cuda::getCudaEnabledDeviceCount() > 0);
+    optFlowEstimator_ = cuda::SparsePyrLKOpticalFlow::create();
+}
+
+
+void SparsePyrLkOptFlowEstimatorGpu::run(
+        InputArray frame0, InputArray frame1, InputArray points0, InputOutputArray points1,
+        OutputArray status, OutputArray errors)
+{
+    frame0_.upload(frame0.getMat());
+    frame1_.upload(frame1.getMat());
+    points0_.upload(points0.getMat());
+
+    if (errors.needed())
+    {
+        run(frame0_, frame1_, points0_, points1_, status_, errors_);
+        errors_.download(errors.getMatRef());
+    }
+    else
+        run(frame0_, frame1_, points0_, points1_, status_);
+
+    points1_.download(points1.getMatRef());
+    status_.download(status.getMatRef());
+}
+
+
+void SparsePyrLkOptFlowEstimatorGpu::run(
+        const cuda::GpuMat &frame0, const cuda::GpuMat &frame1, const cuda::GpuMat &points0,
+        cuda::GpuMat &points1, cuda::GpuMat &status, cuda::GpuMat &errors)
+{
+    optFlowEstimator_->setWinSize(winSize_);
+    optFlowEstimator_->setMaxLevel(maxLevel_);
+    optFlowEstimator_->calc(frame0, frame1, points0, points1, status, errors);
+}
+
+
+void SparsePyrLkOptFlowEstimatorGpu::run(
+        const cuda::GpuMat &frame0, const cuda::GpuMat &frame1, const cuda::GpuMat &points0,
+        cuda::GpuMat &points1, cuda::GpuMat &status)
+{
+    optFlowEstimator_->setWinSize(winSize_);
+    optFlowEstimator_->setMaxLevel(maxLevel_);
+    optFlowEstimator_->calc(frame0, frame1, points0, points1, status);
+}
+
+
 DensePyrLkOptFlowEstimatorGpu::DensePyrLkOptFlowEstimatorGpu()
 {
-    CV_Assert(gpu::getCudaEnabledDeviceCount() > 0);
+    CV_Assert(cuda::getCudaEnabledDeviceCount() > 0);
+    optFlowEstimator_ = cuda::DensePyrLKOpticalFlow::create();
 }
 
 
@@ -73,21 +126,30 @@ void DensePyrLkOptFlowEstimatorGpu::run(
     frame0_.upload(frame0.getMat());
     frame1_.upload(frame1.getMat());
 
-    optFlowEstimator_.winSize = winSize_;
-    optFlowEstimator_.maxLevel = maxLevel_;
+    optFlowEstimator_->setWinSize(winSize_);
+    optFlowEstimator_->setMaxLevel(maxLevel_);
+
     if (errors.needed())
     {
-        optFlowEstimator_.dense(frame0_, frame1_, flowX_, flowY_, &errors_);
-        errors_.download(errors.getMatRef());
+        CV_Error(Error::StsNotImplemented, "DensePyrLkOptFlowEstimatorGpu doesn't support errors calculation");
     }
     else
-        optFlowEstimator_.dense(frame0_, frame1_, flowX_, flowY_);
+    {
+        cuda::GpuMat flow;
+        optFlowEstimator_->calc(frame0_, frame1_, flow);
+
+        cuda::GpuMat flows[2];
+        cuda::split(flow, flows);
+
+        flowX_ = flows[0];
+        flowY_ = flows[1];
+    }
 
     flowX_.download(flowX.getMatRef());
     flowY_.download(flowY.getMatRef());
 }
-#endif
 
+#endif // HAVE_OPENCV_CUDAOPTFLOW
 
 } // namespace videostab
 } // namespace cv

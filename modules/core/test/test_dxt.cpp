@@ -39,8 +39,8 @@ static void DFT_1D( const Mat& _src, Mat& _dst, int flags, const Mat& _wave=Mat(
     double scale = (flags & DFT_SCALE) ? 1./n : 1.;
     size_t esz = _src.elemSize();
     size_t srcstep = esz, dststep = esz;
-    const uchar* src0 = _src.data;
-    uchar* dst0 = _dst.data;
+    const uchar* src0 = _src.ptr();
+    uchar* dst0 = _dst.ptr();
 
     CV_Assert( _src.cols + _src.rows - 1 == n );
 
@@ -855,7 +855,7 @@ protected:
             merge(mv, 2, srcz);
             dft(srcz, dstz);
             dft(src, dst, DFT_COMPLEX_OUTPUT);
-            if(norm(dst, dstz, NORM_INF) > 1e-3)
+            if (cvtest::norm(dst, dstz, NORM_INF) > 1e-3)
             {
                 cout << "actual:\n" << dst << endl << endl;
                 cout << "reference:\n" << dstz << endl << endl;
@@ -866,3 +866,24 @@ protected:
 };
 
 TEST(Core_DFT, complex_output) { Core_DFTComplexOutputTest test; test.safe_run(); }
+
+TEST(Core_DFT, complex_output2)
+{
+    for( int i = 0; i < 100; i++ )
+    {
+        int type = theRNG().uniform(0, 2) ? CV_64F : CV_32F;
+        int m = theRNG().uniform(1, 10);
+        int n = theRNG().uniform(1, 10);
+        Mat x(m, n, type), out;
+        randu(x, -1., 1.);
+        dft(x, out, DFT_ROWS | DFT_COMPLEX_OUTPUT);
+        double nrm = norm(out, NORM_INF);
+        double thresh = n*m*2;
+        if( nrm > thresh )
+        {
+            cout << "x: " << x << endl;
+            cout << "out: " << out << endl;
+            ASSERT_LT(nrm, thresh);
+        }
+    }
+}

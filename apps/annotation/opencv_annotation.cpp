@@ -5,9 +5,11 @@ USAGE:
 Created by: Puttemans Steven
 *****************************************************************************************************/
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/videoio.hpp>
+#include <opencv2/imgproc.hpp>
 
 #include <fstream>
 #include <iostream>
@@ -34,7 +36,7 @@ const string window_name="OpenCV Based Annotation Tool";
 void on_mouse(int event, int x, int y, int , void * )
 {
     // Action when left button is clicked
-    if(event == CV_EVENT_LBUTTONDOWN)
+    if(event == EVENT_LBUTTONDOWN)
     {
         if(!start_draw)
         {
@@ -48,7 +50,7 @@ void on_mouse(int event, int x, int y, int , void * )
         }
     }
     // Action when mouse is moving
-    if((event == CV_EVENT_MOUSEMOVE) && start_draw)
+    if((event == EVENT_MOUSEMOVE) && start_draw)
     {
         // Redraw bounding box for annotation
         Mat current_view;
@@ -152,6 +154,15 @@ void get_annotations(Mat input_image, stringstream* output_stream)
 
 int main( int argc, const char** argv )
 {
+    // If no arguments are given, then supply some information on how this tool works
+    if( argc == 1 ){
+        cout << "Usage: " << argv[0] << endl;
+        cout << " -images <folder_location> [example - /data/testimages/]" << endl;
+        cout << " -annotations <ouput_file> [example - /data/annotations.txt]" << endl;
+
+        return -1;
+    }
+
     // Read in the input arguments
     string image_folder;
     string annotations;

@@ -9,14 +9,23 @@
 #include <ctime>
 #include <ctype.h>
 
+#include "cvconfig.h"
 #include <iostream>
 #include <iomanip>
-#include "opencv2/gpu/gpu.hpp"
+#include "opencv2/core/cuda.hpp"
+#include "opencv2/cudalegacy.hpp"
 #include "opencv2/highgui/highgui.hpp"
+#include "opencv2/highgui/highgui_c.h"
 
-#include "NPP_staging/NPP_staging.hpp"
-#include "NCVBroxOpticalFlow.hpp"
+#if !defined(HAVE_CUDA)
+int main( int, const char** )
+{
+    std::cout << "Please compile the library with CUDA support" << std::endl;
+    return -1;
+}
+#else
 
+//using std::tr1::shared_ptr;
 using cv::Ptr;
 
 #define PARAM_LEFT  "--left"
@@ -382,7 +391,7 @@ int main(int argc, char **argv)
         return result;
     }
 
-    cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice());
+    cv::cuda::printShortCudaDeviceInfo(cv::cuda::getDevice());
 
     std::cout << "OpenCV / NVIDIA Computer Vision\n";
     std::cout << "Optical Flow Demo: Frame Interpolation\n";
@@ -637,3 +646,5 @@ int main(int argc, char **argv)
 
     return 0;
 }
+
+#endif

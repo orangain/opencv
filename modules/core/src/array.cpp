@@ -48,6 +48,12 @@
 
 #include "precomp.hpp"
 
+#define  CV_ORIGIN_TL  0
+#define  CV_ORIGIN_BL  1
+
+/* default image row align (in bytes) */
+#define  CV_DEFAULT_IMAGE_ROW_ALIGN  4
+
 
 static struct
 {
@@ -305,7 +311,8 @@ cvCloneMatND( const CvMatND* src )
     if( src->data.ptr )
     {
         cvCreateData( dst );
-        cv::Mat _src(src), _dst(dst);
+        cv::Mat _src = cv::cvarrToMat(src);
+        cv::Mat _dst = cv::cvarrToMat(dst);
         uchar* data0 = dst->data.ptr;
         _src.copyTo(_dst);
         CV_Assert(_dst.data == data0);
@@ -497,7 +504,7 @@ cvInitNArrayIterator( int count, CvArr** arrs,
 CV_IMPL int cvNextNArraySlice( CvNArrayIterator* iterator )
 {
     assert( iterator != 0 );
-    int i, dims, size = 0;
+    int i, dims;
 
     for( dims = iterator->dims; dims > 0; dims-- )
     {
@@ -507,7 +514,7 @@ CV_IMPL int cvNextNArraySlice( CvNArrayIterator* iterator )
         if( --iterator->stack[dims-1] > 0 )
             break;
 
-        size = iterator->hdr[0]->dim[dims-1].size;
+        const int size = iterator->hdr[0]->dim[dims-1].size;
 
         for( i = 0; i < iterator->count; i++ )
             iterator->ptr[i] -= (size_t)size*iterator->hdr[i]->dim[dims-1].step;
@@ -849,7 +856,6 @@ cvCreateData( CvArr* arr )
     else if( CV_IS_MATND_HDR( arr ))
     {
         CvMatND* mat = (CvMatND*)arr;
-        int i;
         size_t total_size = CV_ELEM_SIZE(mat->type);
 
         if( mat->dim[0].size == 0 )
@@ -865,6 +871,7 @@ cvCreateData( CvArr* arr )
         }
         else
         {
+            int i;
             for( i = mat->dims - 1; i >= 0; i-- )
             {
                 size_t size = (size_t)mat->dim[i].step*mat->dim[i].size;
@@ -1048,16 +1055,19 @@ cvGetRawData( const CvArr* arr, uchar** data, int* step, CvSize* roi_size )
 
         if( roi_size || step )
         {
-            int i, size1 = mat->dim[0].size, size2 = 1;
-
-            if( mat->dims > 2 )
-                for( i = 1; i < mat->dims; i++ )
-                    size1 *= mat->dim[i].size;
-            else
-                size2 = mat->dim[1].size;
-
             if( roi_size )
             {
+                int size1 = mat->dim[0].size, size2 = 1;
+
+                if( mat->dims > 2 )
+                {
+                    int i;
+                    for( i = 1; i < mat->dims; i++ )
+                        size1 *= mat->dim[i].size;
+                }
+                else
+                    size2 = mat->dim[1].size;
+
                 roi_size->width = size2;
                 roi_size->height = size1;
             }
@@ -1210,7 +1220,7 @@ cvGetDimSize( const CvArr* arr, int index )
 CV_IMPL CvSize
 cvGetSize( const CvArr* arr )
 {
-    CvSize size = { 0, 0 };
+    CvSize size;
 
     if( CV_IS_MAT_HDR_Z( arr ))
     {
@@ -1463,28 +1473,28 @@ cvScalarToRawData( const CvScalar* scalar, void* data, int type, int extend_to_1
         while( cn-- )
         {
             int t = cvRound( scalar->val[cn] );
-            ((uchar*)data)[cn] = CV_CAST_8U(t);
+            ((uchar*)data)[cn] = cv::saturate_cast<uchar>(t);
         }
         break;
     case CV_8SC1:
         while( cn-- )
         {
             int t = cvRound( scalar->val[cn] );
-            ((char*)data)[cn] = CV_CAST_8S(t);
+            ((char*)data)[cn] = cv::saturate_cast<schar>(t);
         }
         break;
     case CV_16UC1:
         while( cn-- )
         {
             int t = cvRound( scalar->val[cn] );
-            ((ushort*)data)[cn] = CV_CAST_16U(t);
+            ((ushort*)data)[cn] = cv::saturate_cast<ushort>(t);
         }
         break;
     case CV_16SC1:
         while( cn-- )
         {
             int t = cvRound( scalar->val[cn] );
-            ((short*)data)[cn] = CV_CAST_16S(t);
+            ((short*)data)[cn] = cv::saturate_cast<short>(t);
         }
         break;
     case CV_32SC1:
@@ -1601,19 +1611,19 @@ static void icvSetReal( double value, const void* data, int type )
         switch( type )
         {
         case CV_8U:
-            *(uchar*)data = CV_CAST_8U(ivalue);
+            *(uchar*)data = cv::saturate_cast<uchar>(ivalue);
             break;
         case CV_8S:
-            *(char*)data = CV_CAST_8S(ivalue);
+            *(schar*)data = cv::saturate_cast<schar>(ivalue);
             break;
         case CV_16U:
-            *(ushort*)data = CV_CAST_16U(ivalue);
+            *(ushort*)data = cv::saturate_cast<ushort>(ivalue);
             break;
         case CV_16S:
-            *(short*)data = CV_CAST_16S(ivalue);
+            *(short*)data = cv::saturate_cast<short>(ivalue);
             break;
         case CV_32S:
-            *(int*)data = CV_CAST_32S(ivalue);
+            *(int*)data = cv::saturate_cast<int>(ivalue);
             break;
         }
     }
@@ -1910,7 +1920,7 @@ cvPtrND( const CvArr* arr, const int* idx, int* _type,
 CV_IMPL  CvScalar
 cvGet1D( const CvArr* arr, int idx )
 {
-    CvScalar scalar = {{0,0,0,0}};
+    CvScalar scalar(0);
     int type = 0;
     uchar* ptr;
 
@@ -1945,7 +1955,7 @@ cvGet1D( const CvArr* arr, int idx )
 CV_IMPL  CvScalar
 cvGet2D( const CvArr* arr, int y, int x )
 {
-    CvScalar scalar = {{0,0,0,0}};
+    CvScalar scalar(0);
     int type = 0;
     uchar* ptr;
 
@@ -1979,7 +1989,7 @@ cvGet2D( const CvArr* arr, int y, int x )
 CV_IMPL  CvScalar
 cvGet3D( const CvArr* arr, int z, int y, int x )
 {
-    CvScalar scalar = {{0,0,0,0}};
+    CvScalar scalar(0);
     int type = 0;
     uchar* ptr;
 
@@ -2001,7 +2011,7 @@ cvGet3D( const CvArr* arr, int z, int y, int x )
 CV_IMPL  CvScalar
 cvGetND( const CvArr* arr, const int* idx )
 {
-    CvScalar scalar = {{0,0,0,0}};
+    CvScalar scalar(0);
     int type = 0;
     uchar* ptr;
 
@@ -2451,7 +2461,6 @@ cvGetMat( const CvArr* array, CvMat* mat,
     else if( allowND && CV_IS_MATND_HDR(src) )
     {
         CvMatND* matnd = (CvMatND*)src;
-        int i;
         int size1 = matnd->dim[0].size, size2 = 1;
 
         if( !src->data.ptr )
@@ -2461,8 +2470,11 @@ cvGetMat( const CvArr* array, CvMat* mat,
             CV_Error( CV_StsBadArg, "Only continuous nD arrays are supported here" );
 
         if( matnd->dims > 2 )
+        {
+            int i;
             for( i = 1; i < matnd->dims; i++ )
                 size2 *= matnd->dim[i].size;
+        }
         else
             size2 = matnd->dims == 1 ? 1 : matnd->dim[1].size;
 
@@ -2778,7 +2790,6 @@ cvGetImage( const CvArr* array, IplImage* img )
 {
     IplImage* result = 0;
     const IplImage* src = (const IplImage*)array;
-    int depth;
 
     if( !img )
         CV_Error( CV_StsNullPtr, "" );
@@ -2793,7 +2804,7 @@ cvGetImage( const CvArr* array, IplImage* img )
         if( mat->data.ptr == 0 )
             CV_Error( CV_StsNullPtr, "" );
 
-        depth = cvIplDepth(mat->type);
+        int depth = cvIplDepth(mat->type);
 
         cvInitImageHeader( img, cvSize(mat->cols, mat->rows),
                            depth, CV_MAT_CN(mat->type) );
@@ -3052,7 +3063,7 @@ cvResetImageROI( IplImage* image )
 CV_IMPL CvRect
 cvGetImageROI( const IplImage* img )
 {
-    CvRect rect = { 0, 0, 0, 0 };
+    CvRect rect;
     if( !img )
         CV_Error( CV_StsNullPtr, "Null pointer to image" );
 
@@ -3183,22 +3194,22 @@ cvCheckTermCriteria( CvTermCriteria criteria, double default_eps,
 namespace cv
 {
 
-template<> void Ptr<CvMat>::delete_obj()
+template<> void DefaultDeleter<CvMat>::operator ()(CvMat* obj) const
 { cvReleaseMat(&obj); }
 
-template<> void Ptr<IplImage>::delete_obj()
+template<> void DefaultDeleter<IplImage>::operator ()(IplImage* obj) const
 { cvReleaseImage(&obj); }
 
-template<> void Ptr<CvMatND>::delete_obj()
+template<> void DefaultDeleter<CvMatND>::operator ()(CvMatND* obj) const
 { cvReleaseMatND(&obj); }
 
-template<> void Ptr<CvSparseMat>::delete_obj()
+template<> void DefaultDeleter<CvSparseMat>::operator ()(CvSparseMat* obj) const
 { cvReleaseSparseMat(&obj); }
 
-template<> void Ptr<CvMemStorage>::delete_obj()
+template<> void DefaultDeleter<CvMemStorage>::operator ()(CvMemStorage* obj) const
 { cvReleaseMemStorage(&obj); }
 
-template<> void Ptr<CvFileStorage>::delete_obj()
+template<> void DefaultDeleter<CvFileStorage>::operator ()(CvFileStorage* obj) const
 { cvReleaseFileStorage(&obj); }
 
 }
