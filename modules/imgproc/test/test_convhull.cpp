@@ -161,6 +161,22 @@ cvTsPointPolygonTest( CvPoint2D32f pt, const CvPoint2D32f* vv, int n, int* _idx=
     return result;
 }
 
+static cv::Point2f
+cvTsMiddlePoint(const cv::Point2f &a, const cv::Point2f &b)
+{
+    return cv::Point2f((a.x + b.x) / 2, (a.y + b.y) / 2);
+}
+
+static bool
+cvTsIsPointOnLineSegment(const cv::Point2f &x, const cv::Point2f &a, const cv::Point2f &b)
+{
+    double d1 = cvTsDist(CvPoint2D32f(x.x, x.y), CvPoint2D32f(a.x, a.y));
+    double d2 = cvTsDist(CvPoint2D32f(x.x, x.y), CvPoint2D32f(b.x, b.y));
+    double d3 = cvTsDist(CvPoint2D32f(a.x, a.y), CvPoint2D32f(b.x, b.y));
+
+    return (abs(d1 + d2 - d3) <= (1E-5));
+}
+
 
 /****************************************************************************************\
 *                              Base class for shape descriptor tests                     *
@@ -550,6 +566,8 @@ int CV_ConvHullTest::validate_test_results( int test_case_idx )
     hull = cvCreateMat( 1, hull_count, CV_32FC2 );
     mask = cvCreateMat( 1, hull_count, CV_8UC1 );
     cvZero( mask );
+    Mat _mask = cvarrToMat(mask);
+
     h = (CvPoint2D32f*)(hull->data.ptr);
 
     // extract convex hull points
@@ -627,7 +645,7 @@ int CV_ConvHullTest::validate_test_results( int test_case_idx )
             mask->data.ptr[idx] = (uchar)1;
     }
 
-    if( cvNorm( mask, 0, CV_L1 ) != hull_count )
+    if( cvtest::norm( _mask, Mat::zeros(_mask.dims, _mask.size, _mask.type()), NORM_L1 ) != hull_count )
     {
         ts->printf( cvtest::TS::LOG, "Not every convex hull vertex coincides with some input point\n" );
         code = cvtest::TS::FAIL_BAD_ACCURACY;
@@ -765,6 +783,145 @@ _exit_:
 
     if( code < 0 )
         ts->set_failed_test_info( code );
+    return code;
+}
+
+
+/****************************************************************************************\
+*                                   MinEnclosingTriangle Test                            *
+\****************************************************************************************/
+
+class CV_MinTriangleTest : public CV_BaseShapeDescrTest
+{
+public:
+    CV_MinTriangleTest();
+
+protected:
+    void run_func(void);
+    int validate_test_results( int test_case_idx );
+    std::vector<cv::Point2f> getTriangleMiddlePoints();
+
+    std::vector<cv::Point2f> convexPolygon;
+    std::vector<cv::Point2f> triangle;
+};
+
+
+CV_MinTriangleTest::CV_MinTriangleTest()
+{
+}
+
+std::vector<cv::Point2f> CV_MinTriangleTest::getTriangleMiddlePoints()
+{
+    std::vector<cv::Point2f> triangleMiddlePoints;
+
+    for (int i = 0; i < 3; i++) {
+        triangleMiddlePoints.push_back(cvTsMiddlePoint(triangle[i], triangle[(i + 1) % 3]));
+    }
+
+    return triangleMiddlePoints;
+}
+
+
+void CV_MinTriangleTest::run_func()
+{
+    std::vector<cv::Point2f> pointsAsVector;
+
+    cv::cvarrToMat(points).convertTo(pointsAsVector, CV_32F);
+
+    cv::minEnclosingTriangle(pointsAsVector, triangle);
+    cv::convexHull(pointsAsVector, convexPolygon, true, true);
+}
+
+
+int CV_MinTriangleTest::validate_test_results( int test_case_idx )
+{
+    bool errorEnclosed = false, errorMiddlePoints = false, errorFlush = true;
+    double eps = 1e-4;
+    int code = CV_BaseShapeDescrTest::validate_test_results( test_case_idx );
+
+#if 0
+    {
+    int n = 3;
+    double a = 8, c = 8, b = 100, d = 150;
+    CvPoint bp[4], *bpp = bp;
+    cvNamedWindow( "test", 1 );
+    IplImage* img = cvCreateImage( cvSize(500,500), 8, 3 );
+    cvZero(img);
+    for( i = 0; i < point_count; i++ )
+        cvCircle(img,cvPoint(cvRound(p[i].x*a+b),cvRound(p[i].y*c+d)), 3, CV_RGB(0,255,0), -1 );
+    for( i = 0; i < n; i++ )
+        bp[i] = cvPoint(cvRound(triangle[i].x*a+b),cvRound(triangle[i].y*c+d));
+    cvPolyLine( img, &bpp, &n, 1, 1, CV_RGB(255,255,0), 1, CV_AA, 0 );
+    cvShowImage( "test", img );
+    cvWaitKey();
+    cvReleaseImage(&img);
+    }
+#endif
+
+    int polygonVertices = (int) convexPolygon.size();
+
+    if (polygonVertices > 2) {
+        // Check if all points are enclosed by the triangle
+        for (int i = 0; (i < polygonVertices) && (!errorEnclosed); i++)
+        {
+            if (cv::pointPolygonTest(triangle, cv::Point2f(convexPolygon[i].x, convexPolygon[i].y), true) < (-eps))
+                errorEnclosed = true;
+        }
+
+        // Check if triangle edges middle points touch the polygon
+        std::vector<cv::Point2f> middlePoints = getTriangleMiddlePoints();
+
+        for (int i = 0; (i < 3) && (!errorMiddlePoints); i++)
+        {
+            bool isTouching = false;
+
+            for (int j = 0; (j < polygonVertices) && (!isTouching); j++)
+            {
+                if (cvTsIsPointOnLineSegment(middlePoints[i], convexPolygon[j],
+                                             convexPolygon[(j + 1) % polygonVertices]))
+                    isTouching = true;
+            }
+
+            errorMiddlePoints = (isTouching) ? false : true;
+        }
+
+        // Check if at least one of the edges is flush
+        for (int i = 0; (i < 3) && (errorFlush); i++)
+        {
+            for (int j = 0; (j < polygonVertices) && (errorFlush); j++)
+            {
+                if ((cvTsIsPointOnLineSegment(convexPolygon[j], triangle[i],
+                                              triangle[(i + 1) % 3])) &&
+                    (cvTsIsPointOnLineSegment(convexPolygon[(j + 1) % polygonVertices], triangle[i],
+                                              triangle[(i + 1) % 3])))
+                    errorFlush = false;
+            }
+        }
+
+        // Report any found errors
+        if (errorEnclosed)
+        {
+            ts->printf( cvtest::TS::LOG,
+            "All points should be enclosed by the triangle.\n" );
+            code = cvtest::TS::FAIL_BAD_ACCURACY;
+        }
+        else if (errorMiddlePoints)
+        {
+            ts->printf( cvtest::TS::LOG,
+            "All triangle edges middle points should touch the convex hull of the points.\n" );
+            code = cvtest::TS::FAIL_INVALID_OUTPUT;
+        }
+        else if (errorFlush)
+        {
+            ts->printf( cvtest::TS::LOG,
+            "At least one edge of the enclosing triangle should be flush with one edge of the polygon.\n" );
+            code = cvtest::TS::FAIL_INVALID_OUTPUT;
+        }
+    }
+
+    if ( code < 0 )
+        ts->set_failed_test_info( code );
+
     return code;
 }
 
@@ -1082,7 +1239,6 @@ void CV_FitEllipseTest::run_func()
         box = (CvBox2D)cv::fitEllipse(cv::cvarrToMat(points));
 }
 
-
 int CV_FitEllipseTest::validate_test_results( int test_case_idx )
 {
     int code = CV_BaseShapeDescrTest::validate_test_results( test_case_idx );
@@ -1197,6 +1353,64 @@ protected:
     }
 };
 
+
+// Regression test for incorrect fitEllipse result reported in Bug #3989
+// Check edge cases for rotation angles of ellipse ([-180, 90, 0, 90, 180] degrees)
+class CV_FitEllipseParallelTest : public CV_FitEllipseTest
+{
+public:
+    CV_FitEllipseParallelTest();
+    ~CV_FitEllipseParallelTest();
+protected:
+    void generate_point_set( void* points );
+    void run_func(void);
+    Mat pointsMat;
+};
+
+CV_FitEllipseParallelTest::CV_FitEllipseParallelTest()
+{
+    min_ellipse_size = 5;
+}
+
+void CV_FitEllipseParallelTest::generate_point_set( void* )
+{
+    RNG& rng = ts->get_rng();
+    int height = (int)(MAX(high.val[0] - low.val[0], min_ellipse_size));
+    int width = (int)(MAX(high.val[1] - low.val[1], min_ellipse_size));
+    const int angle = ( (cvtest::randInt(rng) % 5) - 2 ) * 90;
+    const int dim = max(height, width);
+    const Point center = Point(dim*2, dim*2);
+
+    if( width > height )
+    {
+        int t;
+        CV_SWAP( width, height, t );
+    }
+
+    Mat image = Mat::zeros(dim*4, dim*4, CV_8UC1);
+    ellipse(image, center, Size(height, width), angle,
+            0, 360, Scalar(255, 0, 0), 1, 8);
+
+    box0.center.x = (float)center.x;
+    box0.center.y = (float)center.y;
+    box0.size.width = (float)width*2;
+    box0.size.height = (float)height*2;
+    box0.angle = (float)angle;
+
+    vector<vector<Point> > contours;
+    findContours(image, contours,  RETR_EXTERNAL,  CHAIN_APPROX_NONE);
+    Mat(contours[0]).convertTo(pointsMat, CV_32F);
+}
+
+void CV_FitEllipseParallelTest::run_func()
+{
+    box = (CvBox2D)cv::fitEllipse(pointsMat);
+}
+
+CV_FitEllipseParallelTest::~CV_FitEllipseParallelTest(){
+    pointsMat.release();
+}
+
 /****************************************************************************************\
 *                                   FitLine Test                                         *
 \****************************************************************************************/
@@ -1220,12 +1434,12 @@ protected:
 
 CV_FitLineTest::CV_FitLineTest()
 {
-    min_log_size = 5; // for robust ellipse fitting a dozen of points is needed at least
+    min_log_size = 5; // for robust line fitting a dozen of points is needed at least
     max_log_size = 10;
     max_noise = 0.05;
 }
 
-#if (__GNUC__ == 4) && (__GNUC_MINOR__ == 8)
+#if defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ == 8)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
@@ -1301,7 +1515,7 @@ void CV_FitLineTest::generate_point_set( void* pointsSet )
     }
 }
 
-#if (__GNUC__ == 4) && (__GNUC_MINOR__ == 8)
+#if defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ == 8)
 # pragma GCC diagnostic pop
 #endif
 
@@ -1329,7 +1543,7 @@ void CV_FitLineTest::run_func()
         cv::fitLine(cv::cvarrToMat(points), (cv::Vec6f&)line[0], dist_type, 0, reps, aeps);
 }
 
-#if (__GNUC__ == 4) && (__GNUC_MINOR__ == 8)
+#if defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ == 8)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
@@ -1412,7 +1626,7 @@ _exit_:
     return code;
 }
 
-#if (__GNUC__ == 4) && (__GNUC_MINOR__ == 8)
+#if defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ == 8)
 # pragma GCC diagnostic pop
 #endif
 
@@ -1640,7 +1854,7 @@ CV_PerimeterAreaSliceTest::~CV_PerimeterAreaSliceTest() {}
 
 void CV_PerimeterAreaSliceTest::run( int )
 {
-    Ptr<CvMemStorage> storage = cvCreateMemStorage();
+    Ptr<CvMemStorage> storage(cvCreateMemStorage());
     RNG& rng = theRNG();
     const double min_r = 90, max_r = 120;
 
@@ -1705,9 +1919,11 @@ void CV_PerimeterAreaSliceTest::run( int )
 
 TEST(Imgproc_ConvexHull, accuracy) { CV_ConvHullTest test; test.safe_run(); }
 TEST(Imgproc_MinAreaRect, accuracy) { CV_MinAreaRectTest test; test.safe_run(); }
+TEST(Imgproc_MinTriangle, accuracy) { CV_MinTriangleTest test; test.safe_run(); }
 TEST(Imgproc_MinCircle, accuracy) { CV_MinCircleTest test; test.safe_run(); }
 TEST(Imgproc_ContourPerimeter, accuracy) { CV_PerimeterTest test; test.safe_run(); }
 TEST(Imgproc_FitEllipse, accuracy) { CV_FitEllipseTest test; test.safe_run(); }
+TEST(Imgproc_FitEllipse, parallel) { CV_FitEllipseParallelTest test; test.safe_run(); }
 TEST(Imgproc_FitLine, accuracy) { CV_FitLineTest test; test.safe_run(); }
 TEST(Imgproc_ContourMoments, accuracy) { CV_ContourMomentsTest test; test.safe_run(); }
 TEST(Imgproc_ContourPerimeterSlice, accuracy) { CV_PerimeterAreaSliceTest test; test.safe_run(); }

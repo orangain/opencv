@@ -42,14 +42,14 @@
 #include "test_precomp.hpp"
 #include "opencv2/opencv_modules.hpp"
 
-#ifdef HAVE_OPENCV_NONFREE
+#ifdef HAVE_OPENCV_XFEATURES2D
 
 using namespace cv;
 using namespace std;
 
 TEST(SurfFeaturesFinder, CanFindInROIs)
 {
-    Ptr<detail::FeaturesFinder> finder = new detail::SurfFeaturesFinder();
+    Ptr<detail::FeaturesFinder> finder = makePtr<detail::SurfFeaturesFinder>();
     Mat img  = imread(string(cvtest::TS::ptr()->get_data_path()) + "cv/shared/lena.png");
 
     vector<Rect> rois;

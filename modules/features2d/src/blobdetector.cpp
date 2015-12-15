@@ -42,19 +42,44 @@
 
 #include "precomp.hpp"
 #include <iterator>
+#include <limits>
 
 //#define DEBUG_BLOB_DETECTOR
 
 #ifdef DEBUG_BLOB_DETECTOR
 #  include "opencv2/opencv_modules.hpp"
 #  ifdef HAVE_OPENCV_HIGHGUI
-#    include "opencv2/highgui/highgui.hpp"
+#    include "opencv2/highgui.hpp"
 #  else
 #    undef DEBUG_BLOB_DETECTOR
 #  endif
 #endif
 
-using namespace cv;
+namespace cv
+{
+
+class CV_EXPORTS_W SimpleBlobDetectorImpl : public SimpleBlobDetector
+{
+public:
+
+  explicit SimpleBlobDetectorImpl(const SimpleBlobDetector::Params &parameters = SimpleBlobDetector::Params());
+
+  virtual void read( const FileNode& fn );
+  virtual void write( FileStorage& fs ) const;
+
+protected:
+  struct CV_EXPORTS Center
+  {
+      Point2d location;
+      double radius;
+      double confidence;
+  };
+
+  virtual void detect( InputArray image, std::vector<KeyPoint>& keypoints, InputArray mask=noArray() );
+  virtual void findBlobs(InputArray image, InputArray binaryImage, std::vector<Center> &centers) const;
+
+  Params params;
+};
 
 /*
 *  SimpleBlobDetector
@@ -147,29 +172,30 @@ void SimpleBlobDetector::Params::write(cv::FileStorage& fs) const
     fs << "maxConvexity" << maxConvexity;
 }
 
-SimpleBlobDetector::SimpleBlobDetector(const SimpleBlobDetector::Params &parameters) :
+SimpleBlobDetectorImpl::SimpleBlobDetectorImpl(const SimpleBlobDetector::Params &parameters) :
 params(parameters)
 {
 }
 
-void SimpleBlobDetector::read( const cv::FileNode& fn )
+void SimpleBlobDetectorImpl::read( const cv::FileNode& fn )
 {
     params.read(fn);
 }
 
-void SimpleBlobDetector::write( cv::FileStorage& fs ) const
+void SimpleBlobDetectorImpl::write( cv::FileStorage& fs ) const
 {
     params.write(fs);
 }
 
-void SimpleBlobDetector::findBlobs(const cv::Mat &image, const cv::Mat &binaryImage, vector<Center> &centers) const
+void SimpleBlobDetectorImpl::findBlobs(InputArray _image, InputArray _binaryImage, std::vector<Center> &centers) const
 {
+    Mat image = _image.getMat(), binaryImage = _binaryImage.getMat();
     (void)image;
     centers.clear();
 
-    vector < vector<Point> > contours;
+    std::vector < std::vector<Point> > contours;
     Mat tmpBinaryImage = binaryImage.clone();
-    findContours(tmpBinaryImage, contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
+    findContours(tmpBinaryImage, contours, RETR_LIST, CHAIN_APPROX_NONE);
 
 #ifdef DEBUG_BLOB_DETECTOR
     //  Mat keypointsImage;
@@ -204,7 +230,7 @@ void SimpleBlobDetector::findBlobs(const cv::Mat &image, const cv::Mat &binaryIm
 
         if (params.filterByInertia)
         {
-            double denominator = sqrt(pow(2 * moms.mu11, 2) + pow(moms.mu20 - moms.mu02, 2));
+            double denominator = std::sqrt(std::pow(2 * moms.mu11, 2) + std::pow(moms.mu20 - moms.mu02, 2));
             const double eps = 1e-2;
             double ratio;
             if (denominator > eps)
@@ -231,7 +257,7 @@ void SimpleBlobDetector::findBlobs(const cv::Mat &image, const cv::Mat &binaryIm
 
         if (params.filterByConvexity)
         {
-            vector < Point > hull;
+            std::vector < Point > hull;
             convexHull(Mat(contours[contourIdx]), hull);
             double area = contourArea(Mat(contours[contourIdx]));
             double hullArea = contourArea(Mat(hull));
@@ -240,6 +266,8 @@ void SimpleBlobDetector::findBlobs(const cv::Mat &image, const cv::Mat &binaryIm
                 continue;
         }
 
+        if(moms.m00 == 0.0)
+            continue;
         center.location = Point2d(moms.m10 / moms.m00, moms.m01 / moms.m00);
 
         if (params.filterByColor)
@@ -250,7 +278,7 @@ void SimpleBlobDetector::findBlobs(const cv::Mat &image, const cv::Mat &binaryIm
 
         //compute blob radius
         {
-            vector<double> dists;
+            std::vector<double> dists;
             for (size_t pointIdx = 0; pointIdx < contours[contourIdx].size(); pointIdx++)
             {
                 Point2d pt = contours[contourIdx][pointIdx];
@@ -262,6 +290,7 @@ void SimpleBlobDetector::findBlobs(const cv::Mat &image, const cv::Mat &binaryIm
 
         centers.push_back(center);
 
+
 #ifdef DEBUG_BLOB_DETECTOR
         //    circle( keypointsImage, center.location, 1, Scalar(0,0,255), 1 );
 #endif
@@ -272,36 +301,27 @@ void SimpleBlobDetector::findBlobs(const cv::Mat &image, const cv::Mat &binaryIm
 #endif
 }
 
-void SimpleBlobDetector::detectImpl(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, const cv::Mat&) const
+void SimpleBlobDetectorImpl::detect(InputArray image, std::vector<cv::KeyPoint>& keypoints, InputArray)
 {
     //TODO: support mask
     keypoints.clear();
     Mat grayscaleImage;
     if (image.channels() == 3)
-        cvtColor(image, grayscaleImage, CV_BGR2GRAY);
+        cvtColor(image, grayscaleImage, COLOR_BGR2GRAY);
     else
-        grayscaleImage = image;
+        grayscaleImage = image.getMat();
 
-    vector < vector<Center> > centers;
+    std::vector < std::vector<Center> > centers;
     for (double thresh = params.minThreshold; thresh < params.maxThreshold; thresh += params.thresholdStep)
     {
         Mat binarizedImage;
         threshold(grayscaleImage, binarizedImage, thresh, 255, THRESH_BINARY);
 
-#ifdef DEBUG_BLOB_DETECTOR
-        //    Mat keypointsImage;
-        //    cvtColor( binarizedImage, keypointsImage, CV_GRAY2RGB );
-#endif
-
-        vector < Center > curCenters;
+        std::vector < Center > curCenters;
         findBlobs(grayscaleImage, binarizedImage, curCenters);
-        vector < vector<Center> > newCenters;
+        std::vector < std::vector<Center> > newCenters;
         for (size_t i = 0; i < curCenters.size(); i++)
         {
-#ifdef DEBUG_BLOB_DETECTOR
-            //      circle(keypointsImage, curCenters[i].location, curCenters[i].radius, Scalar(0,0,255),-1);
-#endif
-
             bool isNew = true;
             for (size_t j = 0; j < centers.size(); j++)
             {
@@ -323,17 +343,9 @@ void SimpleBlobDetector::detectImpl(const cv::Mat& image, std::vector<cv::KeyPoi
                 }
             }
             if (isNew)
-            {
-                newCenters.push_back(vector<Center> (1, curCenters[i]));
-                //centers.push_back(vector<Center> (1, curCenters[i]));
-            }
+                newCenters.push_back(std::vector<Center> (1, curCenters[i]));
         }
         std::copy(newCenters.begin(), newCenters.end(), std::back_inserter(centers));
-
-#ifdef DEBUG_BLOB_DETECTOR
-        //    imshow("binarized", keypointsImage );
-        //waitKey();
-#endif
     }
 
     for (size_t i = 0; i < centers.size(); i++)
@@ -348,19 +360,14 @@ void SimpleBlobDetector::detectImpl(const cv::Mat& image, std::vector<cv::KeyPoi
             normalizer += centers[i][j].confidence;
         }
         sumPoint *= (1. / normalizer);
-        KeyPoint kpt(sumPoint, (float)(centers[i][centers[i].size() / 2].radius));
+        KeyPoint kpt(sumPoint, (float)(centers[i][centers[i].size() / 2].radius) * 2.0f);
         keypoints.push_back(kpt);
     }
+}
 
-#ifdef DEBUG_BLOB_DETECTOR
-    namedWindow("keypoints", CV_WINDOW_NORMAL);
-    Mat outImg = image.clone();
-    for(size_t i=0; i<keypoints.size(); i++)
-    {
-        circle(outImg, keypoints[i].pt, keypoints[i].size, Scalar(255, 0, 255), -1);
-    }
-    //drawKeypoints(image, keypoints, outImg);
-    imshow("keypoints", outImg);
-    waitKey();
-#endif
+Ptr<SimpleBlobDetector> SimpleBlobDetector::create(const SimpleBlobDetector::Params& params)
+{
+    return makePtr<SimpleBlobDetectorImpl>(params);
+}
+
 }

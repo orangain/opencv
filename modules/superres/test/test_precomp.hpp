@@ -51,13 +51,25 @@
 #ifndef __OPENCV_TEST_PRECOMP_HPP__
 #define __OPENCV_TEST_PRECOMP_HPP__
 
-#include "cvconfig.h"
-
 #include "opencv2/opencv_modules.hpp"
-#include "opencv2/core/core.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/ts/ts.hpp"
-#include "opencv2/superres/superres.hpp"
-#include "input_array_utility.hpp"
+#include "opencv2/core/ocl.hpp"
+#include "opencv2/ts.hpp"
+#include "opencv2/imgproc.hpp"
+#include "opencv2/superres.hpp"
+#include "cvconfig.h"
+#include "../src/input_array_utility.hpp"
+
+#if defined(HAVE_XINE)         || \
+    defined(HAVE_GSTREAMER)    || \
+    defined(HAVE_QUICKTIME)    || \
+    defined(HAVE_QTKIT)        || \
+    defined(HAVE_AVFOUNDATION) || \
+    defined(HAVE_FFMPEG)       || \
+    defined(HAVE_MSMF)         || \
+    defined(HAVE_VFW)
+# define BUILD_WITH_VIDEO_INPUT_SUPPORT 1
+#else
+# define BUILD_WITH_VIDEO_INPUT_SUPPORT 0
+#endif
 
 #endif

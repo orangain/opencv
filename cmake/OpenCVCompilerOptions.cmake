@@ -59,18 +59,12 @@ if(MINGW)
   endif()
 endif()
 
-if(OPENCV_CAN_BREAK_BINARY_COMPATIBILITY)
-  add_definitions(-DOPENCV_CAN_BREAK_BINARY_COMPATIBILITY)
-endif()
-
 if(CMAKE_COMPILER_IS_GNUCXX)
   # High level of warnings.
   add_extra_compiler_option(-W)
   add_extra_compiler_option(-Wall)
   add_extra_compiler_option(-Werror=return-type)
-  if(OPENCV_CAN_BREAK_BINARY_COMPATIBILITY)
-    add_extra_compiler_option(-Werror=non-virtual-dtor)
-  endif()
+  add_extra_compiler_option(-Werror=non-virtual-dtor)
   add_extra_compiler_option(-Werror=address)
   add_extra_compiler_option(-Werror=sequence-point)
   add_extra_compiler_option(-Wformat)
@@ -104,12 +98,20 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     add_extra_compiler_option(-pthread)
   endif()
 
+  if(CMAKE_COMPILER_IS_CLANGCXX)
+    add_extra_compiler_option(-Qunused-arguments)
+  endif()
+
   if(OPENCV_WARNINGS_ARE_ERRORS)
     add_extra_compiler_option(-Werror)
   endif()
 
   if(X86 AND NOT MINGW64 AND NOT X86_64 AND NOT APPLE)
     add_extra_compiler_option(-march=i686)
+  endif()
+
+  if(APPLE)
+    add_extra_compiler_option(-Wno-semicolon-before-method-body)
   endif()
 
   # Other optimizations
@@ -129,11 +131,13 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   endif()
   if(ENABLE_SSE2)
     add_extra_compiler_option(-msse2)
+  elseif(X86 OR X86_64)
+    add_extra_compiler_option(-mno-sse2)
   endif()
-  if (ENABLE_NEON)
+  if(ENABLE_NEON)
     add_extra_compiler_option("-mfpu=neon")
   endif()
-  if (ENABLE_VFPV3 AND NOT ENABLE_NEON)
+  if(ENABLE_VFPV3 AND NOT ENABLE_NEON)
     add_extra_compiler_option("-mfpu=vfpv3")
   endif()
 
@@ -141,24 +145,45 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   if(NOT MINGW)
     if(ENABLE_AVX)
       add_extra_compiler_option(-mavx)
+    elseif(X86 OR X86_64)
+      add_extra_compiler_option(-mno-avx)
+    endif()
+    if(ENABLE_AVX2)
+      add_extra_compiler_option(-mavx2)
+
+      if(ENABLE_FMA3)
+        add_extra_compiler_option(-mfma)
+      endif()
     endif()
 
     # GCC depresses SSEx instructions when -mavx is used. Instead, it generates new AVX instructions or AVX equivalence for all SSEx instructions when needed.
     if(NOT OPENCV_EXTRA_CXX_FLAGS MATCHES "-mavx")
       if(ENABLE_SSE3)
         add_extra_compiler_option(-msse3)
+      elseif(X86 OR X86_64)
+        add_extra_compiler_option(-mno-sse3)
       endif()
 
       if(ENABLE_SSSE3)
         add_extra_compiler_option(-mssse3)
+      elseif(X86 OR X86_64)
+        add_extra_compiler_option(-mno-ssse3)
       endif()
 
       if(ENABLE_SSE41)
         add_extra_compiler_option(-msse4.1)
+      elseif(X86 OR X86_64)
+        add_extra_compiler_option(-mno-sse4.1)
       endif()
 
       if(ENABLE_SSE42)
         add_extra_compiler_option(-msse4.2)
+      elseif(X86 OR X86_64)
+        add_extra_compiler_option(-mno-sse4.2)
+      endif()
+
+      if(ENABLE_POPCNT)
+        add_extra_compiler_option(-mpopcnt)
       endif()
     endif()
   endif(NOT MINGW)
@@ -187,6 +212,11 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     add_extra_compiler_option(-ffunction-sections)
   endif()
 
+  if(ENABLE_COVERAGE)
+    set(OPENCV_EXTRA_C_FLAGS "${OPENCV_EXTRA_C_FLAGS} --coverage")
+    set(OPENCV_EXTRA_CXX_FLAGS "${OPENCV_EXTRA_CXX_FLAGS} --coverage")
+  endif()
+
   set(OPENCV_EXTRA_FLAGS_RELEASE "${OPENCV_EXTRA_FLAGS_RELEASE} -DNDEBUG")
   set(OPENCV_EXTRA_FLAGS_DEBUG "${OPENCV_EXTRA_FLAGS_DEBUG} -O0 -DDEBUG -D_DEBUG")
 endif()
@@ -211,7 +241,10 @@ if(MSVC)
     set(OPENCV_EXTRA_FLAGS_RELEASE "${OPENCV_EXTRA_FLAGS_RELEASE} /Zi")
   endif()
 
-  if(ENABLE_AVX AND NOT MSVC_VERSION LESS 1600)
+  if(ENABLE_AVX2 AND NOT MSVC_VERSION LESS 1800)
+    set(OPENCV_EXTRA_FLAGS "${OPENCV_EXTRA_FLAGS} /arch:AVX2")
+  endif()
+  if(ENABLE_AVX AND NOT MSVC_VERSION LESS 1600 AND NOT OPENCV_EXTRA_FLAGS MATCHES "/arch:")
     set(OPENCV_EXTRA_FLAGS "${OPENCV_EXTRA_FLAGS} /arch:AVX")
   endif()
 
@@ -233,7 +266,7 @@ if(MSVC)
     endif()
   endif()
 
-  if(ENABLE_SSE OR ENABLE_SSE2 OR ENABLE_SSE3 OR ENABLE_SSE4_1 OR ENABLE_AVX)
+  if(ENABLE_SSE OR ENABLE_SSE2 OR ENABLE_SSE3 OR ENABLE_SSE4_1 OR ENABLE_AVX OR ENABLE_AVX2)
     set(OPENCV_EXTRA_FLAGS "${OPENCV_EXTRA_FLAGS} /Oi")
   endif()
 
@@ -246,6 +279,11 @@ if(MSVC)
   if(OPENCV_WARNINGS_ARE_ERRORS)
     set(OPENCV_EXTRA_FLAGS "${OPENCV_EXTRA_FLAGS} /WX")
   endif()
+endif()
+
+if(MSVC12 AND NOT CMAKE_GENERATOR MATCHES "Visual Studio")
+  set(OPENCV_EXTRA_C_FLAGS "${OPENCV_EXTRA_C_FLAGS} /FS")
+  set(OPENCV_EXTRA_CXX_FLAGS "${OPENCV_EXTRA_CXX_FLAGS} /FS")
 endif()
 
 # Extra link libs if the user selects building static libs:
@@ -265,6 +303,12 @@ set(OPENCV_EXTRA_FLAGS_DEBUG   "${OPENCV_EXTRA_FLAGS_DEBUG}"   CACHE INTERNAL "E
 set(OPENCV_EXTRA_EXE_LINKER_FLAGS         "${OPENCV_EXTRA_EXE_LINKER_FLAGS}"         CACHE INTERNAL "Extra linker flags")
 set(OPENCV_EXTRA_EXE_LINKER_FLAGS_RELEASE "${OPENCV_EXTRA_EXE_LINKER_FLAGS_RELEASE}" CACHE INTERNAL "Extra linker flags for Release build")
 set(OPENCV_EXTRA_EXE_LINKER_FLAGS_DEBUG   "${OPENCV_EXTRA_EXE_LINKER_FLAGS_DEBUG}"   CACHE INTERNAL "Extra linker flags for Debug build")
+
+# set default visibility to hidden
+if(CMAKE_COMPILER_IS_GNUCXX AND CMAKE_OPENCV_GCC_VERSION_NUM GREATER 399)
+  add_extra_compiler_option(-fvisibility=hidden)
+  add_extra_compiler_option(-fvisibility-inlines-hidden)
+endif()
 
 #combine all "extra" options
 set(CMAKE_C_FLAGS           "${CMAKE_C_FLAGS} ${OPENCV_EXTRA_FLAGS} ${OPENCV_EXTRA_C_FLAGS}")
@@ -299,6 +343,7 @@ if(MSVC)
   endforeach()
 
   if(NOT ENABLE_NOISY_WARNINGS)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251") #class 'std::XXX' needs to have dll-interface to be used by clients of YYY
+    ocv_warnings_disable(CMAKE_CXX_FLAGS /wd4251) # class 'std::XXX' needs to have dll-interface to be used by clients of YYY
+    ocv_warnings_disable(CMAKE_CXX_FLAGS /wd4324) # 'struct_name' : structure was padded due to __declspec(align())
   endif()
 endif()

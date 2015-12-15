@@ -1,5 +1,7 @@
 #include "test_precomp.hpp"
 
+#include <map>
+
 using namespace cv;
 using namespace std;
 
@@ -7,7 +9,7 @@ using namespace std;
 class Core_ReduceTest : public cvtest::BaseTest
 {
 public:
-    Core_ReduceTest() {};
+    Core_ReduceTest() {}
 protected:
     void run( int);
     int checkOp( const Mat& src, int dstType, int opType, const Mat& opRes, int dim );
@@ -321,8 +323,8 @@ protected:
          evec = svd.vt;
          eval = svd.w;*/
 
-        Mat subEval( maxComponents, 1, eval.type(), eval.data ),
-        subEvec( maxComponents, evec.cols, evec.type(), evec.data );
+        Mat subEval( maxComponents, 1, eval.type(), eval.ptr() ),
+        subEvec( maxComponents, evec.cols, evec.type(), evec.ptr() );
 
     #ifdef CHECK_C
         Mat prjTestPoints, backPrjTestPoints, cPoints = rPoints.t(), cTestPoints = rTestPoints.t();
@@ -338,7 +340,7 @@ protected:
             Mat Qv = Q * v;
 
             Mat lv = eval.at<float>(i,0) * v;
-            err = norm( Qv, lv );
+            err = cvtest::norm( Qv, lv, NORM_L2 );
             if( err > eigenEps )
             {
                 ts->printf( cvtest::TS::LOG, "bad accuracy of eigen(); err = %f\n", err );
@@ -348,7 +350,7 @@ protected:
         }
         // check pca eigenvalues
         evalEps = 1e-6, evecEps = 1e-3;
-        err = norm( rPCA.eigenvalues, subEval );
+        err = cvtest::norm( rPCA.eigenvalues, subEval, NORM_L2 );
         if( err > evalEps )
         {
             ts->printf( cvtest::TS::LOG, "pca.eigenvalues is incorrect (CV_PCA_DATA_AS_ROW); err = %f\n", err );
@@ -360,11 +362,11 @@ protected:
         {
             Mat r0 = rPCA.eigenvectors.row(i);
             Mat r1 = subEvec.row(i);
-            err = norm( r0, r1, CV_L2 );
+            err = cvtest::norm( r0, r1, CV_L2 );
             if( err > evecEps )
             {
                 r1 *= -1;
-                double err2 = norm(r0, r1, CV_L2);
+                double err2 = cvtest::norm(r0, r1, CV_L2);
                 if( err2 > evecEps )
                 {
                     Mat tmp;
@@ -388,7 +390,7 @@ protected:
             // check pca project
             Mat subEvec_t = subEvec.t();
             Mat prj = rTestPoints.row(i) - avg; prj *= subEvec_t;
-            err = norm(rPrjTestPoints.row(i), prj, CV_RELATIVE_L2);
+            err = cvtest::norm(rPrjTestPoints.row(i), prj, CV_RELATIVE_L2);
             if( err > prjEps )
             {
                 ts->printf( cvtest::TS::LOG, "bad accuracy of project() (CV_PCA_DATA_AS_ROW); err = %f\n", err );
@@ -397,7 +399,7 @@ protected:
             }
             // check pca backProject
             Mat backPrj = rPrjTestPoints.row(i) * subEvec + avg;
-            err = norm( rBackPrjTestPoints.row(i), backPrj, CV_RELATIVE_L2 );
+            err = cvtest::norm( rBackPrjTestPoints.row(i), backPrj, CV_RELATIVE_L2 );
             if( err > backPrjEps )
             {
                 ts->printf( cvtest::TS::LOG, "bad accuracy of backProject() (CV_PCA_DATA_AS_ROW); err = %f\n", err );
@@ -410,14 +412,14 @@ protected:
         cPCA( rPoints.t(), Mat(), CV_PCA_DATA_AS_COL, maxComponents );
         diffPrjEps = 1, diffBackPrjEps = 1;
         Mat ocvPrjTestPoints = cPCA.project(rTestPoints.t());
-        err = norm(cv::abs(ocvPrjTestPoints), cv::abs(rPrjTestPoints.t()), CV_RELATIVE_L2 );
+        err = cvtest::norm(cv::abs(ocvPrjTestPoints), cv::abs(rPrjTestPoints.t()), CV_RELATIVE_L2 );
         if( err > diffPrjEps )
         {
             ts->printf( cvtest::TS::LOG, "bad accuracy of project() (CV_PCA_DATA_AS_COL); err = %f\n", err );
             ts->set_failed_test_info( cvtest::TS::FAIL_BAD_ACCURACY );
             return;
         }
-        err = norm(cPCA.backProject(ocvPrjTestPoints), rBackPrjTestPoints.t(), CV_RELATIVE_L2 );
+        err = cvtest::norm(cPCA.backProject(ocvPrjTestPoints), rBackPrjTestPoints.t(), CV_RELATIVE_L2 );
         if( err > diffBackPrjEps )
         {
             ts->printf( cvtest::TS::LOG, "bad accuracy of backProject() (CV_PCA_DATA_AS_COL); err = %f\n", err );
@@ -426,14 +428,14 @@ protected:
         }
 
         // 3. check C++ PCA w/retainedVariance
-        cPCA.computeVar( rPoints.t(), Mat(), CV_PCA_DATA_AS_COL, retainedVariance );
+        cPCA( rPoints.t(), Mat(), CV_PCA_DATA_AS_COL, retainedVariance );
         diffPrjEps = 1, diffBackPrjEps = 1;
         Mat rvPrjTestPoints = cPCA.project(rTestPoints.t());
 
         if( cPCA.eigenvectors.rows > maxComponents)
-            err = norm(cv::abs(rvPrjTestPoints.rowRange(0,maxComponents)), cv::abs(rPrjTestPoints.t()), CV_RELATIVE_L2 );
+            err = cvtest::norm(cv::abs(rvPrjTestPoints.rowRange(0,maxComponents)), cv::abs(rPrjTestPoints.t()), CV_RELATIVE_L2 );
         else
-            err = norm(cv::abs(rvPrjTestPoints), cv::abs(rPrjTestPoints.colRange(0,cPCA.eigenvectors.rows).t()), CV_RELATIVE_L2 );
+            err = cvtest::norm(cv::abs(rvPrjTestPoints), cv::abs(rPrjTestPoints.colRange(0,cPCA.eigenvectors.rows).t()), CV_RELATIVE_L2 );
 
         if( err > diffPrjEps )
         {
@@ -441,7 +443,7 @@ protected:
             ts->set_failed_test_info( cvtest::TS::FAIL_BAD_ACCURACY );
             return;
         }
-        err = norm(cPCA.backProject(rvPrjTestPoints), rBackPrjTestPoints.t(), CV_RELATIVE_L2 );
+        err = cvtest::norm(cPCA.backProject(rvPrjTestPoints), rBackPrjTestPoints.t(), CV_RELATIVE_L2 );
         if( err > diffBackPrjEps )
         {
             ts->printf( cvtest::TS::LOG, "bad accuracy of backProject() (CV_PCA_DATA_AS_COL); retainedVariance=0.95; err = %f\n", err );
@@ -465,14 +467,14 @@ protected:
         cvProjectPCA( &_testPoints, &_avg, &_evec, &_prjTestPoints );
         cvBackProjectPCA( &_prjTestPoints, &_avg, &_evec, &_backPrjTestPoints );
 
-        err = norm(prjTestPoints, rPrjTestPoints, CV_RELATIVE_L2);
+        err = cvtest::norm(prjTestPoints, rPrjTestPoints, CV_RELATIVE_L2);
         if( err > diffPrjEps )
         {
             ts->printf( cvtest::TS::LOG, "bad accuracy of cvProjectPCA() (CV_PCA_DATA_AS_ROW); err = %f\n", err );
             ts->set_failed_test_info( cvtest::TS::FAIL_BAD_ACCURACY );
             return;
         }
-        err = norm(backPrjTestPoints, rBackPrjTestPoints, CV_RELATIVE_L2);
+        err = cvtest::norm(backPrjTestPoints, rBackPrjTestPoints, CV_RELATIVE_L2);
         if( err > diffBackPrjEps )
         {
             ts->printf( cvtest::TS::LOG, "bad accuracy of cvBackProjectPCA() (CV_PCA_DATA_AS_ROW); err = %f\n", err );
@@ -493,14 +495,14 @@ protected:
         cvProjectPCA( &_testPoints, &_avg, &_evec, &_prjTestPoints );
         cvBackProjectPCA( &_prjTestPoints, &_avg, &_evec, &_backPrjTestPoints );
 
-        err = norm(cv::abs(prjTestPoints), cv::abs(rPrjTestPoints.t()), CV_RELATIVE_L2 );
+        err = cvtest::norm(cv::abs(prjTestPoints), cv::abs(rPrjTestPoints.t()), CV_RELATIVE_L2 );
         if( err > diffPrjEps )
         {
             ts->printf( cvtest::TS::LOG, "bad accuracy of cvProjectPCA() (CV_PCA_DATA_AS_COL); err = %f\n", err );
             ts->set_failed_test_info( cvtest::TS::FAIL_BAD_ACCURACY );
             return;
         }
-        err = norm(backPrjTestPoints, rBackPrjTestPoints.t(), CV_RELATIVE_L2);
+        err = cvtest::norm(backPrjTestPoints, rBackPrjTestPoints.t(), CV_RELATIVE_L2);
         if( err > diffBackPrjEps )
         {
             ts->printf( cvtest::TS::LOG, "bad accuracy of cvBackProjectPCA() (CV_PCA_DATA_AS_COL); err = %f\n", err );
@@ -508,6 +510,32 @@ protected:
             return;
         }
     #endif
+        // Test read and write
+        FileStorage fs( "PCA_store.yml", FileStorage::WRITE );
+        rPCA.write( fs );
+        fs.release();
+
+        PCA lPCA;
+        fs.open( "PCA_store.yml", FileStorage::READ );
+        lPCA.read( fs.root() );
+        err = cvtest::norm( rPCA.eigenvectors, lPCA.eigenvectors, CV_RELATIVE_L2 );
+        if( err > 0 )
+        {
+            ts->printf( cvtest::TS::LOG, "bad accuracy of write/load functions (YML); err = %f\n", err );
+            ts->set_failed_test_info( cvtest::TS::FAIL_BAD_ACCURACY );
+        }
+        err = cvtest::norm( rPCA.eigenvalues, lPCA.eigenvalues, CV_RELATIVE_L2 );
+        if( err > 0 )
+        {
+            ts->printf( cvtest::TS::LOG, "bad accuracy of write/load functions (YML); err = %f\n", err );
+            ts->set_failed_test_info( cvtest::TS::FAIL_BAD_ACCURACY );
+        }
+        err = cvtest::norm( rPCA.mean, lPCA.mean, CV_RELATIVE_L2 );
+        if( err > 0 )
+        {
+            ts->printf( cvtest::TS::LOG, "bad accuracy of write/load functions (YML); err = %f\n", err );
+            ts->set_failed_test_info( cvtest::TS::FAIL_BAD_ACCURACY );
+        }
     }
 };
 
@@ -621,6 +649,16 @@ static void setValue(SparseMat& M, const int* idx, double value, RNG& rng)
         CV_Error(CV_StsUnsupportedFormat, "");
 }
 
+template<typename Pixel>
+struct InitializerFunctor{
+    /// Initializer for cv::Mat::forEach test
+    void operator()(Pixel & pixel, const int * idx) const {
+        pixel.x = idx[0];
+        pixel.y = idx[1];
+        pixel.z = idx[2];
+    }
+};
+
 void Core_ArrayOpTest::run( int /* start_from */)
 {
     int errcount = 0;
@@ -641,7 +679,7 @@ void Core_ArrayOpTest::run( int /* start_from */)
         cvSetReal3D(&matA, idx1[0], idx1[1], idx1[2], -val0);
         cvSetND(&matB, idx0, val1);
         cvSet3D(&matB, idx1[0], idx1[1], idx1[2], -val1);
-        Ptr<CvMatND> matC = cvCloneMatND(&matB);
+        Ptr<CvMatND> matC(cvCloneMatND(&matB));
 
         if( A.at<float>(idx0[0], idx0[1], idx0[2]) != val0 ||
            A.at<float>(idx1[0], idx1[1], idx1[2]) != -val0 ||
@@ -655,6 +693,45 @@ void Core_ArrayOpTest::run( int /* start_from */)
         {
             ts->printf(cvtest::TS::LOG, "one of cvSetReal3D, cvSetRealND, cvSet3D, cvSetND "
                        "or the corresponding *Get* functions is not correct\n");
+            errcount++;
+        }
+    }
+    // test cv::Mat::forEach
+    {
+        const int dims[3] = { 101, 107, 7 };
+        typedef cv::Point3i Pixel;
+
+        cv::Mat a = cv::Mat::zeros(3, dims, CV_32SC3);
+        InitializerFunctor<Pixel> initializer;
+
+        a.forEach<Pixel>(initializer);
+
+        uint64 total = 0;
+        bool error_reported = false;
+        for (int i0 = 0; i0 < dims[0]; ++i0) {
+            for (int i1 = 0; i1 < dims[1]; ++i1) {
+                for (int i2 = 0; i2 < dims[2]; ++i2) {
+                    Pixel& pixel = a.at<Pixel>(i0, i1, i2);
+                    if (pixel.x != i0 || pixel.y != i1 || pixel.z != i2) {
+                        if (!error_reported) {
+                            ts->printf(cvtest::TS::LOG, "forEach is not correct.\n"
+                                "First error detected at (%d, %d, %d).\n", pixel.x, pixel.y, pixel.z);
+                            error_reported = true;
+                        }
+                        errcount++;
+                    }
+                    total += pixel.x;
+                    total += pixel.y;
+                    total += pixel.z;
+                }
+            }
+        }
+        uint64 total2 = 0;
+        for (size_t i = 0; i < sizeof(dims) / sizeof(dims[0]); ++i) {
+            total2 += ((dims[i] - 1) * dims[i] / 2) * dims[0] * dims[1] * dims[2] / dims[i];
+        }
+        if (total != total2) {
+            ts->printf(cvtest::TS::LOG, "forEach is not correct because total is invalid.\n");
             errcount++;
         }
     }
@@ -703,9 +780,9 @@ void Core_ArrayOpTest::run( int /* start_from */)
         }
 
         minMaxLoc(_all_vals, &min_val, &max_val);
-        double _norm0 = norm(_all_vals, CV_C);
-        double _norm1 = norm(_all_vals, CV_L1);
-        double _norm2 = norm(_all_vals, CV_L2);
+        double _norm0 = cvtest::norm(_all_vals, CV_C);
+        double _norm1 = cvtest::norm(_all_vals, CV_L1);
+        double _norm2 = cvtest::norm(_all_vals, CV_L2);
 
         for( i = 0; i < nz0; i++ )
         {
@@ -734,7 +811,7 @@ void Core_ArrayOpTest::run( int /* start_from */)
             }
         }
 
-        Ptr<CvSparseMat> M2 = (CvSparseMat*)M;
+        Ptr<CvSparseMat> M2(cvCreateSparseMat(M));
         MatND Md;
         M.copyTo(Md);
         SparseMat M3; SparseMat(Md).convertTo(M3, Md.type(), 2);
@@ -858,9 +935,223 @@ void Core_ArrayOpTest::run( int /* start_from */)
     ts->set_failed_test_info(errcount == 0 ? cvtest::TS::OK : cvtest::TS::FAIL_INVALID_OUTPUT);
 }
 
+
+template <class ElemType>
+int calcDiffElemCountImpl(const vector<Mat>& mv, const Mat& m)
+{
+    int diffElemCount = 0;
+    const int mChannels = m.channels();
+    for(int y = 0; y < m.rows; y++)
+    {
+        for(int x = 0; x < m.cols; x++)
+        {
+            const ElemType* mElem = &m.at<ElemType>(y,x*mChannels);
+            size_t loc = 0;
+            for(size_t i = 0; i < mv.size(); i++)
+            {
+                const size_t mvChannel = mv[i].channels();
+                const ElemType* mvElem = &mv[i].at<ElemType>(y,x*(int)mvChannel);
+                for(size_t li = 0; li < mvChannel; li++)
+                    if(mElem[loc + li] != mvElem[li])
+                        diffElemCount++;
+                loc += mvChannel;
+            }
+            CV_Assert(loc == (size_t)mChannels);
+        }
+    }
+    return diffElemCount;
+}
+
+static
+int calcDiffElemCount(const vector<Mat>& mv, const Mat& m)
+{
+    int depth = m.depth();
+    switch (depth)
+    {
+    case CV_8U:
+        return calcDiffElemCountImpl<uchar>(mv, m);
+    case CV_8S:
+        return calcDiffElemCountImpl<char>(mv, m);
+    case CV_16U:
+        return calcDiffElemCountImpl<unsigned short>(mv, m);
+    case CV_16S:
+        return calcDiffElemCountImpl<short int>(mv, m);
+    case CV_32S:
+        return calcDiffElemCountImpl<int>(mv, m);
+    case CV_32F:
+        return calcDiffElemCountImpl<float>(mv, m);
+    case CV_64F:
+        return calcDiffElemCountImpl<double>(mv, m);
+    }
+
+    return INT_MAX;
+}
+
+class Core_MergeSplitBaseTest : public cvtest::BaseTest
+{
+protected:
+    virtual int run_case(int depth, size_t channels, const Size& size, RNG& rng) = 0;
+
+    virtual void run(int)
+    {
+        // m is Mat
+        // mv is vector<Mat>
+        const int minMSize = 1;
+        const int maxMSize = 100;
+        const size_t maxMvSize = 10;
+
+        RNG& rng = theRNG();
+        Size mSize(rng.uniform(minMSize, maxMSize), rng.uniform(minMSize, maxMSize));
+        size_t mvSize = rng.uniform(1, maxMvSize);
+
+        int res = cvtest::TS::OK, curRes = res;
+        curRes = run_case(CV_8U, mvSize, mSize, rng);
+        res = curRes != cvtest::TS::OK ? curRes : res;
+
+        curRes = run_case(CV_8S, mvSize, mSize, rng);
+        res = curRes != cvtest::TS::OK ? curRes : res;
+
+        curRes = run_case(CV_16U, mvSize, mSize, rng);
+        res = curRes != cvtest::TS::OK ? curRes : res;
+
+        curRes = run_case(CV_16S, mvSize, mSize, rng);
+        res = curRes != cvtest::TS::OK ? curRes : res;
+
+        curRes = run_case(CV_32S, mvSize, mSize, rng);
+        res = curRes != cvtest::TS::OK ? curRes : res;
+
+        curRes = run_case(CV_32F, mvSize, mSize, rng);
+        res = curRes != cvtest::TS::OK ? curRes : res;
+
+        curRes = run_case(CV_64F, mvSize, mSize, rng);
+        res = curRes != cvtest::TS::OK ? curRes : res;
+
+        ts->set_failed_test_info(res);
+    }
+};
+
+class Core_MergeTest : public Core_MergeSplitBaseTest
+{
+public:
+    Core_MergeTest() {}
+    ~Core_MergeTest() {}
+
+protected:
+    virtual int run_case(int depth, size_t matCount, const Size& size, RNG& rng)
+    {
+        const int maxMatChannels = 10;
+
+        vector<Mat> src(matCount);
+        int channels = 0;
+        for(size_t i = 0; i < src.size(); i++)
+        {
+            Mat m(size, CV_MAKETYPE(depth, rng.uniform(1,maxMatChannels)));
+            rng.fill(m, RNG::UNIFORM, 0, 100, true);
+            channels += m.channels();
+            src[i] = m;
+        }
+
+        Mat dst;
+        merge(src, dst);
+
+        // check result
+        stringstream commonLog;
+        commonLog << "Depth " << depth << " :";
+        if(dst.depth() != depth)
+        {
+            ts->printf(cvtest::TS::LOG, "%s incorrect depth of dst (%d instead of %d)\n",
+                       commonLog.str().c_str(), dst.depth(), depth);
+            return cvtest::TS::FAIL_INVALID_OUTPUT;
+        }
+        if(dst.size() != size)
+        {
+            ts->printf(cvtest::TS::LOG, "%s incorrect size of dst (%d x %d instead of %d x %d)\n",
+                       commonLog.str().c_str(), dst.rows, dst.cols, size.height, size.width);
+            return cvtest::TS::FAIL_INVALID_OUTPUT;
+        }
+        if(dst.channels() != channels)
+        {
+            ts->printf(cvtest::TS::LOG, "%s: incorrect channels count of dst (%d instead of %d)\n",
+                       commonLog.str().c_str(), dst.channels(), channels);
+            return cvtest::TS::FAIL_INVALID_OUTPUT;
+        }
+
+        int diffElemCount = calcDiffElemCount(src, dst);
+        if(diffElemCount > 0)
+        {
+            ts->printf(cvtest::TS::LOG, "%s: there are incorrect elements in dst (part of them is %f)\n",
+                       commonLog.str().c_str(), static_cast<float>(diffElemCount)/(channels*size.area()));
+            return cvtest::TS::FAIL_INVALID_OUTPUT;
+        }
+
+        return cvtest::TS::OK;
+    }
+};
+
+class Core_SplitTest : public Core_MergeSplitBaseTest
+{
+public:
+    Core_SplitTest() {}
+    ~Core_SplitTest() {}
+
+protected:
+    virtual int run_case(int depth, size_t channels, const Size& size, RNG& rng)
+    {
+        Mat src(size, CV_MAKETYPE(depth, (int)channels));
+        rng.fill(src, RNG::UNIFORM, 0, 100, true);
+
+        vector<Mat> dst;
+        split(src, dst);
+
+        // check result
+        stringstream commonLog;
+        commonLog << "Depth " << depth << " :";
+        if(dst.size() != channels)
+        {
+            ts->printf(cvtest::TS::LOG, "%s incorrect count of matrices in dst (%d instead of %d)\n",
+                       commonLog.str().c_str(), dst.size(), channels);
+            return cvtest::TS::FAIL_INVALID_OUTPUT;
+        }
+        for(size_t i = 0; i < dst.size(); i++)
+        {
+            if(dst[i].size() != size)
+            {
+                ts->printf(cvtest::TS::LOG, "%s incorrect size of dst[%d] (%d x %d instead of %d x %d)\n",
+                           commonLog.str().c_str(), i, dst[i].rows, dst[i].cols, size.height, size.width);
+                return cvtest::TS::FAIL_INVALID_OUTPUT;
+            }
+            if(dst[i].depth() != depth)
+            {
+                ts->printf(cvtest::TS::LOG, "%s: incorrect depth of dst[%d] (%d instead of %d)\n",
+                           commonLog.str().c_str(), i, dst[i].depth(), depth);
+                return cvtest::TS::FAIL_INVALID_OUTPUT;
+            }
+            if(dst[i].channels() != 1)
+            {
+                ts->printf(cvtest::TS::LOG, "%s: incorrect channels count of dst[%d] (%d instead of %d)\n",
+                           commonLog.str().c_str(), i, dst[i].channels(), 1);
+                return cvtest::TS::FAIL_INVALID_OUTPUT;
+            }
+        }
+
+        int diffElemCount = calcDiffElemCount(dst, src);
+        if(diffElemCount > 0)
+        {
+            ts->printf(cvtest::TS::LOG, "%s: there are incorrect elements in dst (part of them is %f)\n",
+                       commonLog.str().c_str(), static_cast<float>(diffElemCount)/(channels*size.area()));
+            return cvtest::TS::FAIL_INVALID_OUTPUT;
+        }
+
+        return cvtest::TS::OK;
+    }
+};
+
 TEST(Core_PCA, accuracy) { Core_PCATest test; test.safe_run(); }
 TEST(Core_Reduce, accuracy) { Core_ReduceTest test; test.safe_run(); }
 TEST(Core_Array, basic_operations) { Core_ArrayOpTest test; test.safe_run(); }
+
+TEST(Core_Merge, shape_operations) { Core_MergeTest test; test.safe_run(); }
+TEST(Core_Split, shape_operations) { Core_SplitTest test; test.safe_run(); }
 
 
 TEST(Core_IOArray, submat_assignment)
@@ -896,4 +1187,88 @@ TEST(Core_Mat, reshape_1942)
         cn = M.channels();
     );
     ASSERT_EQ(1, cn);
+}
+
+TEST(Core_Mat, copyNx1ToVector)
+{
+    cv::Mat_<uchar> src(5, 1);
+    cv::Mat_<uchar> ref_dst8;
+    cv::Mat_<ushort> ref_dst16;
+    std::vector<uchar> dst8;
+    std::vector<ushort> dst16;
+
+    src << 1, 2, 3, 4, 5;
+
+    src.copyTo(ref_dst8);
+    src.copyTo(dst8);
+
+    ASSERT_PRED_FORMAT2(cvtest::MatComparator(0, 0), ref_dst8, cv::Mat_<uchar>(dst8));
+
+    src.convertTo(ref_dst16, CV_16U);
+    src.convertTo(dst16, CV_16U);
+
+    ASSERT_PRED_FORMAT2(cvtest::MatComparator(0, 0), ref_dst16, cv::Mat_<ushort>(dst16));
+}
+
+TEST(Core_Matx, fromMat_)
+{
+    Mat_<double> a = (Mat_<double>(2,2) << 10, 11, 12, 13);
+    Matx22d b(a);
+    ASSERT_EQ( norm(a, b, NORM_INF), 0.);
+}
+
+TEST(Core_InputArray, empty)
+{
+    vector<vector<Point> > data;
+    ASSERT_TRUE( _InputArray(data).empty() );
+}
+
+TEST(Core_CopyMask, bug1918)
+{
+    Mat_<unsigned char> tmpSrc(100,100);
+    tmpSrc = 124;
+    Mat_<unsigned char> tmpMask(100,100);
+    tmpMask = 255;
+    Mat_<unsigned char> tmpDst(100,100);
+    tmpDst = 2;
+    tmpSrc.copyTo(tmpDst,tmpMask);
+    ASSERT_EQ(sum(tmpDst)[0], 124*100*100);
+}
+
+TEST(Core_SVD, orthogonality)
+{
+    for( int i = 0; i < 2; i++ )
+    {
+        int type = i == 0 ? CV_32F : CV_64F;
+        Mat mat_D(2, 2, type);
+        mat_D.setTo(88.);
+        Mat mat_U, mat_W;
+        SVD::compute(mat_D, mat_W, mat_U, noArray(), SVD::FULL_UV);
+        mat_U *= mat_U.t();
+        ASSERT_LT(norm(mat_U, Mat::eye(2, 2, type), NORM_INF), 1e-5);
+    }
+}
+
+
+TEST(Core_SparseMat, footprint)
+{
+    int n = 1000000;
+    int sz[] = { n, n };
+    SparseMat m(2, sz, CV_64F);
+
+    int nodeSize0 = (int)m.hdr->nodeSize;
+    double dataSize0 = ((double)m.hdr->pool.size() + (double)m.hdr->hashtab.size()*sizeof(size_t))*1e-6;
+    printf("before: node size=%d bytes, data size=%.0f Mbytes\n", nodeSize0, dataSize0);
+
+    for (int i = 0; i < n; i++)
+    {
+        m.ref<double>(i, i) = 1;
+    }
+
+    double dataSize1 = ((double)m.hdr->pool.size() + (double)m.hdr->hashtab.size()*sizeof(size_t))*1e-6;
+    double threshold = (n*nodeSize0*1.6 + n*2.*sizeof(size_t))*1e-6;
+    printf("after: data size=%.0f Mbytes, threshold=%.0f MBytes\n", dataSize1, threshold);
+
+    ASSERT_LE((int)m.hdr->nodeSize, 32);
+    ASSERT_LE(dataSize1, threshold);
 }

@@ -45,7 +45,6 @@
 #include <ctype.h>
 #include <deque>
 #include <iterator>
-#include <wchar.h>
 
 #define USE_ZLIB 1
 
@@ -116,7 +115,7 @@ static char* icv_itoa( int _val, char* buffer, int /*radix*/ )
     return ptr;
 }
 
-cv::string cv::FileStorage::getDefaultObjectName(const string& _filename)
+cv::String cv::FileStorage::getDefaultObjectName(const cv::String& _filename)
 {
     static const char* stubname = "unnamed";
     const char* filename = _filename.c_str();
@@ -152,36 +151,7 @@ cv::string cv::FileStorage::getDefaultObjectName(const string& _filename)
     name = name_buf;
     if( strcmp( name, "_" ) == 0 )
         strcpy( name, stubname );
-    return cv::string(name);
-}
-
-namespace cv
-{
-#if !defined(ANDROID) || (defined(_GLIBCXX_USE_WCHAR_T) && _GLIBCXX_USE_WCHAR_T)
-string fromUtf16(const WString& str)
-{
-    cv::AutoBuffer<char> _buf(str.size()*4 + 1);
-    char* buf = _buf;
-
-    size_t sz = wcstombs(buf, str.c_str(), str.size());
-    if( sz == (size_t)-1 )
-        return string();
-    buf[sz] = '\0';
-    return string(buf);
-}
-
-WString toUtf16(const string& str)
-{
-    cv::AutoBuffer<wchar_t> _buf(str.size() + 1);
-    wchar_t* buf = _buf;
-
-    size_t sz = mbstowcs(buf, str.c_str(), str.size());
-    if( sz == (size_t)-1 )
-        return WString();
-    buf[sz] = '\0';
-    return WString(buf);
-}
-#endif
+    return String(name);
 }
 
 typedef struct CvGenericHash
@@ -540,7 +510,7 @@ icvFSFlush( CvFileStorage* fs )
 
 
 static void
-icvClose( CvFileStorage* fs, std::string* out )
+icvClose( CvFileStorage* fs, cv::String* out )
 {
     if( out )
         out->clear();
@@ -567,8 +537,7 @@ icvClose( CvFileStorage* fs, std::string* out )
 
     if( fs->outbuf && out )
     {
-        out->resize(fs->outbuf->size());
-        std::copy(fs->outbuf->begin(), fs->outbuf->end(), out->begin());
+        *out = cv::String(fs->outbuf->begin(), fs->outbuf->end());
     }
 }
 
@@ -1208,7 +1177,7 @@ force_int:
                         int val, is_hex = d == 'x';
                         c = ptr[3];
                         ptr[3] = '\0';
-                        val = strtol( ptr + is_hex, &endptr, is_hex ? 8 : 16 );
+                        val = (int)strtol( ptr + is_hex, &endptr, is_hex ? 8 : 16 );
                         ptr[3] = c;
                         if( endptr == ptr + is_hex )
                             buf[len++] = 'x';
@@ -2248,7 +2217,6 @@ icvXMLParse( CvFileStorage* fs )
     ptr = icvXMLSkipSpaces( fs, ptr, CV_XML_INSIDE_TAG );
 
     if( memcmp( ptr, "<?xml", 5 ) != 0 )
-
         CV_PARSE_ERROR( "Valid XML should start with \'<?xml ...?>\'" );
 
     ptr = icvXMLParseTag( fs, ptr, &key, &list, &tag_type );
@@ -2683,7 +2651,6 @@ CV_IMPL CvFileStorage*
 cvOpenFileStorage( const char* filename, CvMemStorage* dststorage, int flags, const char* encoding )
 {
     CvFileStorage* fs = 0;
-    char* xml_buf = 0;
     int default_block_size = 1 << 18;
     bool append = (flags & 3) == CV_STORAGE_APPEND;
     bool mem = (flags & CV_STORAGE_MEMORY) != 0;
@@ -2724,7 +2691,10 @@ cvOpenFileStorage( const char* filename, CvMemStorage* dststorage, int flags, co
             (dot_pos[3] == '\0' || (cv_isdigit(dot_pos[3]) && dot_pos[4] == '\0')) )
         {
             if( append )
+            {
+                cvReleaseFileStorage( &fs );
                 CV_Error(CV_StsNotImplemented, "Appending data to compressed file is not implemented" );
+            }
             isGZ = true;
             compression = dot_pos[3];
             if( compression )
@@ -2745,6 +2715,7 @@ cvOpenFileStorage( const char* filename, CvMemStorage* dststorage, int flags, co
             if( !fs->gzfile )
                 goto _exit_;
             #else
+            cvReleaseFileStorage( &fs );
             CV_Error(CV_StsNotImplemented, "There is no compressed file storage support in this configuration");
             #endif
         }
@@ -2797,7 +2768,10 @@ cvOpenFileStorage( const char* filename, CvMemStorage* dststorage, int flags, co
                     if( strcmp( encoding, "UTF-16" ) == 0 ||
                         strcmp( encoding, "utf-16" ) == 0 ||
                         strcmp( encoding, "Utf-16" ) == 0 )
+                    {
+                        cvReleaseFileStorage( &fs );
                         CV_Error( CV_StsBadArg, "UTF-16 XML encoding is not supported! Use 8-bit encoding\n");
+                    }
 
                     CV_Assert( strlen(encoding) < 1000 );
                     char buf[1100];
@@ -2815,11 +2789,11 @@ cvOpenFileStorage( const char* filename, CvMemStorage* dststorage, int flags, co
                 int last_occurence = -1;
                 xml_buf_size = MIN(xml_buf_size, int(file_size));
                 fseek( fs->file, -xml_buf_size, SEEK_END );
-                xml_buf = (char*)cvAlloc( xml_buf_size+2 );
+                char* xml_buf = (char*)cvAlloc( xml_buf_size+2 );
                 // find the last occurence of </opencv_storage>
                 for(;;)
                 {
-                    int line_offset = ftell( fs->file );
+                    int line_offset = (int)ftell( fs->file );
                     char* ptr0 = icvGets( fs, xml_buf, xml_buf_size ), *ptr;
                     if( !ptr0 )
                         break;
@@ -2833,8 +2807,12 @@ cvOpenFileStorage( const char* filename, CvMemStorage* dststorage, int flags, co
                         ptr += strlen(substr);
                     }
                 }
+                cvFree( &xml_buf );
                 if( last_occurence < 0 )
+                {
+                    cvReleaseFileStorage( &fs );
                     CV_Error( CV_StsError, "Could not find </opencv_storage> in the end of file.\n" );
+                }
                 icvCloseFile( fs );
                 fs->file = fopen( fs->filename, "r+t" );
                 fseek( fs->file, last_occurence, SEEK_SET );
@@ -2908,10 +2886,18 @@ cvOpenFileStorage( const char* filename, CvMemStorage* dststorage, int flags, co
 
         //mode = cvGetErrMode();
         //cvSetErrMode( CV_ErrModeSilent );
-        if( fs->fmt == CV_STORAGE_FORMAT_XML )
-            icvXMLParse( fs );
-        else
-            icvYMLParse( fs );
+        try
+        {
+            if( fs->fmt == CV_STORAGE_FORMAT_XML )
+                icvXMLParse( fs );
+            else
+                icvYMLParse( fs );
+        }
+        catch (...)
+        {
+            cvReleaseFileStorage( &fs );
+            throw;
+        }
         //cvSetErrMode( mode );
 
         // release resources that we do not need anymore
@@ -2936,7 +2922,6 @@ _exit_:
         }
     }
 
-    cvFree( &xml_buf );
     return  fs;
 }
 
@@ -3271,19 +3256,19 @@ cvReadRawDataSlice( const CvFileStorage* fs, CvSeqReader* reader,
                     switch( elem_type )
                     {
                     case CV_8U:
-                        *(uchar*)data = CV_CAST_8U(ival);
+                        *(uchar*)data = cv::saturate_cast<uchar>(ival);
                         data++;
                         break;
                     case CV_8S:
-                        *(char*)data = CV_CAST_8S(ival);
+                        *(char*)data = cv::saturate_cast<schar>(ival);
                         data++;
                         break;
                     case CV_16U:
-                        *(ushort*)data = CV_CAST_16U(ival);
+                        *(ushort*)data = cv::saturate_cast<ushort>(ival);
                         data += sizeof(ushort);
                         break;
                     case CV_16S:
-                        *(short*)data = CV_CAST_16S(ival);
+                        *(short*)data = cv::saturate_cast<short>(ival);
                         data += sizeof(short);
                         break;
                     case CV_32S:
@@ -3316,22 +3301,22 @@ cvReadRawDataSlice( const CvFileStorage* fs, CvSeqReader* reader,
                     {
                     case CV_8U:
                         ival = cvRound(fval);
-                        *(uchar*)data = CV_CAST_8U(ival);
+                        *(uchar*)data = cv::saturate_cast<uchar>(ival);
                         data++;
                         break;
                     case CV_8S:
                         ival = cvRound(fval);
-                        *(char*)data = CV_CAST_8S(ival);
+                        *(char*)data = cv::saturate_cast<schar>(ival);
                         data++;
                         break;
                     case CV_16U:
                         ival = cvRound(fval);
-                        *(ushort*)data = CV_CAST_16U(ival);
+                        *(ushort*)data = cv::saturate_cast<ushort>(ival);
                         data += sizeof(ushort);
                         break;
                     case CV_16S:
                         ival = cvRound(fval);
-                        *(short*)data = CV_CAST_16S(ival);
+                        *(short*)data = cv::saturate_cast<short>(ival);
                         data += sizeof(short);
                         break;
                     case CV_32S:
@@ -4855,7 +4840,7 @@ cvRegisterType( const CvTypeInfo* _info )
             "Type name should contain only letters, digits, - and _" );
     }
 
-    info = (CvTypeInfo*)malloc( sizeof(*info) + len + 1 );
+    info = (CvTypeInfo*)cvAlloc( sizeof(*info) + len + 1 );
 
     *info = *_info;
     info->type_name = (char*)(info + 1);
@@ -4893,7 +4878,7 @@ cvUnregisterType( const char* type_name )
         if( !CvType::first || !CvType::last )
             CvType::first = CvType::last = 0;
 
-        free( info );
+        cvFree( &info );
     }
 }
 
@@ -5035,7 +5020,7 @@ cvSave( const char* filename, const void* struct_ptr,
     if( !fs )
         CV_Error( CV_StsError, "Could not open the file storage. Check the path and permissions" );
 
-    cv::string name = _name ? cv::string(_name) : cv::FileStorage::getDefaultObjectName(filename);
+    cv::String name = _name ? cv::String(_name) : cv::FileStorage::getDefaultObjectName(filename);
 
     if( comment )
         cvWriteComment( fs, comment, 0 );
@@ -5129,7 +5114,7 @@ stop_search:
 namespace cv
 {
 
-static void getElemSize( const string& fmt, size_t& elemSize, size_t& cn )
+static void getElemSize( const String& fmt, size_t& elemSize, size_t& cn )
 {
     const char* dt = fmt.c_str();
     cn = 1;
@@ -5149,15 +5134,17 @@ FileStorage::FileStorage()
     state = UNDEFINED;
 }
 
-FileStorage::FileStorage(const string& filename, int flags, const string& encoding)
+FileStorage::FileStorage(const String& filename, int flags, const String& encoding)
 {
     state = UNDEFINED;
     open( filename, flags, encoding );
 }
 
-FileStorage::FileStorage(CvFileStorage* _fs)
+FileStorage::FileStorage(CvFileStorage* _fs, bool owning)
 {
-    fs = Ptr<CvFileStorage>(_fs);
+    if (owning) fs.reset(_fs);
+    else fs = Ptr<CvFileStorage>(Ptr<CvFileStorage>(), _fs);
+
     state = _fs ? NAME_EXPECTED + INSIDE_MAP : UNDEFINED;
 }
 
@@ -5170,11 +5157,11 @@ FileStorage::~FileStorage()
     }
 }
 
-bool FileStorage::open(const string& filename, int flags, const string& encoding)
+bool FileStorage::open(const String& filename, int flags, const String& encoding)
 {
     release();
-    fs = Ptr<CvFileStorage>(cvOpenFileStorage( filename.c_str(), 0, flags,
-                                               !encoding.empty() ? encoding.c_str() : 0));
+    fs.reset(cvOpenFileStorage( filename.c_str(), 0, flags,
+                                !encoding.empty() ? encoding.c_str() : 0));
     bool ok = isOpened();
     state = ok ? NAME_EXPECTED + INSIDE_MAP : UNDEFINED;
     return ok;
@@ -5182,7 +5169,7 @@ bool FileStorage::open(const string& filename, int flags, const string& encoding
 
 bool FileStorage::isOpened() const
 {
-    return !fs.empty() && fs.obj->is_opened;
+    return fs && fs->is_opened;
 }
 
 void FileStorage::release()
@@ -5192,12 +5179,11 @@ void FileStorage::release()
     state = UNDEFINED;
 }
 
-string FileStorage::releaseAndGetString()
+String FileStorage::releaseAndGetString()
 {
-    string buf;
-    buf.reserve(16); // HACK: Work around for compiler bug
-    if( fs.obj && fs.obj->outbuf )
-        icvClose(fs.obj, &buf);
+    String buf;
+    if( fs && fs->outbuf )
+        icvClose(fs, &buf);
 
     release();
     return buf;
@@ -5208,7 +5194,7 @@ FileNode FileStorage::root(int streamidx) const
     return isOpened() ? FileNode(fs, cvGetRootFileNode(fs, streamidx)) : FileNode();
 }
 
-FileStorage& operator << (FileStorage& fs, const string& str)
+FileStorage& operator << (FileStorage& fs, const String& str)
 {
     enum { NAME_EXPECTED = FileStorage::NAME_EXPECTED,
         VALUE_EXPECTED = FileStorage::VALUE_EXPECTED,
@@ -5227,7 +5213,7 @@ FileStorage& operator << (FileStorage& fs, const string& str)
         fs.state = fs.structs.empty() || fs.structs.back() == '{' ?
             INSIDE_MAP + NAME_EXPECTED : VALUE_EXPECTED;
         cvEndWriteStruct( *fs );
-        fs.elname = string();
+        fs.elname = String();
     }
     else if( fs.state == NAME_EXPECTED + INSIDE_MAP )
     {
@@ -5251,12 +5237,12 @@ FileStorage& operator << (FileStorage& fs, const string& str)
             }
             cvStartWriteStruct( *fs, fs.elname.size() > 0 ? fs.elname.c_str() : 0,
                 flags, *_str ? _str : 0 );
-            fs.elname = string();
+            fs.elname = String();
         }
         else
         {
             write( fs, fs.elname, (_str[0] == '\\' && (_str[1] == '{' || _str[1] == '}' ||
-                _str[1] == '[' || _str[1] == ']')) ? string(_str+1) : str );
+                _str[1] == '[' || _str[1] == ']')) ? String(_str+1) : str );
             if( fs.state == INSIDE_MAP + VALUE_EXPECTED )
                 fs.state = INSIDE_MAP + NAME_EXPECTED;
         }
@@ -5267,7 +5253,7 @@ FileStorage& operator << (FileStorage& fs, const string& str)
 }
 
 
-void FileStorage::writeRaw( const string& fmt, const uchar* vec, size_t len )
+void FileStorage::writeRaw( const String& fmt, const uchar* vec, size_t len )
 {
     if( !isOpened() )
         return;
@@ -5278,7 +5264,7 @@ void FileStorage::writeRaw( const string& fmt, const uchar* vec, size_t len )
 }
 
 
-void FileStorage::writeObj( const string& name, const void* obj )
+void FileStorage::writeObj( const String& name, const void* obj )
 {
     if( !isOpened() )
         return;
@@ -5286,7 +5272,7 @@ void FileStorage::writeObj( const string& name, const void* obj )
 }
 
 
-FileNode FileStorage::operator[](const string& nodename) const
+FileNode FileStorage::operator[](const String& nodename) const
 {
     return FileNode(fs, cvGetFileNodeByName(fs, 0, nodename.c_str()));
 }
@@ -5296,7 +5282,7 @@ FileNode FileStorage::operator[](const char* nodename) const
     return FileNode(fs, cvGetFileNodeByName(fs, 0, nodename));
 }
 
-FileNode FileNode::operator[](const string& nodename) const
+FileNode FileNode::operator[](const String& nodename) const
 {
     return FileNode(fs, cvGetFileNodeByName(fs, node, nodename.c_str()));
 }
@@ -5312,10 +5298,10 @@ FileNode FileNode::operator[](int i) const
         i == 0 ? *this : FileNode();
 }
 
-string FileNode::name() const
+String FileNode::name() const
 {
     const char* str;
-    return !node || (str = cvGetFileNodeName(node)) == 0 ? string() : string(str);
+    return !node || (str = cvGetFileNodeName(node)) == 0 ? String() : String(str);
 }
 
 void* FileNode::readObj() const
@@ -5343,7 +5329,7 @@ FileNodeIterator::FileNodeIterator(const CvFileStorage* _fs,
         container = _node;
         if( !(_node->tag & FileNode::USER) && (node_type == FileNode::SEQ || node_type == FileNode::MAP) )
         {
-            cvStartReadSeq( _node->data.seq, &reader );
+            cvStartReadSeq( _node->data.seq, (CvSeqReader*)&reader );
             remaining = FileNode(_fs, _node).size();
         }
         else
@@ -5376,7 +5362,12 @@ FileNodeIterator& FileNodeIterator::operator ++()
     if( remaining > 0 )
     {
         if( reader.seq )
-            CV_NEXT_SEQ_ELEM( reader.seq->elem_size, reader );
+        {
+            if( ((reader).ptr += (((CvSeq*)reader.seq)->elem_size)) >= (reader).block_max )
+            {
+                cvChangeSeqBlock( (CvSeqReader*)&(reader), 1 );
+            }
+        }
         remaining--;
     }
     return *this;
@@ -5394,7 +5385,12 @@ FileNodeIterator& FileNodeIterator::operator --()
     if( remaining < FileNode(fs, container).size() )
     {
         if( reader.seq )
-            CV_PREV_SEQ_ELEM( reader.seq->elem_size, reader );
+        {
+            if( ((reader).ptr -= (((CvSeq*)reader.seq)->elem_size)) < (reader).block_min )
+            {
+                cvChangeSeqBlock( (CvSeqReader*)&(reader), -1 );
+            }
+        }
         remaining++;
     }
     return *this;
@@ -5420,7 +5416,7 @@ FileNodeIterator& FileNodeIterator::operator += (int ofs)
     }
     remaining -= ofs;
     if( reader.seq )
-        cvSetSeqReaderPos( &reader, ofs, 1 );
+        cvSetSeqReaderPos( (CvSeqReader*)&reader, ofs, 1 );
     return *this;
 }
 
@@ -5430,7 +5426,7 @@ FileNodeIterator& FileNodeIterator::operator -= (int ofs)
 }
 
 
-FileNodeIterator& FileNodeIterator::readRaw( const string& fmt, uchar* vec, size_t maxCount )
+FileNodeIterator& FileNodeIterator::readRaw( const String& fmt, uchar* vec, size_t maxCount )
 {
     if( fs && container && remaining > 0 )
     {
@@ -5441,7 +5437,7 @@ FileNodeIterator& FileNodeIterator::readRaw( const string& fmt, uchar* vec, size
 
         if( reader.seq )
         {
-            cvReadRawDataSlice( fs, &reader, (int)count, vec, fmt.c_str() );
+            cvReadRawDataSlice( fs, (CvSeqReader*)&reader, (int)count, vec, fmt.c_str() );
             remaining -= count*cn;
         }
         else
@@ -5454,16 +5450,16 @@ FileNodeIterator& FileNodeIterator::readRaw( const string& fmt, uchar* vec, size
 }
 
 
-void write( FileStorage& fs, const string& name, int value )
+void write( FileStorage& fs, const String& name, int value )
 { cvWriteInt( *fs, name.size() ? name.c_str() : 0, value ); }
 
-void write( FileStorage& fs, const string& name, float value )
+void write( FileStorage& fs, const String& name, float value )
 { cvWriteReal( *fs, name.size() ? name.c_str() : 0, value ); }
 
-void write( FileStorage& fs, const string& name, double value )
+void write( FileStorage& fs, const String& name, double value )
 { cvWriteReal( *fs, name.size() ? name.c_str() : 0, value ); }
 
-void write( FileStorage& fs, const string& name, const string& value )
+void write( FileStorage& fs, const String& name, const String& value )
 { cvWriteString( *fs, name.size() ? name.c_str() : 0, value.c_str() ); }
 
 void writeScalar(FileStorage& fs, int value )
@@ -5475,11 +5471,11 @@ void writeScalar(FileStorage& fs, float value )
 void writeScalar(FileStorage& fs, double value )
 { cvWriteReal( *fs, 0, value ); }
 
-void writeScalar(FileStorage& fs, const string& value )
+void writeScalar(FileStorage& fs, const String& value )
 { cvWriteString( *fs, 0, value.c_str() ); }
 
 
-void write( FileStorage& fs, const string& name, const Mat& value )
+void write( FileStorage& fs, const String& name, const Mat& value )
 {
     if( value.dims <= 2 )
     {
@@ -5494,21 +5490,40 @@ void write( FileStorage& fs, const string& name, const Mat& value )
 }
 
 // TODO: the 4 functions below need to be implemented more efficiently
-void write( FileStorage& fs, const string& name, const SparseMat& value )
+void write( FileStorage& fs, const String& name, const SparseMat& value )
 {
-    Ptr<CvSparseMat> mat = (CvSparseMat*)value;
+    Ptr<CvSparseMat> mat(cvCreateSparseMat(value));
     cvWrite( *fs, name.size() ? name.c_str() : 0, mat );
 }
 
 
-WriteStructContext::WriteStructContext(FileStorage& _fs, const string& name,
-                   int flags, const string& typeName) : fs(&_fs)
+internal::WriteStructContext::WriteStructContext(FileStorage& _fs,
+    const String& name, int flags, const String& typeName) : fs(&_fs)
 {
     cvStartWriteStruct(**fs, !name.empty() ? name.c_str() : 0, flags,
                        !typeName.empty() ? typeName.c_str() : 0);
+    fs->elname = String();
+    if ((flags & FileNode::TYPE_MASK) == FileNode::SEQ)
+    {
+        fs->state = FileStorage::VALUE_EXPECTED;
+        fs->structs.push_back('[');
+    }
+    else
+    {
+        fs->state = FileStorage::NAME_EXPECTED + FileStorage::INSIDE_MAP;
+        fs->structs.push_back('{');
+    }
 }
 
-WriteStructContext::~WriteStructContext() { cvEndWriteStruct(**fs); }
+internal::WriteStructContext::~WriteStructContext()
+{
+    cvEndWriteStruct(**fs);
+    fs->structs.pop_back();
+    fs->state = fs->structs.empty() || fs->structs.back() == '{' ?
+        FileStorage::NAME_EXPECTED + FileStorage::INSIDE_MAP :
+        FileStorage::VALUE_EXPECTED;
+    fs->elname = String();
+}
 
 
 void read( const FileNode& node, Mat& mat, const Mat& default_mat )
@@ -5521,12 +5536,12 @@ void read( const FileNode& node, Mat& mat, const Mat& default_mat )
     void* obj = cvRead((CvFileStorage*)node.fs, (CvFileNode*)*node);
     if(CV_IS_MAT_HDR_Z(obj))
     {
-        Mat((const CvMat*)obj).copyTo(mat);
+        cvarrToMat(obj).copyTo(mat);
         cvReleaseMat((CvMat**)&obj);
     }
     else if(CV_IS_MATND_HDR(obj))
     {
-        Mat((const CvMatND*)obj).copyTo(mat);
+        cvarrToMat(obj).copyTo(mat);
         cvReleaseMatND((CvMatND**)&obj);
     }
     else
@@ -5543,9 +5558,105 @@ void read( const FileNode& node, SparseMat& mat, const SparseMat& default_mat )
         default_mat.copyTo(mat);
         return;
     }
-    Ptr<CvSparseMat> m = (CvSparseMat*)cvRead((CvFileStorage*)node.fs, (CvFileNode*)*node);
+    Ptr<CvSparseMat> m((CvSparseMat*)cvRead((CvFileStorage*)node.fs, (CvFileNode*)*node));
     CV_Assert(CV_IS_SPARSE_MAT(m));
-    SparseMat(m).copyTo(mat);
+    m->copyToSparseMat(mat);
+}
+
+void write(FileStorage& fs, const String& objname, const std::vector<KeyPoint>& keypoints)
+{
+    cv::internal::WriteStructContext ws(fs, objname, CV_NODE_SEQ + CV_NODE_FLOW);
+
+    int i, npoints = (int)keypoints.size();
+    for( i = 0; i < npoints; i++ )
+    {
+        const KeyPoint& kpt = keypoints[i];
+        cv::write(fs, kpt.pt.x);
+        cv::write(fs, kpt.pt.y);
+        cv::write(fs, kpt.size);
+        cv::write(fs, kpt.angle);
+        cv::write(fs, kpt.response);
+        cv::write(fs, kpt.octave);
+        cv::write(fs, kpt.class_id);
+    }
+}
+
+
+void read(const FileNode& node, std::vector<KeyPoint>& keypoints)
+{
+    keypoints.resize(0);
+    FileNodeIterator it = node.begin(), it_end = node.end();
+    for( ; it != it_end; )
+    {
+        KeyPoint kpt;
+        it >> kpt.pt.x >> kpt.pt.y >> kpt.size >> kpt.angle >> kpt.response >> kpt.octave >> kpt.class_id;
+        keypoints.push_back(kpt);
+    }
+}
+
+
+void write(FileStorage& fs, const String& objname, const std::vector<DMatch>& matches)
+{
+    cv::internal::WriteStructContext ws(fs, objname, CV_NODE_SEQ + CV_NODE_FLOW);
+
+    int i, n = (int)matches.size();
+    for( i = 0; i < n; i++ )
+    {
+        const DMatch& m = matches[i];
+        cv::write(fs, m.queryIdx);
+        cv::write(fs, m.trainIdx);
+        cv::write(fs, m.imgIdx);
+        cv::write(fs, m.distance);
+    }
+}
+
+void read(const FileNode& node, std::vector<DMatch>& matches)
+{
+    matches.resize(0);
+    FileNodeIterator it = node.begin(), it_end = node.end();
+    for( ; it != it_end; )
+    {
+        DMatch m;
+        it >> m.queryIdx >> m.trainIdx >> m.imgIdx >> m.distance;
+        matches.push_back(m);
+    }
+}
+
+
+int FileNode::type() const { return !node ? NONE : (node->tag & TYPE_MASK); }
+bool FileNode::isNamed() const { return !node ? false : (node->tag & NAMED) != 0; }
+
+size_t FileNode::size() const
+{
+    int t = type();
+    return t == MAP ? (size_t)((CvSet*)node->data.map)->active_count :
+        t == SEQ ? (size_t)node->data.seq->total : (size_t)!isNone();
+}
+
+void read(const FileNode& node, int& value, int default_value)
+{
+    value = !node.node ? default_value :
+    CV_NODE_IS_INT(node.node->tag) ? node.node->data.i :
+    CV_NODE_IS_REAL(node.node->tag) ? cvRound(node.node->data.f) : 0x7fffffff;
+}
+
+void read(const FileNode& node, float& value, float default_value)
+{
+    value = !node.node ? default_value :
+        CV_NODE_IS_INT(node.node->tag) ? (float)node.node->data.i :
+        CV_NODE_IS_REAL(node.node->tag) ? (float)node.node->data.f : 1e30f;
+}
+
+void read(const FileNode& node, double& value, double default_value)
+{
+    value = !node.node ? default_value :
+        CV_NODE_IS_INT(node.node->tag) ? (double)node.node->data.i :
+        CV_NODE_IS_REAL(node.node->tag) ? node.node->data.f : 1e300;
+}
+
+void read(const FileNode& node, String& value, const String& default_value)
+{
+    value = !node.node ? default_value : CV_NODE_IS_STRING(node.node->tag) ? String(node.node->data.str.ptr) : String();
 }
 
 }

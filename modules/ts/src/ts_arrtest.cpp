@@ -40,6 +40,7 @@
 //M*/
 
 #include "precomp.hpp"
+#include "opencv2/core/core_c.h"
 
 namespace cvtest
 {
@@ -122,7 +123,7 @@ void ArrayTest::get_test_array_types_and_sizes( int /*test_case_idx*/, vector<ve
 }
 
 
-static const int icvTsTypeToDepth[] =
+static const unsigned int icvTsTypeToDepth[] =
 {
     IPL_DEPTH_8U, IPL_DEPTH_8S, IPL_DEPTH_16U, IPL_DEPTH_16S,
     IPL_DEPTH_32S, IPL_DEPTH_32F, IPL_DEPTH_64F
@@ -158,7 +159,7 @@ int ArrayTest::prepare_test_case( int test_case_idx )
             unsigned t = randInt(rng);
             bool create_mask = true, use_roi = false;
             CvSize size = sizes[i][j], whole_size = size;
-            CvRect roi = {0,0,0,0};
+            CvRect roi;
 
             is_image = !cvmat_allowed ? true : iplimage_allowed ? (t & 1) != 0 : false;
             create_mask = (t & 6) == 0; // ~ each of 3 tests will use mask

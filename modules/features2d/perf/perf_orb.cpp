@@ -14,7 +14,7 @@ typedef perf::TestBaseWithParam<std::string> orb;
 
 PERF_TEST_P(orb, detect, testing::Values(ORB_IMAGES))
 {
-    String filename = getDataPath(GetParam());
+    string filename = getDataPath(GetParam());
     Mat frame = imread(filename, IMREAD_GRAYSCALE);
 
     if (frame.empty())
@@ -22,18 +22,18 @@ PERF_TEST_P(orb, detect, testing::Values(ORB_IMAGES))
 
     Mat mask;
     declare.in(frame);
-    ORB detector(1500, 1.3f, 1);
+    Ptr<ORB> detector = ORB::create(1500, 1.3f, 1);
     vector<KeyPoint> points;
 
-    TEST_CYCLE() detector(frame, mask, points);
+    TEST_CYCLE() detector->detect(frame, points, mask);
 
     sort(points.begin(), points.end(), comparators::KeypointGreater());
-    SANITY_CHECK_KEYPOINTS(points);
+    SANITY_CHECK_KEYPOINTS(points, 1e-5);
 }
 
 PERF_TEST_P(orb, extract, testing::Values(ORB_IMAGES))
 {
-    String filename = getDataPath(GetParam());
+    string filename = getDataPath(GetParam());
     Mat frame = imread(filename, IMREAD_GRAYSCALE);
 
     if (frame.empty())
@@ -42,21 +42,21 @@ PERF_TEST_P(orb, extract, testing::Values(ORB_IMAGES))
     Mat mask;
     declare.in(frame);
 
-    ORB detector(1500, 1.3f, 1);
+    Ptr<ORB> detector = ORB::create(1500, 1.3f, 1);
     vector<KeyPoint> points;
-    detector(frame, mask, points);
+    detector->detect(frame, points, mask);
     sort(points.begin(), points.end(), comparators::KeypointGreater());
 
     Mat descriptors;
 
-    TEST_CYCLE() detector(frame, mask, points, descriptors, true);
+    TEST_CYCLE() detector->compute(frame, points, descriptors);
 
     SANITY_CHECK(descriptors);
 }
 
 PERF_TEST_P(orb, full, testing::Values(ORB_IMAGES))
 {
-    String filename = getDataPath(GetParam());
+    string filename = getDataPath(GetParam());
     Mat frame = imread(filename, IMREAD_GRAYSCALE);
 
     if (frame.empty())
@@ -64,14 +64,14 @@ PERF_TEST_P(orb, full, testing::Values(ORB_IMAGES))
 
     Mat mask;
     declare.in(frame);
-    ORB detector(1500, 1.3f, 1);
+    Ptr<ORB> detector = ORB::create(1500, 1.3f, 1);
 
     vector<KeyPoint> points;
     Mat descriptors;
 
-    TEST_CYCLE() detector(frame, mask, points, descriptors, false);
+    TEST_CYCLE() detector->detectAndCompute(frame, mask, points, descriptors, false);
 
     perf::sort(points, descriptors);
-    SANITY_CHECK_KEYPOINTS(points);
+    SANITY_CHECK_KEYPOINTS(points, 1e-5);
     SANITY_CHECK(descriptors);
 }

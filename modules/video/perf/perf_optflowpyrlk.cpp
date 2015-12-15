@@ -50,7 +50,7 @@ PERF_TEST_P(Path_Idx_Cn_NPoints_WSize, OpticalFlowPyrLK_full, testing::Combine(
     int winSize = get<4>(GetParam());
 
     int maxLevel = 2;
-    TermCriteria criteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 7, 0.001);
+    TermCriteria criteria(TermCriteria::COUNT|TermCriteria::EPS, 7, 0.001);
     int flags = 0;
     double minEigThreshold = 1e-4;
 
@@ -124,7 +124,7 @@ PERF_TEST_P(Path_Idx_Cn_NPoints_WSize_Deriv, OpticalFlowPyrLK_self, testing::Com
     bool withDerivatives = get<5>(GetParam());
 
     int maxLevel = 2;
-    TermCriteria criteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 7, 0.001);
+    TermCriteria criteria(TermCriteria::COUNT|TermCriteria::EPS, 7, 0.001);
     int flags = 0;
     double minEigThreshold = 1e-4;
 
@@ -178,7 +178,7 @@ PERF_TEST_P(Path_Idx_Cn_NPoints_WSize_Deriv, OpticalFlowPyrLK_self, testing::Com
     SANITY_CHECK(err, 2);
 }
 
-CV_ENUM(PyrBorderMode, BORDER_DEFAULT, BORDER_TRANSPARENT);
+CV_ENUM(PyrBorderMode, BORDER_DEFAULT, BORDER_TRANSPARENT)
 typedef tr1::tuple<std::string, int, bool, PyrBorderMode, bool> Path_Win_Deriv_Border_Reuse_t;
 typedef TestBaseWithParam<Path_Win_Deriv_Border_Reuse_t> Path_Win_Deriv_Border_Reuse;
 

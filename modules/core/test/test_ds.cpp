@@ -358,8 +358,6 @@ Core_DynStructBaseTest::Core_DynStructBaseTest()
     iterations = max_struct_size*2;
     gen = struct_idx = iter = -1;
     test_progress = -1;
-
-    storage = 0;
 }
 
 
@@ -999,7 +997,7 @@ void Core_SeqBaseTest::run( int )
             {
                 t = cvtest::randReal(rng)*(max_log_storage_block_size - min_log_storage_block_size)
                 + min_log_storage_block_size;
-                storage = cvCreateMemStorage( cvRound( exp(t * CV_LOG2) ) );
+                storage.reset(cvCreateMemStorage( cvRound( exp(t * CV_LOG2) ) ));
             }
 
             iter = struct_idx = -1;
@@ -1083,11 +1081,11 @@ void Core_SeqSortInvTest::run( int )
         {
             struct_idx = iter = -1;
 
-            if( storage.empty() )
+            if( !storage )
             {
                 t = cvtest::randReal(rng)*(max_log_storage_block_size - min_log_storage_block_size)
                 + min_log_storage_block_size;
-                storage = cvCreateMemStorage( cvRound( exp(t * CV_LOG2) ) );
+                storage.reset(cvCreateMemStorage( cvRound( exp(t * CV_LOG2) ) ));
             }
 
             for( iter = 0; iter < iterations/10; iter++ )
@@ -1357,7 +1355,7 @@ int  Core_SetTest::test_set_ops( int iters )
                                   (cvset->total == 0 || cvset->total >= prev_total),
                                   "The total number of cvset elements is not correct" );
 
-        // CvSet and simple set do not neccessary have the same "total" (active & free) number,
+        // CvSet and simple set do not necessary have the same "total" (active & free) number,
         // so pass "set->total" to skip that check
         test_seq_block_consistence( struct_idx, (CvSeq*)cvset, cvset->total );
         update_progressbar();
@@ -1384,7 +1382,7 @@ void Core_SetTest::run( int )
         {
             struct_idx = iter = -1;
             t = cvtest::randReal(rng)*(max_log_storage_block_size - min_log_storage_block_size) + min_log_storage_block_size;
-            storage = cvCreateMemStorage( cvRound( exp(t * CV_LOG2) ) );
+            storage.reset(cvCreateMemStorage( cvRound( exp(t * CV_LOG2) ) ));
 
             for( int i = 0; i < struct_count; i++ )
             {
@@ -1398,7 +1396,7 @@ void Core_SetTest::run( int )
 
                 cvTsReleaseSimpleSet( (CvTsSimpleSet**)&simple_struct[i] );
                 simple_struct[i] = cvTsCreateSimpleSet( max_struct_size, pure_elem_size );
-                 cxcore_struct[i] = cvCreateSet( 0, sizeof(CvSet), elem_size, storage );
+                cxcore_struct[i] = cvCreateSet( 0, sizeof(CvSet), elem_size, storage );
             }
 
             if( test_set_ops( iterations*100 ) < 0 )
@@ -1779,7 +1777,7 @@ int  Core_GraphTest::test_graph_ops( int iters )
                                   (graph->edges->total == 0 || graph->edges->total >= prev_edge_total),
                                   "The total number of graph vertices is not correct" );
 
-        // CvGraph and simple graph do not neccessary have the same "total" (active & free) number,
+        // CvGraph and simple graph do not necessary have the same "total" (active & free) number,
         // so pass "graph->total" (or "graph->edges->total") to skip that check
         test_seq_block_consistence( struct_idx, (CvSeq*)graph, graph->total );
         test_seq_block_consistence( struct_idx, (CvSeq*)graph->edges, graph->edges->total );
@@ -1811,7 +1809,7 @@ void Core_GraphTest::run( int )
             int block_size = cvRound( exp(t * CV_LOG2) );
             block_size = MAX(block_size, (int)(sizeof(CvGraph) + sizeof(CvMemBlock) + sizeof(CvSeqBlock)));
 
-            storage = cvCreateMemStorage(block_size);
+            storage.reset(cvCreateMemStorage(block_size));
 
             for( i = 0; i < struct_count; i++ )
             {
@@ -1929,7 +1927,7 @@ void Core_GraphScanTest::run( int )
             storage_blocksize = MAX(storage_blocksize, (int)(sizeof(CvGraph) + sizeof(CvMemBlock) + sizeof(CvSeqBlock)));
             storage_blocksize = MAX(storage_blocksize, (int)(sizeof(CvGraphEdge) + sizeof(CvMemBlock) + sizeof(CvSeqBlock)));
             storage_blocksize = MAX(storage_blocksize, (int)(sizeof(CvGraphVtx) + sizeof(CvMemBlock) + sizeof(CvSeqBlock)));
-            storage = cvCreateMemStorage(storage_blocksize);
+            storage.reset(cvCreateMemStorage(storage_blocksize));
 
             if( gen == 0 )
             {

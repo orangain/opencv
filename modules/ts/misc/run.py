@@ -740,7 +740,15 @@ class TestSuite(object):
                 print >> _stderr, "Run command:", command
                 if self.setUp:
                     self.setUp()
-                Popen(self.adb + ["shell", "export OPENCV_TEST_DATA_PATH=" + self.options.test_data_path + "&& cd " + andoidcwd + "&& ./" + command], stdout=_stdout, stderr=_stderr).wait()
+                env = self.options.android_env.copy()
+                env['OPENCV_TEST_DATA_PATH'] = self.options.test_data_path
+                if self.options.android_propagate_opencv_env:
+                    for k, v in os.environ.items():
+                        if k.startswith('OPENCV') and not k in env:
+                            env[k] = v
+                print >> _stderr, "Android environment variables: \n", '\n'.join(['    %s=%s' % (k, v) for k, v in env.items()])
+                commandPrefix = ''.join(['export %s=%s && ' % (k, v) for k, v in env.items()])
+                Popen(self.adb + ["shell", commandPrefix + "cd " + andoidcwd + "&& ./" + command], stdout=_stdout, stderr=_stderr).wait()
                 if self.tearDown:
                     self.tearDown()
                 # try get log
@@ -842,16 +850,57 @@ def getRunArgs(args):
             path = npath
     return run_args
 
+if hostos == "nt":
+    def moveTests(instance, destination):
+        src = os.path.dirname(instance.tests_dir)
+        # new binaries path
+        newBinPath = os.path.join(destination, "bin")
+
+        try:
+            # copy binaries and CMakeCache.txt to the specified destination
+            shutil.copytree(src, newBinPath)
+            shutil.copy(os.path.join(instance.path, "CMakeCache.txt"), os.path.join(destination, "CMakeCache.txt"))
+        except Exception, e:
+            print "Copying error occurred:", str(e)
+            exit(e.errno)
+
+        # pattern of CMakeCache.txt string to be replaced
+        replacePattern = re.compile("EXECUTABLE_OUTPUT_PATH:PATH=(.+)")
+
+        with open(os.path.join(destination, "CMakeCache.txt"), "r") as cachefile:
+            try:
+                cachedata = cachefile.read()
+                if hostos == 'nt':
+                    # fix path slashes on nt systems
+                    newBinPath = re.sub(r"\\", r"/", newBinPath)
+                # replace old binaries path in CMakeCache.txt
+                cachedata = re.sub(re.search(replacePattern, cachedata).group(1), newBinPath, cachedata)
+            except Exception, e:
+                print "Reading error occurred:", str(e)
+                exit(e.errno)
+
+        with open(os.path.join(destination, "CMakeCache.txt"), "w") as cachefile:
+            try:
+                cachefile.write(cachedata)
+            except Exception, e:
+                print "Writing error occurred:", str(e)
+                exit(e.errno)
+        exit()
+
 if __name__ == "__main__":
     test_args = [a for a in sys.argv if a.startswith("--perf_") or a.startswith("--gtest_")]
     argv =      [a for a in sys.argv if not(a.startswith("--perf_") or a.startswith("--gtest_"))]
 
-    parser = OptionParser()
+    parser = OptionParser(usage="run.py [options] [build_path]", description="Note: build_path is required if running not from CMake build directory")
     parser.add_option("-t", "--tests", dest="tests", help="comma-separated list of modules to test", metavar="SUITS", default="")
+    if hostos == "nt":
+        parser.add_option("-m", "--move_tests", dest="move", help="location to move current tests build", metavar="PATH", default="")
     parser.add_option("-w", "--cwd", dest="cwd", help="working directory for tests", metavar="PATH", default=".")
     parser.add_option("-a", "--accuracy", dest="accuracy", help="look for accuracy tests instead of performance tests", action="store_true", default=False)
     parser.add_option("-l", "--longname", dest="useLongNames", action="store_true", help="generate log files with long names", default=False)
     parser.add_option("", "--android_test_data_path", dest="test_data_path", help="OPENCV_TEST_DATA_PATH for Android run", metavar="PATH", default="/sdcard/opencv_testdata/")
+    parser.add_option("", "--android_env", dest="android_env_array", help="Environment variable for Android run (NAME=VALUE)", action='append')
+    parser.add_option("", "--android_propagate_opencv_env", dest="android_propagate_opencv_env", help="Propagate OPENCV* environment variables for Android run", action="store_true", default=False)
     parser.add_option("", "--configuration", dest="configuration", help="force Debug or Release configuration", metavar="CFG", default="")
     parser.add_option("", "--serial", dest="adb_serial", help="Android: directs command to the USB device or emulator with the given serial number", metavar="serial number", default="")
     parser.add_option("", "--package", dest="junit_package", help="Android: run jUnit tests for specified package", metavar="package", default="")
@@ -870,7 +919,14 @@ if __name__ == "__main__":
 
     if len(run_args) == 0:
         print >> sys.stderr, "Usage:", os.path.basename(sys.argv[0]), "[options] [build_path]"
+        print >> sys.stderr, "Please specify build_path or run script from CMake build directory"
         exit(1)
+
+    options.android_env = {}
+    if options.android_env_array:
+        for entry in options.android_env_array:
+            k, v = entry.split("=", 1)
+            options.android_env[k] = v
 
     tests = [s.strip() for s in options.tests.split(",") if s]
 
@@ -890,6 +946,10 @@ if __name__ == "__main__":
     test_list = []
     for path in run_args:
         suite = TestSuite(options, path)
+
+        if hostos == "nt":
+            if(options.move):
+                moveTests(suite, options.move)
         #print vars(suite),"\n"
         if options.list:
             test_list.extend(suite.tests)

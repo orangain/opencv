@@ -91,9 +91,9 @@ elseif(CMAKE_COMPILER_IS_GNUCXX)
 
   if(WIN32)
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpmachine
-              OUTPUT_VARIABLE CMAKE_OPENCV_GCC_TARGET_MACHINE
+              OUTPUT_VARIABLE OPENCV_GCC_TARGET_MACHINE
               OUTPUT_STRIP_TRAILING_WHITESPACE)
-    if(CMAKE_OPENCV_GCC_TARGET_MACHINE MATCHES "amd64|x86_64|AMD64")
+    if(OPENCV_GCC_TARGET_MACHINE MATCHES "amd64|x86_64|AMD64")
       set(MINGW64 1)
     endif()
   endif()
@@ -107,12 +107,14 @@ elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
   set(X86_64 1)
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "i686.*|i386.*|x86.*|amd64.*|AMD64.*")
   set(X86 1)
-elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*|ARM.*")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm.*|ARM.*)")
   set(ARM 1)
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64.*|AARCH64.*)")
+  set(AARCH64 1)
 endif()
 
 
-# Similar code is existed in OpenCVConfig.cmake
+# Similar code exists in OpenCVConfig.cmake
 if(NOT DEFINED OpenCV_STATIC)
   # look for global setting
   if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
@@ -125,6 +127,9 @@ endif()
 if(MSVC)
   if(CMAKE_CL_64)
     set(OpenCV_ARCH x64)
+  elseif((CMAKE_GENERATOR MATCHES "ARM") OR ("${arch_hint}" STREQUAL "ARM") OR (CMAKE_VS_EFFECTIVE_PLATFORMS MATCHES "ARM|arm"))
+    # see Modules/CmakeGenericSystem.cmake
+    set(OpenCV_ARCH ARM)
   else()
     set(OpenCV_ARCH x86)
   endif()
@@ -138,15 +143,13 @@ if(MSVC)
     set(OpenCV_RUNTIME vc11)
   elseif(MSVC_VERSION EQUAL 1800)
     set(OpenCV_RUNTIME vc12)
+  elseif(MSVC_VERSION EQUAL 1900)
+    set(OpenCV_RUNTIME vc14)
   endif()
 elseif(MINGW)
   set(OpenCV_RUNTIME mingw)
 
-  execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpmachine
-                  OUTPUT_VARIABLE OPENCV_GCC_TARGET_MACHINE
-                  OUTPUT_STRIP_TRAILING_WHITESPACE)
-  if(CMAKE_OPENCV_GCC_TARGET_MACHINE MATCHES "64")
-    set(MINGW64 1)
+  if(MINGW64)
     set(OpenCV_ARCH x64)
   else()
     set(OpenCV_ARCH x86)

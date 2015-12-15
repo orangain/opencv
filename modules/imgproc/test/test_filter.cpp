@@ -228,7 +228,7 @@ int CV_MorphologyBaseTest::prepare_test_case( int test_case_idx )
     if( shape == CV_SHAPE_CUSTOM )
     {
         eldata.resize(aperture_size.width*aperture_size.height);
-        uchar* src = test_mat[INPUT][1].data;
+        const uchar* src = test_mat[INPUT][1].ptr();
         int srcstep = (int)test_mat[INPUT][1].step;
         int i, j, nonzero = 0;
 
@@ -898,8 +898,8 @@ struct median_pair
 {
     int col;
     int val;
-    median_pair() {};
-    median_pair( int _col, int _val ) : col(_col), val(_val) {};
+    median_pair() { }
+    median_pair( int _col, int _val ) : col(_col), val(_val) { }
 };
 
 
@@ -1886,3 +1886,69 @@ protected:
 };
 
 TEST(Imgproc_Filtering, supportedFormats) { CV_FilterSupportedFormatsTest test; test.safe_run(); }
+
+TEST(Imgproc_Blur, borderTypes)
+{
+    Size kernelSize(3, 3);
+
+    /// ksize > src_roi.size()
+    Mat src(3, 3, CV_8UC1, cv::Scalar::all(255)), dst;
+    Mat src_roi = src(Rect(1, 1, 1, 1));
+    src_roi.setTo(cv::Scalar::all(0));
+
+    // should work like !BORDER_ISOLATED
+    blur(src_roi, dst, kernelSize, Point(-1, -1), BORDER_REPLICATE);
+    EXPECT_EQ(227, dst.at<uchar>(0, 0));
+
+    // should work like BORDER_ISOLATED
+    blur(src_roi, dst, kernelSize, Point(-1, -1), BORDER_REPLICATE | BORDER_ISOLATED);
+    EXPECT_EQ(0, dst.at<uchar>(0, 0));
+
+    /// ksize <= src_roi.size()
+    src = Mat(5, 5, CV_8UC1, cv::Scalar(255));
+    src_roi = src(Rect(1, 1, 3, 3));
+    src_roi.setTo(0);
+    src.at<uchar>(2, 2) = 255;
+
+    // should work like !BORDER_ISOLATED
+    blur(src_roi, dst, kernelSize, Point(-1, -1), BORDER_REPLICATE);
+    Mat expected_dst =
+            (Mat_<uchar>(3, 3) << 170, 113, 170, 113, 28, 113, 170, 113, 170);
+    EXPECT_EQ(expected_dst.type(), dst.type());
+    EXPECT_EQ(expected_dst.size(), dst.size());
+    EXPECT_DOUBLE_EQ(0.0, cvtest::norm(expected_dst, dst, NORM_INF));
+}
+
+TEST(Imgproc_Morphology, iterated)
+{
+    RNG& rng = theRNG();
+    for( int iter = 0; iter < 30; iter++ )
+    {
+        int width = rng.uniform(5, 33);
+        int height = rng.uniform(5, 33);
+        int cn = rng.uniform(1, 5);
+        int iterations = rng.uniform(1, 11);
+        int op = rng.uniform(0, 2);
+        Mat src(height, width, CV_8UC(cn)), dst0, dst1, dst2;
+
+        randu(src, 0, 256);
+        if( op == 0 )
+            dilate(src, dst0, Mat(), Point(-1,-1), iterations);
+        else
+            erode(src, dst0, Mat(), Point(-1,-1), iterations);
+
+        for( int i = 0; i < iterations; i++ )
+            if( op == 0 )
+                dilate(i == 0 ? src : dst1, dst1, Mat(), Point(-1,-1), 1);
+            else
+                erode(i == 0 ? src : dst1, dst1, Mat(), Point(-1,-1), 1);
+
+        Mat kern = getStructuringElement(MORPH_RECT, Size(3,3));
+        if( op == 0 )
+            dilate(src, dst2, kern, Point(-1,-1), iterations);
+        else
+            erode(src, dst2, kern, Point(-1,-1), iterations);
+        ASSERT_EQ(0.0, norm(dst0, dst1, NORM_INF));
+        ASSERT_EQ(0.0, norm(dst0, dst2, NORM_INF));
+    }
+}

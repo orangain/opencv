@@ -40,6 +40,7 @@
 //M*/
 
 #include "test_precomp.hpp"
+#include "opencv2/imgproc/imgproc_c.h"
 
 class CV_UndistortPointsBadArgTest : public cvtest::BadArgTest
 {
@@ -77,6 +78,8 @@ private:
 
 CV_UndistortPointsBadArgTest::CV_UndistortPointsBadArgTest ()
 {
+    useCPlus = false;
+    _camera_mat = matR = matP = _distortion_coeffs = _src_points = _dst_points = NULL;
 }
 
 void CV_UndistortPointsBadArgTest::run_func()
@@ -101,7 +104,10 @@ void CV_UndistortPointsBadArgTest::run(int)
     img_size.height = 600;
     double cam[9] = {150.f, 0.f, img_size.width/2.f, 0, 300.f, img_size.height/2.f, 0.f, 0.f, 1.f};
     double dist[4] = {0.01,0.02,0.001,0.0005};
-    double s_points[N_POINTS2] = {img_size.width/4,img_size.height/4};
+    double s_points[N_POINTS2] = {
+        static_cast<double>(img_size.width) / 4.0,
+        static_cast<double>(img_size.height) / 4.0,
+    };
     double d_points[N_POINTS2];
     double p[9] = {155.f, 0.f, img_size.width/2.f+img_size.width/50.f, 0, 310.f, img_size.height/2.f+img_size.height/50.f, 0.f, 0.f, 1.f};
     double r[9] = {1,0,0,0,1,0,0,0,1};
@@ -243,27 +249,27 @@ void CV_UndistortPointsBadArgTest::run(int)
     //C++ tests
     useCPlus = true;
 
-    camera_mat = cv::Mat(&_camera_mat_orig);
-    distortion_coeffs = cv::Mat(&_distortion_coeffs_orig);
-    P = cv::Mat(&_P_orig);
-    R = cv::Mat(&_R_orig);
-    src_points = cv::Mat(&_src_points_orig);
+    camera_mat = cv::cvarrToMat(&_camera_mat_orig);
+    distortion_coeffs = cv::cvarrToMat(&_distortion_coeffs_orig);
+    P = cv::cvarrToMat(&_P_orig);
+    R = cv::cvarrToMat(&_R_orig);
+    src_points = cv::cvarrToMat(&_src_points_orig);
 
     temp = cvCreateMat(2,2,CV_32FC2);
-    src_points = cv::Mat(temp);
+    src_points = cv::cvarrToMat(temp);
     errcount += run_test_case( CV_StsAssert, "Invalid input data matrix size" );
-    src_points = cv::Mat(&_src_points_orig);
+    src_points = cv::cvarrToMat(&_src_points_orig);
     cvReleaseMat(&temp);
 
     temp = cvCreateMat(1,4,CV_64FC2);
-    src_points = cv::Mat(temp);
+    src_points = cv::cvarrToMat(temp);
     errcount += run_test_case( CV_StsAssert, "Invalid input data matrix type" );
-    src_points = cv::Mat(&_src_points_orig);
+    src_points = cv::cvarrToMat(&_src_points_orig);
     cvReleaseMat(&temp);
 
     src_points = cv::Mat();
     errcount += run_test_case( CV_StsAssert, "Input data matrix is not continuous" );
-    src_points = cv::Mat(&_src_points_orig);
+    src_points = cv::cvarrToMat(&_src_points_orig);
     cvReleaseMat(&temp);
 
 
@@ -310,6 +316,8 @@ private:
 
 CV_InitUndistortRectifyMapBadArgTest::CV_InitUndistortRectifyMapBadArgTest ()
 {
+    useCPlus = false;
+    _camera_mat = matR = _new_camera_mat = _distortion_coeffs = _mapx = _mapy = NULL;
 }
 
 void CV_InitUndistortRectifyMapBadArgTest::run_func()
@@ -360,12 +368,12 @@ void CV_InitUndistortRectifyMapBadArgTest::run(int)
     //C++ tests
     useCPlus = true;
 
-    camera_mat = cv::Mat(&_camera_mat_orig);
-    distortion_coeffs = cv::Mat(&_distortion_coeffs_orig);
-    new_camera_mat = cv::Mat(&_new_camera_mat_orig);
-    R = cv::Mat(&_R_orig);
-    mapx = cv::Mat(&_mapx_orig);
-    mapy = cv::Mat(&_mapy_orig);
+    camera_mat = cv::cvarrToMat(&_camera_mat_orig);
+    distortion_coeffs = cv::cvarrToMat(&_distortion_coeffs_orig);
+    new_camera_mat = cv::cvarrToMat(&_new_camera_mat_orig);
+    R = cv::cvarrToMat(&_R_orig);
+    mapx = cv::cvarrToMat(&_mapx_orig);
+    mapy = cv::cvarrToMat(&_mapy_orig);
 
 
     mat_type = CV_64F;
@@ -373,21 +381,21 @@ void CV_InitUndistortRectifyMapBadArgTest::run(int)
     mat_type = mat_type_orig;
 
     temp = cvCreateMat(3,2,CV_32FC1);
-    camera_mat = cv::Mat(temp);
+    camera_mat = cv::cvarrToMat(temp);
     errcount += run_test_case( CV_StsAssert, "Invalid camera data matrix size" );
-    camera_mat = cv::Mat(&_camera_mat_orig);
+    camera_mat = cv::cvarrToMat(&_camera_mat_orig);
     cvReleaseMat(&temp);
 
     temp = cvCreateMat(4,3,CV_32FC1);
-    R = cv::Mat(temp);
+    R = cv::cvarrToMat(temp);
     errcount += run_test_case( CV_StsAssert, "Invalid R data matrix size" );
-    R = cv::Mat(&_R_orig);
+    R = cv::cvarrToMat(&_R_orig);
     cvReleaseMat(&temp);
 
     temp = cvCreateMat(6,1,CV_32FC1);
-    distortion_coeffs = cv::Mat(temp);
+    distortion_coeffs = cv::cvarrToMat(temp);
     errcount += run_test_case( CV_StsAssert, "Invalid distortion coefficients data matrix size" );
-    distortion_coeffs = cv::Mat(&_distortion_coeffs_orig);
+    distortion_coeffs = cv::cvarrToMat(&_distortion_coeffs_orig);
     cvReleaseMat(&temp);
 
 //------------
@@ -430,6 +438,8 @@ private:
 
 CV_UndistortBadArgTest::CV_UndistortBadArgTest ()
 {
+    useCPlus = false;
+    _camera_mat = _new_camera_mat = _distortion_coeffs = _src = _dst = NULL;
 }
 
 void CV_UndistortBadArgTest::run_func()
@@ -499,11 +509,11 @@ void CV_UndistortBadArgTest::run(int)
     //C++ tests
     useCPlus = true;
 
-    camera_mat = cv::Mat(&_camera_mat_orig);
-    distortion_coeffs = cv::Mat(&_distortion_coeffs_orig);
-    new_camera_mat = cv::Mat(&_new_camera_mat_orig);
-    src = cv::Mat(&_src_orig);
-    dst = cv::Mat(&_dst_orig);
+    camera_mat = cv::cvarrToMat(&_camera_mat_orig);
+    distortion_coeffs = cv::cvarrToMat(&_distortion_coeffs_orig);
+    new_camera_mat = cv::cvarrToMat(&_new_camera_mat_orig);
+    src = cv::cvarrToMat(&_src_orig);
+    dst = cv::cvarrToMat(&_dst_orig);
 
 //------------
     delete[] arr_src;

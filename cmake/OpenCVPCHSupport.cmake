@@ -48,11 +48,27 @@ MACRO(_PCH_GET_COMPILE_FLAGS _out_compile_flags)
             LIST(APPEND ${_out_compile_flags} "-fPIC")
         ENDIF()
 
+        GET_TARGET_PROPERTY(_target_definitions ${_PCH_current_target} COMPILE_DEFINITIONS)
+        if(_target_definitions)
+          foreach(_def ${_target_definitions})
+            LIST(APPEND ${_out_compile_flags} "-D${_def}")
+          endforeach()
+        endif()
+
     ELSE()
         ## TODO ... ? or does it work out of the box
     ENDIF()
 
     GET_DIRECTORY_PROPERTY(DIRINC INCLUDE_DIRECTORIES )
+    FOREACH(item ${DIRINC})
+        if(item MATCHES "^${OpenCV_SOURCE_DIR}/modules/")
+          LIST(APPEND ${_out_compile_flags} "${_PCH_include_prefix}\"${item}\"")
+        else()
+          LIST(APPEND ${_out_compile_flags} "${_PCH_isystem_prefix}\"${item}\"")
+        endif()
+    ENDFOREACH(item)
+
+    get_target_property(DIRINC ${_PCH_current_target} INCLUDE_DIRECTORIES )
     FOREACH(item ${DIRINC})
         if(item MATCHES "^${OpenCV_SOURCE_DIR}/modules/")
           LIST(APPEND ${_out_compile_flags} "${_PCH_include_prefix}\"${item}\"")
@@ -246,6 +262,9 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
             list(APPEND _compile_FLAGS "${_PCH_define_prefix}${__DEFINES}")
         endif()
     endif()
+
+    get_target_property(DIRINC ${_targetName} INCLUDE_DIRECTORIES)
+    set_target_properties(${_targetName}_pch_dephelp PROPERTIES INCLUDE_DIRECTORIES "${DIRINC}")
 
     #MESSAGE("_compile_FLAGS: ${_compile_FLAGS}")
     #message("COMMAND ${CMAKE_CXX_COMPILER}	${_compile_FLAGS} -x c++-header -o ${_output} ${_input}")
