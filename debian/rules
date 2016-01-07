@@ -5,6 +5,13 @@ DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 DEB_HOST_ARCH_OS ?= $(shell dpkg-architecture -qDEB_HOST_ARCH_OS)
 
+# for i386 arch
+ifeq ($(DEB_HOST_ARCH),i386)
+BUILDDIR_ARCH = i586-linux-gnu
+else
+BUILDDIR_ARCH = $(DEB_HOST_MULTIARCH)
+endif
+
 # SSE options
 ifeq ($(DEB_HOST_ARCH),amd64)
 CMAKE_ARCH_FLAGS = -DENABLE_SSE=ON -DENABLE_SSE2=ON -DENABLE_SSE3=OFF 
@@ -71,28 +78,30 @@ override_dh_clean:
 	rm -rf modules/refman.rst
 
 	dh_clean -O--buildsystem=cmake
-	-rm -rf obj-$(DEB_HOST_MULTIARCH)-static
+	-rm -rf obj-$(BUILDDIR_ARCH)
+	-rm -rf obj-$(BUILDDIR_ARCH)-static
 	-rm -rf modules/python/src2/__pycache__/hdr_parser.cpython-34.pyc
 
 override_dh_auto_configure: configure_dyn configure_static
 configure_dyn:
-	dh_auto_configure -B obj-$(DEB_HOST_MULTIARCH) \
+	dh_auto_configure -B obj-$(BUILDDIR_ARCH) \
 		-- $(CMAKE_FLAGS) \
 		-DCMAKE_SHARED_LINKER_FLAGS_RELEASE="$(LDFLAGS)" \
 		-DBUILD_SHARED_LIBS=ON -DBUILD_DOCS=ON
 
 configure_static:
-	dh_auto_configure -B obj-$(DEB_HOST_MULTIARCH)-static \
+	dh_auto_configure -B obj-$(BUILDDIR_ARCH)-static \
 		-- $(CMAKE_FLAGS) \
 		-DBUILD_SHARED_LIBS=OFF -DBUILD_DOCS=OFF
 
 override_dh_auto_build: build_dyn build_static
 	
 build_dyn:
-	dh_auto_build -B obj-$(DEB_HOST_MULTIARCH)
-	dh_auto_build -B obj-$(DEB_HOST_MULTIARCH) -- doxygen
+	dh_auto_build -B obj-$(BUILDDIR_ARCH)
+	dh_auto_build -B obj-$(BUILDDIR_ARCH) -- doxygen
+
 build_static:
-	dh_auto_build -B obj-$(DEB_HOST_MULTIARCH)-static
+	dh_auto_build -B obj-$(BUILDDIR_ARCH)-static
 
 override_dh_install:
 	-rm --verbose -rf debian/tmp/usr/share/opencv/samples/octave
@@ -113,22 +122,13 @@ override_dh_fixperms-indep:
 	#chmod 644 $(CURDIR)/debian/opencv-doc/usr/share/doc/opencv-doc/examples/python2/*.py
 
 override_dh_strip:
-	dh_strip -plibopencv-core3.0 --dbg-package=libopencv-core3.0-dbg
-	dh_strip -plibopencv-ml3.0 --dbg-package=libopencv-ml3.0-dbg
-	dh_strip -plibopencv-imgproc3.0 --dbg-package=libopencv-imgproc3.0-dbg
-	dh_strip -plibopencv-imgcodecs3.0 --dbg-package=libopencv-imgcodecs3.0-dbg
-	dh_strip -plibopencv-video3.0 --dbg-package=libopencv-video3.0-dbg
-	dh_strip -plibopencv-videoio3.0 --dbg-package=libopencv-videoio3.0-dbg
-	dh_strip -plibopencv-objdetect3.0 --dbg-package=libopencv-objdetect3.0-dbg
-	dh_strip -plibopencv-highgui3.0 --dbg-package=libopencv-highgui3.0-dbg
-	dh_strip -plibopencv-calib3d3.0 --dbg-package=libopencv-calib3d3.0-dbg
-	dh_strip -plibopencv-flann3.0 --dbg-package=libopencv-flann3.0-dbg
-	dh_strip -plibopencv-features2d3.0 --dbg-package=libopencv-features2d3.0-dbg
-	dh_strip -plibopencv-photo3.0 --dbg-package=libopencv-photo3.0-dbg
-	dh_strip -plibopencv-videostab3.0 --dbg-package=libopencv-videostab3.0-dbg
-	dh_strip -plibopencv-stitching3.0 --dbg-package=libopencv-stitching3.0-dbg
-	dh_strip -plibopencv-shape3.0 --dbg-package=libopencv-shape3.0-dbg
-	dh_strip -plibopencv-superres3.0 --dbg-package=libopencv-superres3.0-dbg
-	dh_strip -plibopencv-viz3.0 --dbg-package=libopencv-viz3.0-dbg
-
+	for p in libopencv-core3.0 libopencv-ml3.0 libopencv-imgproc3.0 \
+		libopencv-imgcodecs3.0 libopencv-video3.0 libopencv-videoio3.0 \
+		libopencv-objdetect3.0 libopencv-highgui3.0 \
+		libopencv-calib3d3.0 libopencv-flann3.0 \
+		libopencv-features2d3.0 \ libopencv-photo3.0 \
+		libopencv-videostab3.0 libopencv-stitching3.0 \
+		libopencv-shape3.0 libopencv-superres3.0 \
+		libopencv-viz3.0 libopencv-photo3.0 ; do \
+		dh_strip -p$$p --dbg-package=$$p-dbg ; done
 	dh_strip
