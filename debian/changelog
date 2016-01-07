@@ -1,3 +1,11 @@
+opencv (3.0.0+dfsg-1~exp2) experimental; urgency=medium
+
+  * Fix build on i386.
+  * Build with -march=i586 instead of -march=i686 on i386.
+    Add debian/patches/optimize_i586.patch.
+
+ -- Nobuhiro Iwamatsu <iwamatsu@debian.org>  Thu, 07 Jan 2016 23:48:01 +0900
+
 opencv (3.0.0+dfsg-1~exp1) experimental; urgency=medium
 
   * Update to 3.0.0 (Closes: #792677, #805099).
