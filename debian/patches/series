@@ -7,3 +7,4 @@ support_multiarch
 #revert-Make-ts-always-static
 #fix_path_of_opencl_headers
 #libav10.patch
+optimize_i586.patch
