@@ -103,6 +103,14 @@ build_dyn:
 build_static:
 	dh_auto_build -B obj-$(BUILDDIR_ARCH)-static
 
+override_dh_auto_test: test_dyn test_static
+	
+test_dyn:
+	dh_auto_test -B obj-$(BUILDDIR_ARCH)
+
+test_static:
+	dh_auto_test -B obj-$(BUILDDIR_ARCH)-static
+
 override_dh_install:
 	-rm --verbose -rf debian/tmp/usr/share/opencv/samples/octave
 	-rm --verbose -rf debian/tmp/usr/share/opencv/samples/c/cvsample.dsp
