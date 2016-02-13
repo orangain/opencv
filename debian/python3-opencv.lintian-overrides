@@ -1,0 +1,2 @@
+python3-opencv: postinst-has-useless-call-to-ldconfig
+python3-opencv: postrm-has-useless-call-to-ldconfig
