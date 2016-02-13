@@ -1,3 +1,11 @@
+opencv (3.0.0+dfsg-1-0ubuntu1ppa1) trusty; urgency=low
+
+  * Add python3-opencv package.
+  * Fix some lintian warnings.
+
+ -- Orangain <orangain@gmail.com>  Fri, 12 Feb 2016 11:05:00 +0900
+
+
 opencv (3.0.0+dfsg-1~exp2) experimental; urgency=medium
 
   * Fix build on i386.
