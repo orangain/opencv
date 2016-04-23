@@ -80,7 +80,7 @@ override_dh_clean:
 	dh_clean -O--buildsystem=cmake
 	-rm -rf obj-$(BUILDDIR_ARCH)
 	-rm -rf obj-$(BUILDDIR_ARCH)-static
-	-rm -rf modules/python/src2/__pycache__/hdr_parser.cpython-34.pyc
+	-rm -rf modules/python/src2/__pycache__/hdr_parser.cpython-35.pyc
 
 override_dh_auto_configure: configure_dyn configure_static
 configure_dyn:
